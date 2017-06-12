@@ -1,0 +1,190 @@
+---
+title: "Autoencoders and anomaly detection with machine learning in fraud analytics"
+author: "Dr. Shirin Glander"
+date: "`r Sys.Date()`"
+output:
+  md_document:
+    variant: markdown_github
+---
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+```
+
+```{r echo=FALSE}
+load("~/Documents/Github/creditcard/creditcard.RData")
+```
+
+```{r echo=FALSE}
+# separate transactions by day
+creditcard$day <- ifelse(creditcard$Time > 3600 * 24, "day2", "day1")
+
+# make transaction relative to day
+creditcard$Time_day <- ifelse(creditcard$day == "day2", creditcard$Time - 86400, creditcard$Time)
+
+# bin transactions according to time of day
+creditcard$Time <- as.factor(ifelse(creditcard$Time_day <= 38138, "gr1", # mean 1st Qu.
+                          ifelse(creditcard$Time_day <= 52327, "gr2", # mean mean
+                                 ifelse(creditcard$Time_day <= 69580, "gr3", # mean 3rd Qu
+                                        "gr4"))))
+
+creditcard <- select(creditcard, -Time_day, -day)
+
+# convert class variable to factor
+creditcard$Class <- factor(creditcard$Class)
+```
+
+```{r warning=FALSE, message=FALSE}
+library(h2o)
+h2o.init(nthreads = -1)
+
+# convert data to H2OFrame
+creditcard_hf <- as.h2o(creditcard)
+```
+
+Then, I am splitting the dataset into training and test sets. Because I want to check how a pre-trained model with perform, I am splitting my data into two separate training sets and one independent test set for final model comparison.
+
+```{r tidy=FALSE}
+splits <- h2o.splitFrame(creditcard_hf, 
+                         ratios = c(0.4, 0.4), 
+                         seed = 42)
+
+train_unsupervised  <- splits[[1]]
+train_supervised  <- splits[[2]]
+test <- splits[[3]]
+
+train_supervised <- rbind(as.data.frame(train_supervised), as.data.frame(train_unsupervised[train_unsupervised$Class == "1", ])) %>%
+  as.h2o()
+
+train_unsupervised <- train_unsupervised[train_unsupervised$Class == "0", ]
+
+response <- "Class"
+features <- setdiff(colnames(train_unsupervised), response)
+```
+
+```{r }
+model_nn <- h2o.deeplearning(x = features,
+                             training_frame = train_unsupervised,
+                             model_id = "model_nn",
+                             autoencoder = TRUE,
+                             reproducible = TRUE, #slow - turn off for real problems
+                             ignore_const_cols = FALSE,
+                             seed = 42,
+                             hidden = c(10, 2, 10), 
+                             epochs = 100,
+                             activation = "Tanh")
+```
+
+```{r}
+anomaly <- h2o.anomaly(model_nn, test) %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column() %>%
+  mutate(Class = as.vector(test[, 31]))
+
+mean_mse <- anomaly %>%
+  group_by(Class) %>%
+  summarise(mean = mean(Reconstruction.MSE))
+```
+
+```{r fig.width=8, fig.height=3}
+ggplot(anomaly, aes(x = as.numeric(rowname), y = Reconstruction.MSE, color = as.factor(Class))) +
+  geom_point(alpha = 0.3) +
+  geom_hline(data = mean_mse, aes(yintercept = mean, color = Class)) +
+  scale_color_brewer(palette = "Set1") +
+  labs(x = "instance number",
+       color = "Class")
+```
+
+```{r}
+anomaly <- anomaly %>%
+  mutate(outlier = ifelse(Reconstruction.MSE > 0.04, "outlier", "no_outlier"))
+
+anomaly %>%
+  group_by(Class, outlier) %>%
+  summarise(n = n()) %>%
+  mutate(freq = n / sum(n)) 
+```
+
+```{r }
+model_nn_2 <- h2o.deeplearning(y = response,
+                               x = features,
+                               training_frame = train_supervised,
+                               pretrained_autoencoder  = "model_nn",
+                               reproducible = TRUE, #slow - turn off for real problems
+                               balance_classes = TRUE,
+                               ignore_const_cols = FALSE,
+                               seed = 42,
+                               hidden = c(10, 2, 10), 
+                               epochs = 100,
+                               activation = "Tanh")
+```
+
+```{r fig.width=6, fig.height=5, fig.align='center'}
+pred <- as.data.frame(h2o.predict(object = model_nn_2, newdata = test)) %>%
+  mutate(actual = as.vector(test[, 31]))
+```
+
+```{r}
+pred %>%
+  group_by(actual, predict) %>%
+  summarise(n = n()) %>%
+  mutate(freq = n / sum(n)) 
+```
+
+```{r fig.width=4, fig.height=2}
+pred %>%
+  ggplot(aes(x = actual, fill = predict)) +
+    geom_bar() +
+    theme_bw() +
+    scale_fill_brewer(palette = "Set1") +
+    facet_wrap( ~ actual, scales = "free", ncol = 2)
+```
+
+```{r}
+thresholds <- seq(from = 0, to = 1, by = 0.1)
+pred_thresholds <- data.frame(actual = pred$actual)
+
+for (threshold in thresholds) {
+  
+  prediction <- ifelse(pred$p1 > threshold, 1, 0)
+  prediction_true <- ifelse(pred_thresholds$actual == prediction, TRUE, FALSE)
+  pred_thresholds <- cbind(pred_thresholds, prediction_true)
+
+}
+
+colnames(pred_thresholds)[-1] <- thresholds
+```
+
+```{r fig.width=7, fig.height=4}
+pred_thresholds %>%
+  gather(x, y, 2:ncol(pred_thresholds)) %>%
+  group_by(actual, x, y) %>%
+  summarise(n = n()) %>%
+  ggplot(aes(x = as.numeric(x), y = n, color = actual)) +
+    geom_vline(xintercept = 0.7, alpha = 0.5) +
+    geom_line() +
+    geom_point(alpha = 0.5) +
+    theme_bw() +
+    scale_color_brewer(palette = "Set1") +
+    facet_wrap(actual ~ y, scales = "free", ncol = 2) +
+    labs(x = "prediction threshold",
+         y = "number of instances")
+```
+
+```{r}
+pred %>%
+  mutate(predict = ifelse(pred$p1 > 0.7, 1, 0)) %>%
+  group_by(actual, predict) %>%
+  summarise(n = n()) %>%
+  mutate(freq = n / sum(n)) 
+```
+
+---
+
+If you are interested in more machine learning posts, check out [the category listing for **machine_learning** on my blog](https://shiring.github.io/categories.html#machine_learning-ref).
+
+---
+
+```{r}
+sessionInfo()
+```

@@ -1,0 +1,467 @@
+---
+title: "Autoencoders and anomaly detection with machine learning in fraud analytics"
+author: "Dr. Shirin Glander"
+date: "`r Sys.Date()`"
+output:
+  md_document:
+    variant: markdown_github
+---
+
+All my previous posts on machine learning have dealt with supervised learning. But we can also use machine learning for unsupervised learning. The latter are used for clustering and (non-linear) dimensionality reduction.
+
+For this task, I am using [Kaggle's creditcard fraud dataset](https://www.kaggle.com/dalpozz/creditcardfraud) from the following study: 
+
+> Andrea Dal Pozzolo, Olivier Caelen, Reid A. Johnson and Gianluca Bontempi. Calibrating Probability with Undersampling for Unbalanced Classification. In Symposium on Computational Intelligence and Data Mining (CIDM), IEEE, 2015
+
+The dataset gives > 280,000 instances of creditcard use, and for each transaction, we know whether it was fraudulent or not.
+
+Data like this needs special treatment when performing machine learning because they are severely unbalanced: in this case, only 0.17% of all transactions are fraudulent.
+
+While we could try to work with classifiers, like random forests or support vector machines, by applying [over- or under-sampling techniques](https://shiring.github.io/machine_learning/2017/04/02/unbalanced), we can alternatively try to find anomalies in the data (assuming we expect our fraud cases to be anomalies within the whole dataset).
+
+When dealing with such a severe unbalance of response labels, we also need to careful when measuring model performance. Because there are only a handful of fraudulent instances, a model that predicts everything as non-fraud will already achieve a > 99% accuracy. But we won't be able to find fraudulent cases - the proverbial "needle-in-a-haystack" - that we actually want to find!
+
+Below, I will show how you could use autoencoders and anomaly detection, how you could use autoencoders to pre-train a classification model and how you could measure model performance on unbalanced data.
+
+<br>
+
+## Exploring the data
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+```
+
+```{r eval=FALSE}
+# download from https://www.kaggle.com/dalpozz/creditcardfraud
+creditcard <- read.csv("~/Documents/Github/creditcard/creditcard.csv")
+```
+
+```{r echo=FALSE, eval=FALSE}
+save(creditcard, file = "~/Documents/Github/creditcard/creditcard.RData")
+```
+
+```{r echo=FALSE}
+load("~/Documents/Github/creditcard/creditcard.RData")
+```
+
+The dataset contains numerical input variables V1 to V28, which are the result of a PCA transformation of the original features (which could not be provided due to confidentiality issues).
+
+The response variable *Class* tell us whether a transaction was fraudulent (value = 1) or not (value = 0).
+
+```{r fig.width=4, fig.height=2}
+creditcard %>%
+  ggplot(aes(x = Class)) +
+    geom_bar(color = "grey", fill = "lightgrey") +
+    theme_bw()
+```
+
+There are two additional features, *Time* (time in seconds between each transaction and the first transaction) and *Amount* (how much money was transferred in this transaction).
+
+Because *Time* only tells us the order in which transactions have been done, it doesn't actually tell us anything about the actual times (i.e. time of day) of the transaction. Therefore, I am normalizing them by day and bin them into four groups according time of day.
+
+```{r}
+summary(creditcard$Time)
+
+# how many seconds are 24 hours
+# 1 hr = 60 mins = 60 x 60 s = 3600 s
+3600 * 24
+
+# separate transactions by day
+creditcard$day <- ifelse(creditcard$Time > 3600 * 24, "day2", "day1")
+
+# make transaction relative to day
+creditcard$Time_day <- ifelse(creditcard$day == "day2", creditcard$Time - 86400, creditcard$Time)
+
+summary(creditcard[creditcard$day == "day1", ]$Time_day)
+summary(creditcard[creditcard$day == "day2", ]$Time_day)
+
+# bin transactions according to time of day
+creditcard$Time <- as.factor(ifelse(creditcard$Time_day <= 38138, "gr1", # mean 1st Qu.
+                          ifelse(creditcard$Time_day <= 52327, "gr2", # mean mean
+                                 ifelse(creditcard$Time_day <= 69580, "gr3", # mean 3rd Qu
+                                        "gr4"))))
+```
+
+```{r fig.width=4, fig.height=2}
+creditcard %>%
+  ggplot(aes(x = day)) +
+    geom_bar(color = "grey", fill = "lightgrey") +
+    theme_bw()
+```
+
+```{r }
+creditcard <- select(creditcard, -Time_day, -day)
+
+# convert class variable to factor
+creditcard$Class <- factor(creditcard$Class)
+```
+
+```{r fig.width=4, fig.height=2}
+creditcard %>%
+  ggplot(aes(x = Time)) +
+    geom_bar(color = "grey", fill = "lightgrey") +
+    theme_bw() +
+    facet_wrap( ~ Class, scales = "free", ncol = 2)
+```
+
+```{r fig.width=4, fig.height=2}
+summary(creditcard[creditcard$Class == "0", ]$Amount)
+summary(creditcard[creditcard$Class == "1", ]$Amount)
+
+creditcard %>%
+  ggplot(aes(x = Amount)) +
+    geom_histogram(color = "grey", fill = "lightgrey", bins = 50) +
+    theme_bw() +
+    facet_wrap( ~ Class, scales = "free", ncol = 2)
+```
+
+Interestingly, fraudulent creditcard transactions had a higher mean amount of money that was transferred, but the maximum amount was much lower compared to regular transactions.
+
+<br>
+
+## Modeling
+
+For modeling, I am using R's H2O implementation with the *h2o* package. For more details and other examples, see my posts on [my machine learning webinar](https://shiring.github.io/machine_learning/2017/03/31/webinar_code), on [building neural nets with h2o](https://shiring.github.io/machine_learning/2017/02/27/h2o) and on [performing grid search for hyperparameter tuning](https://shiring.github.io/machine_learning/2017/03/07/grid_search).
+
+```{r warning=FALSE, message=FALSE}
+library(h2o)
+h2o.init(nthreads = -1)
+
+# convert data to H2OFrame
+creditcard_hf <- as.h2o(creditcard)
+```
+
+Then, I am splitting the dataset into training and test sets. Because I want to check how a pre-trained model with perform, I am splitting my data into two separate training sets and one independent test set for final model comparison.
+
+```{r tidy=FALSE}
+splits <- h2o.splitFrame(creditcard_hf, 
+                         ratios = c(0.4, 0.4), 
+                         seed = 42)
+
+train_unsupervised  <- splits[[1]]
+train_supervised  <- splits[[2]]
+test <- splits[[3]]
+
+response <- "Class"
+features <- setdiff(colnames(train_unsupervised), response)
+```
+
+<br>
+
+### Autoencoders
+
+First, I am training the unsupervised neural network model using deep learnign autoencoders. With *h2o*, we can simply set `autoencoder = TRUE`.
+
+Here, I am applying a technique called "bottleneck" training, where the hidden layer in the middle is very small. This means that my model will have to reduce the dimensionality of the input data (in this case, down to 2 nodes/dimensions).
+
+The autoencoder model will then learn the patterns of the input data irrespective of given class labels. Here, it will learn, which creditcard transactions are similar and which transactions are outliers or anomalies. We need to keep in mind though, that autoencoder models will be sensitive to outliers in our data, which might throw off otherwise typical patterns.
+
+```{r eval=FALSE}
+model_nn <- h2o.deeplearning(x = features,
+                             training_frame = train_unsupervised,
+                             model_id = "model_nn",
+                             autoencoder = TRUE,
+                             reproducible = TRUE, #slow - turn off for real problems
+                             ignore_const_cols = FALSE,
+                             seed = 42,
+                             hidden = c(10, 2, 10), 
+                             epochs = 100,
+                             activation = "Tanh")
+```
+
+Because training can take a while, I am saving the model:
+
+```{r echo=TRUE, eval=FALSE}
+h2o.saveModel(model_nn, path="model_nn", force = TRUE)
+```
+
+```{r}
+model_nn <- h2o.loadModel("/Users/Shirin/Documents/Github/blog_posts_prep/wip/model_nn/model_nn")
+model_nn
+```
+
+```{r}
+#Convert to autoencoded representation
+test_autoenc <- h2o.predict(model_nn, test)
+```
+
+<br>
+
+### Dimensionality reduction with hidden layers
+
+Because I had used a bottleneck model with two nodes in the hidden layer in the middle, we can consider this dimensionality reduction to explore our feature space (similar to what to we could do with a principal component analysis).
+We can extract this hidden feature with the `h2o.deepfeatures()` function and plot it to show the reduced representation of the input data.
+
+```{r fig.width=5, fig.height=3}
+train_features <- h2o.deepfeatures(model_nn, train_unsupervised, layer = 2) %>%
+  as.data.frame() %>%
+  mutate(Class = as.vector(train_unsupervised[, 31]))
+
+ggplot(train_features, aes(x = DF.L2.C1, y = DF.L2.C2, color = Class)) +
+  geom_point(alpha = 0.1)
+```
+
+Here, we do not see a cluster of fraudulent transactions that is distinct from non-fraud instances, so dimensionality reduction with our autoencoder model alone is not sufficient to identify fraud in this dataset.
+
+But we could use the reduced dimensionality representation of one of the hidden layers as features for model training. An example would be to use th 10 features from the first or third hidden layer:
+
+```{r}
+train_features <- h2o.deepfeatures(model_nn, train_unsupervised, layer = 3) %>%
+  as.data.frame() %>%
+  mutate(Class = as.factor(as.vector(train_unsupervised[, 31]))) %>%
+  as.h2o()
+
+features_dim <- setdiff(colnames(train_features), response)
+```
+
+```{r eval=FALSE}
+model_nn_dim <- h2o.deeplearning(y = response,
+                               x = features_dim,
+                               training_frame = train_features,
+                               reproducible = TRUE, #slow - turn off for real problems
+                               balance_classes = TRUE,
+                               ignore_const_cols = FALSE,
+                               seed = 42,
+                               hidden = c(10, 2, 10), 
+                               epochs = 100,
+                               activation = "Tanh")
+```
+
+```{r echo=TRUE, eval=FALSE}
+h2o.saveModel(model_nn_dim, path="model_nn_dim", force = TRUE)
+```
+
+```{r}
+model_nn_dim <- h2o.loadModel("/Users/Shirin/Documents/Github/blog_posts_prep/wip/model_nn_dim/DeepLearning_model_R_1493574057843_49")
+model_nn_dim
+```
+
+For measuring model performance on test data, we need to convert the test data to the same reduced dimensions as the trainings data:
+
+```{r fig.width=6, fig.height=5, fig.align='center'}
+test_dim <- h2o.deepfeatures(model_nn, test, layer = 3)
+
+h2o.predict(model_nn_dim, test_dim) %>%
+  as.data.frame() %>%
+  mutate(actual = as.vector(test[, 31])) %>%
+  group_by(actual, predict) %>%
+  summarise(n = n()) %>%
+  mutate(freq = n / sum(n))
+```
+
+Now, this actually looks quite good in terms of identifying fraud cases: 92% of fraud cases were identified! However, many non-fraud cases were also classified as fraud. For real-life application, this wouldn't be a good model. Let's try some other techniques...
+
+<br>
+
+### Anomaly detection
+
+We can also ask which instances were considered outliers or anomalies within our test data, using the `h2o.anomaly()` function. Based on the autoencoder model that was trained before, the input data will be reconstructed and for each instance, the mean squarred error (MSE) between actual value and reconstruction is calculated.
+
+I am also calculating the mean MSE for both class labels.
+
+```{r}
+anomaly <- h2o.anomaly(model_nn, test) %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column() %>%
+  mutate(Class = as.vector(test[, 31]))
+
+mean_mse <- anomaly %>%
+  group_by(Class) %>%
+  summarise(mean = mean(Reconstruction.MSE))
+```
+
+This, we can now plot:
+
+```{r fig.width=8, fig.height=3}
+ggplot(anomaly, aes(x = as.numeric(rowname), y = Reconstruction.MSE, color = as.factor(Class))) +
+  geom_point(alpha = 0.3) +
+  geom_hline(data = mean_mse, aes(yintercept = mean, color = Class)) +
+  scale_color_brewer(palette = "Set1") +
+  labs(x = "instance number",
+       color = "Class")
+```
+
+As we can see in the plot, there is no perfect classification into fraud and non-fraud cases but the mean MSE is definitely higher for fraudulent transactions than for regular ones.
+
+We can now identify outlier instances by sorting them according to MSE and apply a threshold for what we consider outliers. We could e.g. say that we consider every instance with a MSE > 0.02 (according to the plot above) to be an anomaly/outlier.
+
+```{r}
+anomaly <- anomaly %>%
+  mutate(outlier = ifelse(Reconstruction.MSE > 0.02, "outlier", "no_outlier"))
+
+anomaly %>%
+  group_by(Class, outlier) %>%
+  summarise(n = n()) %>%
+  mutate(freq = n / sum(n)) 
+```
+
+As we can see, outlier detection is not sufficient to correctly classify fraudulent creditcard transactions either (at least not with this dataset).
+
+<br>
+
+### Pre-trained supervised model
+
+We can now try using the autoencoder model as a pretraining model for a supervised model. Here, I am again using a neural network. This model will now use the weights from the autoencoder model for model fitting.
+
+```{r eval=FALSE}
+model_nn_2 <- h2o.deeplearning(y = response,
+                               x = features,
+                               training_frame = train_supervised,
+                               pretrained_autoencoder  = "model_nn",
+                               reproducible = TRUE, #slow - turn off for real problems
+                               balance_classes = TRUE,
+                               ignore_const_cols = FALSE,
+                               seed = 42,
+                               hidden = c(10, 2, 10), 
+                               epochs = 100,
+                               activation = "Tanh")
+```
+
+```{r echo=TRUE, eval=FALSE}
+h2o.saveModel(model_nn_2, path="model_nn_2", force = TRUE)
+```
+
+```{r}
+model_nn_2 <- h2o.loadModel("/Users/Shirin/Documents/Github/blog_posts_prep/wip/model_nn_2/DeepLearning_model_R_1493574057843_9")
+model_nn_2
+```
+
+```{r fig.width=6, fig.height=5, fig.align='center'}
+pred <- as.data.frame(h2o.predict(object = model_nn_2, newdata = test)) %>%
+  mutate(actual = as.vector(test[, 31]))
+```
+
+```{r}
+pred %>%
+  group_by(actual, predict) %>%
+  summarise(n = n()) %>%
+  mutate(freq = n / sum(n)) 
+```
+
+```{r fig.width=4, fig.height=2}
+pred %>%
+  ggplot(aes(x = actual, fill = predict)) +
+    geom_bar() +
+    theme_bw() +
+    scale_fill_brewer(palette = "Set1") +
+    facet_wrap( ~ actual, scales = "free", ncol = 2)
+```
+
+Now, this looks much better! We did miss 17% of the fraud cases but we also did not mis-classify too many of the non-fraud cases. 
+
+In real-life, we would now spend some more time trying to improve the model by e.g. [performing grid search for hyperparameter tuning](https://shiring.github.io/machine_learning/2017/03/07/grid_search), going back to the original features (which we did not have here) and trying different engineered features and/or trying different algorithms. But here, I will leave it at that.
+
+<br>
+
+### Measuring model performance on highly unbalanced data
+
+Because of the severe bias towards non-fraud cases, we can not use performance measures like accuracy or area under the curve (AUC), as they would give overly optimistic results based on the high percentage of correct classifications of the majority class.
+
+An alternative to AUC is to use the precision-recall curve or the sensitivity (recall)-specificity curve. To calculate and plot these metrics, we can use the *ROCR* package. There are different ways to calculate the area under a curve (see the *PRROC* package for details) but I am going to use a simple function that calculates the area between every consecutive points-pair of x (i.e. x1 - x0, x2 - x1, etc.) under the corresponding values of y.
+
+```{r fig.width=6, fig.height=5, fig.align='center', echo=FALSE, eval=FALSE}
+h2o.performance(model_nn_2, test)
+```
+
+```{r warning=FALSE, message=FALSE}
+library(ROCR)
+
+# http://stackoverflow.com/questions/24563061/computing-integral-of-a-line-plot-in-r
+line_integral <- function(x, y) {
+  dx <- diff(x)
+  end <- length(y)
+  my <- (y[1:(end - 1)] + y[2:end]) / 2
+  sum(dx * my)
+} 
+
+prediction_obj <- prediction(pred$p1, pred$actual)
+```
+
+```{r warning=FALSE, message=FALSE, fig.width=10, fig.height=4}
+par(mfrow = c(1, 2))
+par(mar = c(5.1,4.1,4.1,2.1))
+
+# precision-recall curve
+perf1 <- performance(prediction_obj, measure = "prec", x.measure = "rec") 
+
+x <- perf1@x.values[[1]]
+y <- perf1@y.values[[1]]
+y[1] <- 0
+
+plot(perf1, main = paste("Area Under the\nPrecision-Recall Curve:\n", round(abs(line_integral(x,y)), digits = 3)))
+
+# sensitivity-specificity curve
+perf2 <- performance(prediction_obj, measure = "sens", x.measure = "spec") 
+
+x <- perf2@x.values[[1]]
+y <- perf2@y.values[[1]]
+y[1] <- 0
+
+plot(perf2, main = paste("Area Under the\nSensitivity-Specificity Curve:\n", round(abs(line_integral(x,y)), digits = 3)))
+```
+
+Precision is the proportion of test cases that were predicted to be fraud that were indeed fraudulent (i.e. the true positive predictions), while recall or sensitivity is the proportion of fraud cases that were identified as fraud. And specificity is the proportion of non-fraud cases that are identified as non-fraud. 
+
+The precision-recall curve tells us the relationship between correct fraud predictions and the proprtion of fraud cases that were detected (e.g. if all or most fraud cases were identified, we also have many non-fraud cases predicted as fraud and vice versa).
+The sensitivity-specificity curve thus tell us the relationship between correctly identified classes of both labels (e.g. if we have 100% correctly classified fraud cases, we will have no correctly classified non-fraud cases and vice versa).
+
+```{r echo = FALSE, eval=FALSE}
+library(PRROC)
+
+pr <- pr.curve(scores.class0 = pred$p1, weights.class0 = as.numeric(pred$actual), curve = TRUE)
+plot(pr)
+```
+
+We can also look at this a little bit differently, by manually going through different prediction thresholds and calculating how many cases were correctly classified in the two classes:
+
+```{r}
+thresholds <- seq(from = 0, to = 1, by = 0.1)
+pred_thresholds <- data.frame(actual = pred$actual)
+
+for (threshold in thresholds) {
+  
+  prediction <- ifelse(pred$p1 > threshold, 1, 0)
+  prediction_true <- ifelse(pred_thresholds$actual == prediction, TRUE, FALSE)
+  pred_thresholds <- cbind(pred_thresholds, prediction_true)
+
+}
+
+colnames(pred_thresholds)[-1] <- thresholds
+```
+
+```{r fig.width=7, fig.height=4}
+pred_thresholds %>%
+  gather(x, y, 2:ncol(pred_thresholds)) %>%
+  group_by(actual, x, y) %>%
+  summarise(n = n()) %>%
+  ggplot(aes(x = as.numeric(x), y = n, color = actual)) +
+    geom_vline(xintercept = 0.6, alpha = 0.5) +
+    geom_line() +
+    geom_point(alpha = 0.5) +
+    theme_bw() +
+    scale_color_brewer(palette = "Set1") +
+    facet_wrap(actual ~ y, scales = "free", ncol = 2) +
+    labs(x = "prediction threshold",
+         y = "number of instances")
+```
+
+This plot tells us that we can increase the number of correctly classified non-fraud cases without loosing correctly classified fraud cases when we increase the prediction threshold from the default 0.5 to 0.6:
+
+```{r}
+pred %>%
+  mutate(predict = ifelse(pred$p1 > 0.6, 1, 0)) %>%
+  group_by(actual, predict) %>%
+  summarise(n = n()) %>%
+  mutate(freq = n / sum(n)) 
+```
+
+---
+
+If you are interested in more machine learning posts, check out [the category listing for **machine_learning** on my blog](https://shiring.github.io/categories.html#machine_learning-ref).
+
+---
+
+```{r}
+sessionInfo()
+```
+
