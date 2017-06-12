@@ -1,0 +1,40 @@
+---
+title: "3D plot 1"
+output: html_document
+---
+
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+load("geodata_gc.RData")
+load("geodata_tracks.RData")
+load("loc_gc.RData")
+
+geodata_tracks$ele <- as.numeric(as.character(geodata_tracks$ele))
+data_combined <- data.frame(lat = c(geodata_gc$lat, loc_gc$lat, geodata_tracks$lat),
+                            lon = c(geodata_gc$lon, loc_gc$lon, geodata_tracks$lon),
+                            ele = c(geodata_gc$ele, loc_gc$altitude, geodata_tracks$ele),
+                            track = c(rep("GPS", nrow(geodata_gc)), rep("Google", nrow(loc_gc)), rep("Hiking", nrow(geodata_tracks))))
+data_combined <- data_combined[!duplicated(data_combined), ]
+
+library(maptools)
+library(raster)
+srtm <- getData("SRTM", lon = -15.59972, lat = 27.965)
+
+e2 <- extent(min(data_combined$lon) - 0.2, # xmin
+            max(data_combined$lon) + 0.1, # xmax
+            min(data_combined$lat) - 0.1, # ymin
+            max(data_combined$lat) + 0.1) # ymax
+
+srtm_c <- crop(srtm, e2)
+
+library(rgdal)
+library(rasterVis)
+library(rgl)
+library(htmlwidgets)
+
+options(rgl.printRglwidget = TRUE)
+
+open3d()
+plot3D(srtm_c,  maxpixels = 7e4)
+#browseURL(paste("file://", writeWebGL(dir = file.path(getwd(), "3dplot1"), width = 1000), sep = ""))
+```

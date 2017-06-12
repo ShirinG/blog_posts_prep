@@ -1,0 +1,73 @@
+---
+title: "3D plot 2"
+output: html_document
+---
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+load("geodata_gc.RData")
+load("geodata_tracks.RData")
+load("loc_gc.RData")
+
+geodata_tracks$ele <- as.numeric(as.character(geodata_tracks$ele))
+data_combined <- data.frame(lat = c(geodata_gc$lat, loc_gc$lat, geodata_tracks$lat),
+                            lon = c(geodata_gc$lon, loc_gc$lon, geodata_tracks$lon),
+                            ele = c(geodata_gc$ele, loc_gc$altitude, geodata_tracks$ele),
+                            track = c(rep("GPS", nrow(geodata_gc)), rep("Google", nrow(loc_gc)), rep("Hiking", nrow(geodata_tracks))))
+data_combined <- data_combined[!duplicated(data_combined), ]
+
+library(maptools)
+library(raster)
+srtm <- getData("SRTM", lon = -15.59972, lat = 27.965)
+
+e2 <- extent(min(data_combined$lon) - 0.2, # xmin
+            max(data_combined$lon) + 0.1, # xmax
+            min(data_combined$lat) - 0.1, # ymin
+            max(data_combined$lat) + 0.1) # ymax
+
+srtm_c <- crop(srtm, e2)
+
+library(rgdal)
+library(rasterVis)
+library(rgl)
+library(htmlwidgets)
+
+library(scatterplot3d)
+
+# http://gis.stackexchange.com/questions/142156/r-how-to-get-latitudes-and-longitudes-from-a-rasterlayer
+r.pts <- rasterToPoints(srtm_c, spatial = TRUE)
+geo.prj <- proj4string(r.pts)
+r.pts <- spTransform(r.pts, CRS(geo.prj)) 
+
+library(dplyr)
+bg_matrix <- data.frame(lon = coordinates(r.pts)[,1],
+                         lat = coordinates(r.pts)[,2])
+
+ex_bg <- extract(srtm_c, bg_matrix, cellnumbers = TRUE, df = TRUE)
+bg_matrix$ele <- ex_bg$srtm_33_07 
+
+bg_matrix <- arrange(bg_matrix, lon, lat)
+ex_points <- extract(srtm_c, cbind(data_combined$lon, data_combined$lat), cellnumbers = TRUE, df = TRUE)
+```
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+options(rgl.printRglwidget = TRUE)
+open3d()
+plot3d(data_combined$lon, data_combined$lat, ex_points$srtm_33_07, 
+       xlab = "", ylab = "", zlab = "",
+       col = "blue", size = 5, alpha = 0.1,
+       lit = TRUE,
+       box = FALSE, axes = FALSE)
+```
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, eval=FALSE}
+open3d(useNULL = TRUE)
+plot3d(bg_matrix$lon, bg_matrix$lat, bg_matrix$ele, 
+       xlab = "", ylab = "", zlab = "",
+       col = "grey", size = 5, alpha = 0.1,
+       box = FALSE, axes = FALSE, useNULL = TRUE)
+plot3d(data_combined$lon, data_combined$lat, ex_points$srtm_33_07, 
+       col = "blue", add = TRUE, size = 10, alpha = 0.5, useNULL = TRUE) 
+browseURL(paste("file://", writeWebGL(dir = file.path(getwd(), "3dplot2"), width = 500, reuse = TRUE), sep = ""))
+```
+
+
