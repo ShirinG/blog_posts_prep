@@ -1,0 +1,689 @@
+---
+title: "Can we predict flu outcome with Machine Learning in R?"
+author: "Dr. Shirin Glander"
+date: '`r Sys.Date()`'
+output: html_document
+---
+
+Among the many nice R packages containing data collections is the [outbreaks](https://mran.microsoft.com/web/packages/outbreaks/outbreaks.pdf
+) package. It contains datsets on epidemics and among them is data from the 2013 outbreak of [influenza A H7N9](http://www.who.int/influenza/human_animal_interface/faq_H7N9/en/) in [China](http://www.who.int/influenza/human_animal_interface/influenza_h7n9/ChinaH7N9JointMissionReport2013u.pdf?ua=1) as analysed by Kucharski et al. (2014): 
+
+> A. Kucharski, H. Mills, A. Pinsent, C. Fraser, M. Van Kerkhove, C. A. Donnelly, and S. Riley. 2014. Distinguishing between reservoir exposure and human-to-human transmission for emerging pathogens using case onset data. PLOS Currents Outbreaks. Mar 7, edition 1. doi: 10.1371/currents.outbreaks.e1473d9bfc99d080ca242139a06c455f.
+
+> A. Kucharski, H. Mills, A. Pinsent, C. Fraser, M. Van Kerkhove, C. A. Donnelly, and S. Riley. 2014. Data from: Distinguishing between reservoir exposure and human-to-human transmission for emerging pathogens using case onset data. Dryad Digital Repository. http://dx.doi.org/10.5061/dryad.2g43n.
+
+I will be using their data as an example to show how to use Machine Learning algorithms for predicting disease outcome.
+
+---
+
+**Disclaimer:** I am not an expert in Machine Learning. Everything I know, I tought myself during the last months. So, if you see any mistakes or have tips and tricks for improvement, please don't hesitate to let me know! Thanks. :-)
+
+---
+
+<br>
+
+# The data
+
+The dataset contains case ID, date of onset, date of hospitalisation, date of outcome, gender, age, province and of course outcome: Death or Recovery.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+options(width = 1000)
+
+if (!require("outbreaks")) install.packages("outbreaks")
+library(outbreaks)
+fluH7N9.china.2013_backup <- fluH7N9.china.2013
+
+fluH7N9.china.2013$age[which(fluH7N9.china.2013$age == "?")] <- NA
+fluH7N9.china.2013$case.ID <- paste("case", fluH7N9.china.2013$case.ID, sep = "_")
+head(fluH7N9.china.2013)
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+library(tidyr)
+fluH7N9.china.2013_gather <- fluH7N9.china.2013 %>%
+  gather(Group, Date, date.of.onset:date.of.outcome)
+
+fluH7N9.china.2013_gather$Group <- factor(fluH7N9.china.2013_gather$Group, levels = c("date.of.onset", "date.of.hospitalisation", "date.of.outcome"))
+
+library(plyr)
+fluH7N9.china.2013_gather$Group <- mapvalues(fluH7N9.china.2013_gather$Group, from = c("date.of.onset", "date.of.hospitalisation", "date.of.outcome"), 
+          to = c("Date of onset", "Date of hospitalisation", "Date of outcome"))
+
+fluH7N9.china.2013_gather$province <- mapvalues(fluH7N9.china.2013_gather$province, 
+                                                from = c("Anhui", "Beijing", "Fujian", "Guangdong", "Hebei", "Henan", "Hunan", "Jiangxi", "Shandong", "Taiwan"), 
+                                                to = rep("Other", 10))
+
+levels(fluH7N9.china.2013_gather$gender) <- c(levels(fluH7N9.china.2013_gather$gender), "unknown")
+fluH7N9.china.2013_gather$gender[is.na(fluH7N9.china.2013_gather$gender)] <- "unknown"
+
+fluH7N9.china.2013_gather$province <- factor(fluH7N9.china.2013_gather$province, levels = c("Jiangsu",  "Shanghai", "Zhejiang", "Other"))
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+library(ggplot2)
+my_theme <- function(base_size = 12, base_family = "sans"){
+  theme_minimal(base_size = base_size, base_family = base_family) +
+  theme(
+    axis.text = element_text(size = 12),
+    axis.text.x = element_text(angle = 45, vjust = 0.5, hjust = 0.5),
+    axis.title = element_text(size = 14),
+    panel.grid.major = element_line(color = "grey"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "aliceblue"),
+    strip.background = element_rect(fill = "lightgrey", color = "grey", size = 1),
+    strip.text = element_text(face = "bold", size = 12, color = "black"),
+    legend.position = "bottom",
+    legend.justification = "top", 
+    legend.box = "horizontal",
+    legend.box.background = element_rect(colour = "grey50"),
+    legend.background = element_blank(),
+    panel.border = element_rect(color = "grey", fill = NA, size = 0.5)
+  )
+}
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 12, fig.height = 8, fig.align = "center"}
+ggplot(data = fluH7N9.china.2013_gather, aes(x = Date, y = as.numeric(age), fill = outcome)) +
+  stat_density2d(aes(alpha = ..level..), geom = "polygon") +
+  geom_jitter(aes(color = outcome, shape = gender), size = 1.5) +
+  geom_rug(aes(color = outcome)) +
+  labs(
+    fill = "Outcome",
+    color = "Outcome",
+    alpha = "Level",
+    shape = "Gender",
+    x = "Date in 2013",
+    y = "Age",
+    title = "2013 Influenza A H7N9 cases in China",
+    subtitle = "Dataset from 'outbreaks' package (Kucharski et al. 2014)",
+    caption = ""
+  ) +
+  facet_grid(Group ~ province) +
+  my_theme() +
+  scale_shape_manual(values = c(15, 16, 17)) +
+  scale_color_brewer(palette="Set1", na.value = "grey50") +
+  scale_fill_brewer(palette="Set1")
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+fluH7N9.china.2013_gather_2 <- fluH7N9.china.2013_gather[, -4] %>%
+  gather(group_2, value, gender:province)
+
+fluH7N9.china.2013_gather_2$value <- mapvalues(fluH7N9.china.2013_gather_2$value, from = c("m", "f", "unknown", "Other"), 
+          to = c("Male", "Female", "Unknown gender", "Other province"))
+
+fluH7N9.china.2013_gather_2$value <- factor(fluH7N9.china.2013_gather_2$value, 
+                                            levels = c("Female", "Male", "Unknown gender", "Jiangsu", "Shanghai", "Zhejiang", "Other province"))
+
+p1 <- ggplot(data = fluH7N9.china.2013_gather_2, aes(x = value, fill = outcome, color = outcome)) +
+  geom_bar(position = "dodge", alpha = 0.7, size = 1) +
+  my_theme() +
+  scale_fill_brewer(palette="Set1", na.value = "grey50") +
+  scale_color_brewer(palette="Set1", na.value = "grey50") +
+  labs(
+    color = "",
+    fill = "",
+    x = "",
+    y = "Count",
+    title = "2013 Influenza A H7N9 cases in China",
+    subtitle = "Gender and Province numbers of flu cases",
+    caption = ""
+  )
+
+p2 <- ggplot(data = fluH7N9.china.2013_gather, aes(x = as.numeric(age), fill = outcome, color = outcome)) +
+  geom_density(alpha = 0.3, size = 1) +
+  geom_rug() +
+  scale_color_brewer(palette="Set1", na.value = "grey50") +
+  scale_fill_brewer(palette="Set1", na.value = "grey50") +
+  my_theme() +
+  labs(
+    color = "",
+    fill = "",
+    x = "Age",
+    y = "Density",
+    title = "",
+    subtitle = "Age distribution of flu cases",
+    caption = ""
+  )
+
+library(gridExtra)
+library(grid)
+
+grid.arrange(p1, p2, ncol = 2)
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 8, fig.height = 8, fig.align = "center"}
+ggplot(data = fluH7N9.china.2013_gather, aes(x = Date, y = as.numeric(age), color = outcome)) +
+  geom_point(aes(color = outcome, shape = gender), size = 1.5, alpha = 0.6) +
+  geom_path(aes(group = case.ID)) +
+  facet_wrap( ~ province, ncol = 2) +
+  my_theme() +
+  scale_shape_manual(values = c(15, 16, 17)) +
+  scale_color_brewer(palette="Set1", na.value = "grey50") +
+  scale_fill_brewer(palette="Set1") +
+  labs(
+    color = "Outcome",
+    shape = "Gender",
+    x = "Date in 2013",
+    y = "Age",
+    title = "2013 Influenza A H7N9 cases in China",
+    subtitle = "Dataset from 'outbreaks' package (Kucharski et al. 2014)",
+    caption = "\nTime from onset of flu to outcome."
+  )
+```
+
+<br>
+
+# Features
+
+In Machine Learning-speak features are what we call the variables used for model training. Using the right features dramatically influences the accuracy and success of your model.
+
+For this example, I am keeping age, but I am also generating new features from the date information and converting gender and province into numerical values.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+library(dplyr)
+
+dataset <- fluH7N9.china.2013 %>%
+  mutate(hospital = as.factor(ifelse(is.na(date.of.hospitalisation), 0, 1)),
+         gender_f = as.factor(ifelse(gender == "f", 1, 0)),
+         province_Jiangsu = as.factor(ifelse(province == "Jiangsu", 1, 0)),
+         province_Shanghai = as.factor(ifelse(province == "Shanghai", 1, 0)),
+         province_Zhejiang = as.factor(ifelse(province == "Zhejiang", 1, 0)),
+         province_other = as.factor(ifelse(province == "Zhejiang" | province == "Jiangsu" | province == "Shanghai", 0, 1)),
+         days_onset_to_outcome = as.numeric(as.character(gsub(" days", "",
+                                      as.Date(as.character(date.of.outcome), format = "%Y-%m-%d") - 
+                                        as.Date(as.character(date.of.onset), format = "%Y-%m-%d")))),
+         days_onset_to_hospital = as.numeric(as.character(gsub(" days", "",
+                                      as.Date(as.character(date.of.hospitalisation), format = "%Y-%m-%d") - 
+                                        as.Date(as.character(date.of.onset), format = "%Y-%m-%d")))),
+         age = as.numeric(as.character(age)),
+         early_onset = as.factor(ifelse(date.of.onset < summary(fluH7N9.china.2013$date.of.onset)[[3]], 1, 0)),
+         early_outcome = as.factor(ifelse(date.of.outcome < summary(fluH7N9.china.2013$date.of.outcome)[[3]], 1, 0))) %>%
+  subset(select = -c(2:4, 6, 8))
+rownames(dataset) <- dataset$case.ID
+dataset <- dataset[, -1]
+head(dataset)
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+summary(dataset$outcome)
+```
+
+<br>
+
+## Imputing missing values
+
+https://www.r-bloggers.com/imputing-missing-data-with-r-mice-package/
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+library(mice)
+
+dataset_impute <- mice(dataset[, -1],  print = FALSE)
+dataset_impute
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+dataset_complete <- merge(dataset[, 1, drop = FALSE], mice::complete(dataset_impute, 1), by = "row.names", all = TRUE)
+rownames(dataset_complete) <- dataset_complete$Row.names
+dataset_complete <- dataset_complete[, -1]
+```
+
+<br>
+
+# Test, train and validation data sets
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+train_index <- which(is.na(dataset_complete$outcome))
+train_data <- dataset_complete[-train_index, ]
+test_data  <- dataset_complete[train_index, -1]
+
+library(caret)
+set.seed(27)
+val_index <- createDataPartition(train_data$outcome, p = 0.7, list=FALSE)
+val_train_data <- train_data[val_index, ]
+val_test_data  <- train_data[-val_index, ]
+val_train_X <- val_train_data[,-1]
+val_test_X <- val_test_data[,-1]
+```
+
+<br>
+
+## Decision trees
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 12, fig.height = 9, fig.align = "center"}
+library(rpart)
+library(rattle)
+library(rpart.plot)
+library(RColorBrewer)
+
+set.seed(27)
+fit <- rpart(outcome ~ .,
+                    data = train_data,
+                    method = "class",
+                    control = rpart.control(xval = 10, minbucket = 2, cp = 0), parms = list(split = "information"))
+
+fancyRpartPlot(fit)
+```
+
+<br>
+
+## Feature Importance
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 5, fig.height = 3, fig.align = "center"}
+# prepare training scheme
+control <- trainControl(method = "repeatedcv", number = 10, repeats = 10)
+
+# train the model
+set.seed(27)
+model <- train(outcome ~ ., data = train_data, method = "rf", preProcess = NULL, trControl = control)
+
+# estimate variable importance
+importance <- varImp(model, scale=TRUE)
+
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 4, fig.align = "center"}
+importance_df_1 <- importance$importance
+importance_df_1$group <- rownames(importance_df_1)
+
+importance_df_1$group <- mapvalues(importance_df_1$group, 
+                                           from = c("age", "hospital2", "gender_f2", "province_Jiangsu2", "province_Shanghai2", "province_Zhejiang2",
+                                                    "province_other2", "days_onset_to_outcome", "days_onset_to_hospital", "early_onset2", "early_outcome2" ), 
+                                           to = c("Age", "Hospital", "Female", "Jiangsu", "Shanghai", "Zhejiang",
+                                                    "Other province", "Days onset to outcome", "Days onset to hospital", "Early onset", "Early outcome" ))
+f = importance_df_1[order(importance_df_1$Overall, decreasing = FALSE), "group"]
+
+importance_df_2 <- importance_df_1
+importance_df_2$Overall <- 0
+
+importance_df <- rbind(importance_df_1, importance_df_2)
+
+# setting factor levels
+importance_df <- within(importance_df, group <- factor(group, levels = f))
+importance_df_1 <- within(importance_df_1, group <- factor(group, levels = f))
+
+ggplot() +
+  geom_point(data = importance_df_1, aes(x = Overall, y = group, color = group), size = 2) +
+  geom_path(data = importance_df, aes(x = Overall, y = group, color = group, group = group), size = 1) +
+  scale_color_manual(values = rep(brewer.pal(1, "Set1")[1], 11)) +
+  my_theme() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 0, vjust = 0.5, hjust = 0.5)) +
+  labs(
+    x = "Importance",
+    y = "",
+    title = "2013 Influenza A H7N9 cases in China",
+    subtitle = "Scaled feature importance",
+    caption = "\nDetermined with Random Forest and
+    repeated cross validation (10 repeats, 10 times)"
+  )
+```
+
+<br>
+
+## Feature Plot
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 8, fig.height = 6, fig.align = "center"}
+dataset_complete_gather <- dataset_complete %>%
+  mutate(set = ifelse(rownames(dataset_complete) %in% rownames(test_data), "Test Data", 
+                               ifelse(rownames(dataset_complete) %in% rownames(val_train_data), "Validation Train Data",
+                                      ifelse(rownames(dataset_complete) %in% rownames(val_test_data), "Validation Test Data", "NA"))),
+         case_ID = rownames(.)) %>%
+  gather(group, value, age:early_outcome)
+
+dataset_complete_gather$group <- mapvalues(dataset_complete_gather$group, 
+                                           from = c("age", "hospital", "gender_f", "province_Jiangsu", "province_Shanghai", "province_Zhejiang",
+                                                    "province_other", "days_onset_to_outcome", "days_onset_to_hospital", "early_onset", "early_outcome" ), 
+                                           to = c("Age", "Hospital", "Female", "Jiangsu", "Shanghai", "Zhejiang",
+                                                    "Other province", "Days onset to outcome", "Days onset to hospital", "Early onset", "Early outcome" ))
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 26, fig.height = 9, fig.align = "center"}
+ggplot(data = dataset_complete_gather, aes(x = as.numeric(value), fill = outcome, color = outcome)) +
+  geom_density(alpha = 0.2) +
+  geom_rug() +
+  scale_color_brewer(palette="Set1", na.value = "grey50") +
+  scale_fill_brewer(palette="Set1", na.value = "grey50") +
+  my_theme() +
+  facet_wrap(set ~ group, ncol = 11, scales = "free") +
+  labs(
+    x = "Value",
+    y = "Density",
+    title = "2013 Influenza A H7N9 cases in China",
+    subtitle = "Features for classifying outcome",
+    caption = "\nDensity distribution of all features used for classification of flu outcome."
+  )
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 7, fig.height = 5, fig.align = "center"}
+ggplot(subset(dataset_complete_gather, group == "Age" | group == "Days onset to hospital" | group == "Days onset to outcome"), 
+       aes(x=outcome, y=as.numeric(value), fill=set)) + geom_boxplot() +
+  my_theme() +
+  scale_fill_brewer(palette="Set1", type = "div ") +
+  facet_wrap( ~ group, ncol = 3, scales = "free") +
+  labs(
+    fill = "",
+    x = "Outcome",
+    y = "Value",
+    title = "2013 Influenza A H7N9 cases in China",
+    subtitle = "Features for classifying outcome",
+    caption = "\nBoxplot of the features age, days from onset to hospitalisation and days from onset to outcome."
+  )
+```
+
+<br>
+
+# Comparing Machine Learning algorithms
+
+On validation data set.
+
+<br>
+
+## Random Forest
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+set.seed(27)
+model_rf <- caret::train(outcome ~ .,
+                             data = val_train_data,
+                             method = "rf",
+                             preProcess = NULL,
+                             trControl = trainControl(method = "repeatedcv", number = 10, repeats = 10, verboseIter = FALSE))
+model_rf
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+confusionMatrix(predict(model_rf, val_test_data[, -1]), val_test_data$outcome)
+```
+
+<br>
+
+## GLM net
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+set.seed(27)
+model_glmnet <- caret::train(outcome ~ .,
+                             data = val_train_data,
+                             method = "glmnet",
+                             preProcess = NULL,
+                             trControl = trainControl(method = "repeatedcv", number = 10, repeats = 10, verboseIter = FALSE))
+model_glmnet
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+confusionMatrix(predict(model_glmnet, val_test_data[, -1]), val_test_data$outcome)
+```
+
+<br>
+
+## k-Nearest Neighbors
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+set.seed(27)
+model_kknn <- caret::train(outcome ~ .,
+                             data = val_train_data,
+                             method = "kknn",
+                             preProcess = NULL,
+                             trControl = trainControl(method = "repeatedcv", number = 10, repeats = 10, verboseIter = FALSE))
+model_kknn
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+confusionMatrix(predict(model_kknn, val_test_data[, -1]), val_test_data$outcome)
+```
+
+<br>
+
+## Penalized Discriminant Analysis
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+set.seed(27)
+model_pda <- caret::train(outcome ~ .,
+                             data = val_train_data,
+                             method = "pda",
+                             preProcess = NULL,
+                             trControl = trainControl(method = "repeatedcv", number = 10, repeats = 10, verboseIter = FALSE))
+model_pda
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+confusionMatrix(predict(model_pda, val_test_data[, -1]), val_test_data$outcome)
+```
+
+<br>
+
+## Stabilized Linear Discriminant Analysis
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+set.seed(27)
+model_slda <- caret::train(outcome ~ .,
+                             data = val_train_data,
+                             method = "slda",
+                             preProcess = NULL,
+                             trControl = trainControl(method = "repeatedcv", number = 10, repeats = 10, verboseIter = FALSE))
+model_slda
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+confusionMatrix(predict(model_slda, val_test_data[, -1]), val_test_data$outcome)
+```
+
+<br>
+
+## Nearest Shrunken Centroids
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+set.seed(27)
+model_pam <- caret::train(outcome ~ .,
+                             data = val_train_data,
+                             method = "pam",
+                             preProcess = NULL,
+                             trControl = trainControl(method = "repeatedcv", number = 10, repeats = 10, verboseIter = FALSE))
+model_pam
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+confusionMatrix(predict(model_pam, val_test_data[, -1]), val_test_data$outcome)
+```
+
+<br>
+
+## Single C5.0 Tree
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+set.seed(27)
+model_C5.0Tree <- caret::train(outcome ~ .,
+                             data = val_train_data,
+                             method = "C5.0Tree",
+                             preProcess = NULL,
+                             trControl = trainControl(method = "repeatedcv", number = 10, repeats = 10, verboseIter = FALSE))
+model_C5.0Tree
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+confusionMatrix(predict(model_C5.0Tree, val_test_data[, -1]), val_test_data$outcome)
+```
+
+<br>
+
+## Partial Least Squares
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+set.seed(27)
+model_pls <- caret::train(outcome ~ .,
+                             data = val_train_data,
+                             method = "pls",
+                             preProcess = NULL,
+                             trControl = trainControl(method = "repeatedcv", number = 10, repeats = 10, verboseIter = FALSE))
+model_pls
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+confusionMatrix(predict(model_pls, val_test_data[, -1]), val_test_data$outcome)
+```
+
+<br>
+
+## Comparing accuracy of models
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+# Create a list of models
+models <- list(rf = model_rf, glmnet = model_glmnet, kknn = model_kknn, pda = model_pda, slda = model_slda,
+               pam = model_pam, C5.0Tree = model_C5.0Tree, pls = model_pls)
+
+# Resample the models
+resample_results <- resamples(models)
+
+# Generate a summary
+summary(resample_results, metric = c("Kappa", "Accuracy"))
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+bwplot(resample_results , metric = c("Kappa","Accuracy"))
+```
+
+<br>
+
+### Results
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+results <- data.frame(randomForest = predict(model_rf, newdata = val_test_data[, -1], type="prob"),
+                      glmnet = predict(model_glmnet, newdata = val_test_data[, -1], type="prob"),
+                      kknn = predict(model_kknn, newdata = val_test_data[, -1], type="prob"),
+                      pda = predict(model_pda, newdata = val_test_data[, -1], type="prob"),
+                      slda = predict(model_slda, newdata = val_test_data[, -1], type="prob"),
+                      pam = predict(model_pam, newdata = val_test_data[, -1], type="prob"),
+                      C5.0Tree = predict(model_C5.0Tree, newdata = val_test_data[, -1], type="prob"),
+                      pls = predict(model_pls, newdata = val_test_data[, -1], type="prob"))
+
+results$sum_Death <- rowSums(results[, grep("Death", colnames(results))])
+results$sum_Recover <- rowSums(results[, grep("Recover", colnames(results))])
+results$log2_ratio <- log2(results$sum_Recover/results$sum_Death)
+results$true_outcome <- val_test_data$outcome
+results$pred_outcome <- ifelse(results$log2_ratio > 1.5, "Recover", ifelse(results$log2_ratio < -1.5, "Death", "uncertain"))
+results$prediction <- ifelse(results$pred_outcome == results$true_outcome, "CORRECT", 
+                             ifelse(results$pred_outcome == "uncertain", "uncertain", "wrong"))
+results[, -c(1:16)]
+```
+
+<br>
+
+# Predicting unknown outcomes
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+set.seed(27)
+model_rf <- caret::train(outcome ~ .,
+                             data = train_data,
+                             method = "rf",
+                             preProcess = NULL,
+                             trControl = trainControl(method = "repeatedcv", number = 10, repeats = 10, verboseIter = FALSE))
+model_glmnet <- caret::train(outcome ~ .,
+                             data = train_data,
+                             method = "glmnet",
+                             preProcess = NULL,
+                             trControl = trainControl(method = "repeatedcv", number = 10, repeats = 10, verboseIter = FALSE))
+model_kknn <- caret::train(outcome ~ .,
+                             data = train_data,
+                             method = "kknn",
+                             preProcess = NULL,
+                             trControl = trainControl(method = "repeatedcv", number = 10, repeats = 10, verboseIter = FALSE))
+model_pda <- caret::train(outcome ~ .,
+                             data = train_data,
+                             method = "pda",
+                             preProcess = NULL,
+                             trControl = trainControl(method = "repeatedcv", number = 10, repeats = 10, verboseIter = FALSE))
+model_slda <- caret::train(outcome ~ .,
+                             data = train_data,
+                             method = "slda",
+                             preProcess = NULL,
+                             trControl = trainControl(method = "repeatedcv", number = 10, repeats = 10, verboseIter = FALSE))
+model_pam <- caret::train(outcome ~ .,
+                             data = train_data,
+                             method = "pam",
+                             preProcess = NULL,
+                             trControl = trainControl(method = "repeatedcv", number = 10, repeats = 10, verboseIter = FALSE))
+model_C5.0Tree <- caret::train(outcome ~ .,
+                             data = train_data,
+                             method = "C5.0Tree",
+                             preProcess = NULL,
+                             trControl = trainControl(method = "repeatedcv", number = 10, repeats = 10, verboseIter = FALSE))
+model_pls <- caret::train(outcome ~ .,
+                             data = train_data,
+                             method = "pls",
+                             preProcess = NULL,
+                             trControl = trainControl(method = "repeatedcv", number = 10, repeats = 10, verboseIter = FALSE))
+
+models <- list(rf = model_rf, glmnet = model_glmnet, kknn = model_kknn, pda = model_pda, slda = model_slda,
+               pam = model_pam, C5.0Tree = model_C5.0Tree, pls = model_pls)
+
+# Resample the models
+resample_results <- resamples(models)
+
+bwplot(resample_results , metric = c("Kappa","Accuracy"))
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+results <- data.frame(randomForest = predict(model_rf, newdata = test_data, type="prob"),
+                      glmnet = predict(model_glmnet, newdata = test_data, type="prob"),
+                      kknn = predict(model_kknn, newdata = test_data, type="prob"),
+                      pda = predict(model_pda, newdata = test_data, type="prob"),
+                      slda = predict(model_slda, newdata = test_data, type="prob"),
+                      pam = predict(model_pam, newdata = test_data, type="prob"),
+                      C5.0Tree = predict(model_C5.0Tree, newdata = test_data, type="prob"),
+                      pls = predict(model_pls, newdata = test_data, type="prob"))
+
+results$sum_Death <- rowSums(results[, grep("Death", colnames(results))])
+results$sum_Recover <- rowSums(results[, grep("Recover", colnames(results))])
+results$log2_ratio <- log2(results$sum_Recover/results$sum_Death)
+results$predicted_outcome <- ifelse(results$log2_ratio > 1.5, "Recover", ifelse(results$log2_ratio < -1.5, "Death", "uncertain"))
+results[, -c(1:16)]
+write.table(results, "results_prediction_unknown_outcome_ML_part1.txt", col.names = T, sep = "\t")
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+results_combined <- merge(results[, -c(1:16)], fluH7N9.china.2013[which(fluH7N9.china.2013$case.ID %in% rownames(results)), ], 
+                          by.x = "row.names", by.y = "case.ID")
+results_combined <- results_combined[, -c(2, 3, 8, 9)]
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+results_combined_gather <- results_combined %>%
+  gather(group_dates, date, date.of.onset:date.of.hospitalisation)
+
+results_combined_gather$group_dates <- factor(results_combined_gather$group_dates, levels = c("date.of.onset", "date.of.hospitalisation"))
+
+results_combined_gather$group_dates <- mapvalues(results_combined_gather$group_dates, from = c("date.of.onset", "date.of.hospitalisation"), 
+                                             to = c("Date of onset", "Date of hospitalisation"))
+
+results_combined_gather$gender <- mapvalues(results_combined_gather$gender, from = c("f", "m"), 
+                                             to = c("Female", "Male"))
+levels(results_combined_gather$gender) <- c(levels(results_combined_gather$gender), "unknown")
+results_combined_gather$gender[is.na(results_combined_gather$gender)] <- "unknown"
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 6, fig.align = "center"}
+ggplot(data = results_combined_gather, aes(x = date, y = log2_ratio, color = predicted_outcome)) +
+  geom_jitter(aes(size = as.numeric(age)), alpha = 0.3) +
+  geom_rug() +
+  facet_grid(gender ~ group_dates) +
+  labs(
+    color = "Predicted outcome",
+    size = "Age",
+    x = "Date in 2013",
+    y = "log2 ratio of prediction Recover vs Death",
+    title = "2013 Influenza A H7N9 cases in China",
+    subtitle = "Predicted outcome",
+    caption = ""
+  ) +
+  my_theme() +
+  scale_shape_manual(values = c(15, 16, 17)) +
+  scale_color_brewer(palette="Set1") +
+  scale_fill_brewer(palette="Set1")
+```
+
+<br>
+
+-----------------
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+sessionInfo()
+```

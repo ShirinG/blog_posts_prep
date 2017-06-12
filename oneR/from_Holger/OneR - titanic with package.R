@@ -1,0 +1,8 @@
+library(titanic)
+library(OneR)
+data <- bin(maxlevels(titanic_train), na.omit = FALSE)
+model <- OneR(Survived ~., data = data, verbose = TRUE)
+summary(model)
+plot(model)
+prediction <- predict(model, data)
+eval_model(prediction, data$Survived)

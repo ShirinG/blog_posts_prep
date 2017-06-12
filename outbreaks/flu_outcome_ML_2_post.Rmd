@@ -1,0 +1,938 @@
+---
+title: "Extreme Gradient Boosting and Preprocessing in Machine Learning - Addendum to predicting flu outcome with R"
+author: "Shirin Glander"
+date: "December 1, 2016"
+output:
+  md_document:
+    variant: markdown_github
+---
+
+In [last week's post](https://shiring.github.io/machine_learning/2016/11/27/flu_outcome_ML_post) I explored whether machine learning models can be applied to predict flu deaths from the 2013 outbreak of influenza A H7N9 in China.
+There, I compared random forests, elastic-net regularized generalized linear models, k-nearest neighbors, penalized discriminant analysis, stabilized linear discriminant analysis, nearest shrunken centroids, single C5.0 tree and partial least squares.
+
+<br>
+
+# Extreme gradient boosting
+
+[Extreme gradient boosting (XGBoost)](http://xgboost.readthedocs.io/en/latest/model.html) is a faster and improved implementation of [gradient boosting](https://en.wikipedia.org/wiki/Gradient_boosting) for supervised learning and has recently been very successfully applied in Kaggle competitions. Because I've heard XGBoost's praise being sung everywhere lately, I wanted to get my feet wet with it too. So this week I want to compare the prediction success of gradient boosting with the same dataset. Additionally, I want to test the influence of different preprocessing methods on the outcome.
+
+<br>
+
+> "XGBoost uses a more regularized model formalization to control over-fitting, which gives it better performance." Tianqi Chen, developer of xgboost
+
+XGBoost is a tree ensemble model, which means the sum of predictions from a set of classification and regression trees (CART). In that, XGBoost is similar to Random Forests but it uses a different approach to model training.
+
+<br>
+
+Starting with the same test and training data (partitioned into validation test and validation train subsets) from [last week's post](https://shiring.github.io/machine_learning/2016/11/27/flu_outcome_ML_post), I am training extreme gradient boosting models as implemented in the [xgboost](ftp://cran.r-project.org/pub/R/web/packages/xgboost/vignettes/xgboost.pdf) and [caret](http://topepo.github.io/caret/index.html) packages with different preprocessing settings.
+
+Out of the different implementations and variations of gradient boosting algorithms, caret performed best on PCA-preprocessed data in the validation set. These paramteres were then used to predict the outcome in the test set and compare it to last week's predictions.
+
+Compared to last week, there is much less uncertainty in the predictions from XGBoost. Overall, I would say that this algorithm is superior to the others I have used before.
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache=FALSE}
+options(width = 3000)
+
+library(outbreaks)
+fluH7N9.china.2013_backup <- fluH7N9.china.2013
+
+fluH7N9.china.2013$age[which(fluH7N9.china.2013$age == "?")] <- NA
+fluH7N9.china.2013$case.ID <- paste("case", fluH7N9.china.2013$case.ID, sep = "_")
+library(dplyr)
+
+dataset <- fluH7N9.china.2013 %>%
+  mutate(hospital = as.factor(ifelse(is.na(date.of.hospitalisation), 0, 1)),
+         gender_f = as.factor(ifelse(gender == "f", 1, 0)),
+         province_Jiangsu = as.factor(ifelse(province == "Jiangsu", 1, 0)),
+         province_Shanghai = as.factor(ifelse(province == "Shanghai", 1, 0)),
+         province_Zhejiang = as.factor(ifelse(province == "Zhejiang", 1, 0)),
+         province_other = as.factor(ifelse(province == "Zhejiang" | province == "Jiangsu" | province == "Shanghai", 0, 1)),
+         days_onset_to_outcome = as.numeric(as.character(gsub(" days", "",
+                                                              as.Date(as.character(date.of.outcome), format = "%Y-%m-%d") -
+                                                                as.Date(as.character(date.of.onset), format = "%Y-%m-%d")))),
+         days_onset_to_hospital = as.numeric(as.character(gsub(" days", "",
+                                                               as.Date(as.character(date.of.hospitalisation), format = "%Y-%m-%d") -
+                                                                 as.Date(as.character(date.of.onset), format = "%Y-%m-%d")))),
+         age = as.numeric(as.character(age)),
+         early_onset = as.factor(ifelse(date.of.onset < summary(fluH7N9.china.2013$date.of.onset)[[3]], 1, 0)),
+         early_outcome = as.factor(ifelse(date.of.outcome < summary(fluH7N9.china.2013$date.of.outcome)[[3]], 1, 0))) %>%
+  subset(select = -c(2:4, 6, 8))
+rownames(dataset) <- dataset$case.ID
+dataset <- dataset[, -1]
+library(mice)
+
+dataset_impute <- mice(dataset[, -1],  print = FALSE)
+dataset_complete <- merge(dataset[, 1, drop = FALSE], complete(dataset_impute, 1), by = "row.names", all = TRUE)
+rownames(dataset_complete) <- dataset_complete$Row.names
+dataset_complete <- dataset_complete[, -1]
+
+train_index <- which(is.na(dataset_complete$outcome))
+train_data <- dataset_complete[-train_index, ]
+test_data  <- dataset_complete[train_index, -1]
+
+library(caret)
+set.seed(27)
+val_index <- createDataPartition(train_data$outcome, p = 0.7, list=FALSE)
+val_train_data <- train_data[val_index, ]
+val_test_data  <- train_data[-val_index, ]
+val_train_X <- val_train_data[,-1]
+val_test_X <- val_test_data[,-1]
+```
+
+<br>
+
+## xgboost
+
+Extreme gradient boosting is implemented in the xgboost package.
+
+```{r eval = FALSE, echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+# install the stable/pre-compiled version from CRAN
+
+install.packages('xgboost')
+
+# or install from weekly updated drat repo
+
+install.packages("drat", repos="https://cran.rstudio.com")
+drat:::addRepo("dmlc")
+install.packages("xgboost", repos="http://dmlc.ml/drat/", type="source")
+```
+
+XGBoost supports only numbers, so the outcome classes have to be converted into integers and both training and test data have to be in numeric matrix format.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+library(xgboost)
+matrix_train <- apply(val_train_X, 2, function(x) as.numeric(as.character(x)))
+outcome_death_train <- ifelse(val_train_data$outcome == "Death", 1, 0)
+
+matrix_test <- apply(val_test_X, 2, function(x) as.numeric(as.character(x)))
+outcome_death_test <- ifelse(val_test_data$outcome == "Death", 1, 0)
+
+xgb_train_matrix <- xgb.DMatrix(data = as.matrix(matrix_train), label = outcome_death_train)
+xgb_test_matrix <- xgb.DMatrix(data = as.matrix(matrix_test), label = outcome_death_test)
+
+watchlist <- list(train = xgb_train_matrix, test = xgb_test_matrix)
+label <- getinfo(xgb_test_matrix, "label")
+```
+
+I am using cross validation to evaluate the error rate.
+
+```{r eecho = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+param <- list("objective" = "binary:logistic")
+
+xgb.cv(param = param, 
+       data = xgb_train_matrix, 
+       nfold = 3,
+       label = getinfo(xgb_train_matrix, "label"),
+       nrounds = 5)
+```
+
+<br>
+
+### Training with gbtree
+
+gbtree is the default booster for xgb.train.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+bst_1 <- xgb.train(data = xgb_train_matrix, 
+                   label = getinfo(xgb_train_matrix, "label"),
+                   max.depth = 2, 
+                   eta = 1, 
+                   nthread = 4, 
+                   nround = 50, # number of trees used for model building
+                   watchlist = watchlist, 
+                   objective = "binary:logistic")
+```
+
+Each feature is grouped by importance with k-means clustering. Gain is the improvement in accuracy that the addition of a feature brings to the branches it is on.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 4, fig.align = "center"}
+features = colnames(matrix_train)
+importance_matrix_1 <- xgb.importance(features, model = bst_1)
+print(importance_matrix_1)
+
+xgb.ggplot.importance(importance_matrix_1) +
+  theme_minimal()
+```
+
+
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+pred_1 <- predict(bst_1, xgb_test_matrix)
+
+result_1 <- data.frame(case_ID = rownames(val_test_data),
+                       outcome = val_test_data$outcome, 
+                       label = label, 
+                       prediction_p_death = round(pred_1, digits = 2),
+                       prediction = as.integer(pred_1 > 0.5),
+                       prediction_eval = ifelse(as.integer(pred_1 > 0.5) != label, "wrong", "correct"))
+result_1
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+err <- as.numeric(sum(as.integer(pred_1 > 0.5) != label))/length(label)
+print(paste("test-error =", round(err, digits = 2)))
+```
+
+<br>
+
+### Training with gblinear
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+bst_2 <- xgb.train(data = xgb_train_matrix, 
+                   booster = "gblinear", 
+                   label = getinfo(xgb_train_matrix, "label"),
+                   max.depth = 2, 
+                   eta = 1, 
+                   nthread = 4, 
+                   nround = 50, # number of trees used for model building
+                   watchlist = watchlist, 
+                   objective = "binary:logistic")
+```
+
+Each feature is grouped by importance with k-means clustering. Gain is the improvement in accuracy that the addition of a feature brings to the branches it is on.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 4, fig.align = "center"}
+features = colnames(matrix_train)
+importance_matrix_2 <- xgb.importance(features, model = bst_2)
+print(importance_matrix_2)
+
+xgb.ggplot.importance(importance_matrix_2) +
+  theme_minimal()
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+pred_2 <- predict(bst_2, xgb_test_matrix)
+
+result_2 <- data.frame(case_ID = rownames(val_test_data),
+                       outcome = val_test_data$outcome, 
+                       label = label, 
+                       prediction_p_death = round(pred_2, digits = 2),
+                       prediction = as.integer(pred_2 > 0.5),
+                       prediction_eval = ifelse(as.integer(pred_2 > 0.5) != label, "wrong", "correct"))
+result_2
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+err <- as.numeric(sum(as.integer(pred_2 > 0.5) != label))/length(label)
+print(paste("test-error =", round(err, digits = 2)))
+```
+
+<br>
+
+## caret
+
+Extreme gradient boosting is also implemented in the caret package. Caret also provides a few options for preprocessing, of which I will compare a few.
+
+<br>
+
+### No preprocessing
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+library(caret)
+
+set.seed(27)
+model_xgb_null <-train(outcome ~ .,
+                 data=val_train_data,
+                 method="xgbTree",
+                 preProcess = NULL,
+                 trControl = trainControl(method = "repeatedcv", number = 5, repeats = 10, verboseIter = FALSE))
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+confusionMatrix(predict(model_xgb_null, val_test_data[, -1]), val_test_data$outcome)
+```
+
+<br>
+
+### Scaling and centering
+
+With this method the column variables are centered (subtracting the column mean from each value in a column) and standardized (dividing by the column standard deviation).
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+set.seed(27)
+model_xgb_sc_cen <-train(outcome ~ .,
+                 data=val_train_data,
+                 method="xgbTree",
+                 preProcess = c("scale", "center"),
+                 trControl = trainControl(method = "repeatedcv", number = 5, repeats = 10, verboseIter = FALSE))
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+confusionMatrix(predict(model_xgb_sc_cen, val_test_data[, -1]), val_test_data$outcome)
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+pred_3 <- predict(model_xgb_sc_cen, val_test_data[, -1])
+pred_3b <- round(predict(model_xgb_sc_cen, val_test_data[, -1], type="prob"), digits = 2)
+
+result_3 <- data.frame(case_ID = rownames(val_test_data),
+                       outcome = val_test_data$outcome, 
+                       label = label, 
+                       prediction = pred_3,
+                       pred_3b)
+result_3$prediction_eval <- ifelse(result_3$prediction != result_3$outcome, "wrong", "correct")
+result_3
+```
+
+<br>
+
+### Box-Cox transformation
+
+The Box-Cox power transformation is used to normalize data.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+set.seed(27)
+model_xgb_BoxCox <-train(outcome ~ .,
+                 data=val_train_data,
+                 method="xgbTree",
+                 preProcess = "BoxCox",
+                 trControl = trainControl(method = "repeatedcv", number = 5, repeats = 10, verboseIter = FALSE))
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+confusionMatrix(predict(model_xgb_BoxCox, val_test_data[, -1]), val_test_data$outcome)
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+pred_4 <- predict(model_xgb_BoxCox, val_test_data[, -1])
+pred_4b <- round(predict(model_xgb_BoxCox, val_test_data[, -1], type="prob"), digits = 2)
+
+result_4 <- data.frame(case_ID = rownames(val_test_data),
+                       outcome = val_test_data$outcome, 
+                       label = label, 
+                       prediction = pred_4,
+                       pred_4b)
+result_4$prediction_eval <- ifelse(result_4$prediction != result_4$outcome, "wrong", "correct")
+result_4
+```
+
+<br>
+
+#### Principal Component Analysis (PCA)
+
+PCA is used for dimensionality reduction. When applied as a preprocessing method the number of features are reduced by using the eigenvectors of the covariance matrix.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+set.seed(27)
+model_xgb_pca <-train(outcome ~ .,
+                 data=val_train_data,
+                 method="xgbTree",
+                 preProcess = "pca",
+                 trControl = trainControl(method = "repeatedcv", number = 5, repeats = 10, verboseIter = FALSE))
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+confusionMatrix(predict(model_xgb_pca, val_test_data[, -1]), val_test_data$outcome)
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+pred_5 <- predict(model_xgb_pca, val_test_data[, -1])
+pred_5b <- round(predict(model_xgb_pca, val_test_data[, -1], type="prob"), digits = 2)
+
+result_5 <- data.frame(case_ID = rownames(val_test_data),
+                       outcome = val_test_data$outcome, 
+                       label = label, 
+                       prediction = pred_5,
+                       pred_5b)
+result_5$prediction_eval <- ifelse(result_5$prediction != result_5$outcome, "wrong", "correct")
+result_5
+```
+
+<br>
+
+### Median imputation
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+set.seed(27)
+model_xgb_medianImpute <-train(outcome ~ .,
+                 data=val_train_data,
+                 method="xgbTree",
+                 preProcess = "medianImpute",
+                 trControl = trainControl(method = "repeatedcv", number = 5, repeats = 10, verboseIter = FALSE))
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+confusionMatrix(predict(model_xgb_medianImpute, val_test_data[, -1]), val_test_data$outcome)
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+pred_6 <- predict(model_xgb_medianImpute, val_test_data[, -1])
+pred_6b <- round(predict(model_xgb_medianImpute, val_test_data[, -1], type="prob"), digits = 2)
+
+result_6 <- data.frame(case_ID = rownames(val_test_data),
+                       outcome = val_test_data$outcome, 
+                       label = label, 
+                       prediction = pred_6,
+                       pred_6b)
+result_6$prediction_eval <- ifelse(result_6$prediction != result_6$outcome, "wrong", "correct")
+result_6
+```
+
+<br>
+
+# Comparison of extreme gradient boosting models
+
+## Combining results
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+library(dplyr)
+result <- left_join(result_1[, c(1, 2, 6)], result_2[, c(1, 6)], by = "case_ID")
+result <- left_join(result, result_3[, c(1, 7)], by = "case_ID")
+result <- left_join(result, result_4[, c(1, 7)], by = "case_ID")
+result <- left_join(result, result_5[, c(1, 7)], by = "case_ID")
+result <- left_join(result, result_6[, c(1, 7)], by = "case_ID")
+colnames(result)[-c(1:2)] <- c("pred_xgboost_gbtree", "pred_xgboost_gblinear", "model_xgb_sc_cen", "model_xgb_BoxCox", "pred_xgbTree_pca", "model_xgb_medianImpute")
+```
+
+<br>
+
+### What's the rate of correctly predicted cases in the validation data?
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+round(sum(result$pred_xgboost_gbtree == "correct")/nrow(result), digits = 2)
+round(sum(result$pred_xgboost_gblinear == "correct")/nrow(result), digits = 2)
+round(sum(result$model_xgb_sc_cen == "correct")/nrow(result), digits = 2)
+round(sum(result$model_xgb_BoxCox == "correct")/nrow(result), digits = 2)
+round(sum(result$pred_xgbTree_pca == "correct")/nrow(result), digits = 2)
+round(sum(result$model_xgb_medianImpute == "correct")/nrow(result), digits = 2)
+```
+
+<br>
+
+# Predicting unknown output
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+set.seed(27)
+model_xgb_pca <-train(outcome ~ .,
+                 data = train_data,
+                 method = "xgbTree",
+                 preProcess = "pca",
+                 trControl = trainControl(method = "repeatedcv", number = 5, repeats = 10, verboseIter = FALSE))
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+pred <- predict(model_xgb_pca, test_data)
+predb <- round(predict(model_xgb_pca, test_data, type="prob"), digits = 2)
+
+result <- data.frame(case_ID = rownames(test_data),
+                       prediction = pred,
+                       predb)
+result$predicted_outcome <- ifelse(result$Death > 0.7, "Death",
+                                   ifelse(result$Recover > 0.7, "Recover", "uncertain"))
+result
+```
+
+<br>
+
+## Comparison with predicted outcome from last week's analyses
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+results_last_week <- read.table("results_prediction_unknown_outcome_ML_part1.txt", header = TRUE, sep = "\t")
+```
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+result <- merge(result[, c(1, 5)], results_last_week[, ncol(results_last_week), drop = FALSE], by.x = "case_ID", by.y = "row.names")
+colnames(result)[2:3] <- c("predicted_outcome_xgboost", "predicted_outcome_last_week")
+```
+
+<br>
+
+### Plotting predicted outcome
+
+Combining the table with predicted outcomes from this and last week with the original data.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+results_combined <- merge(result, fluH7N9.china.2013[which(fluH7N9.china.2013$case.ID %in% result$case_ID), ], 
+                          by.x = "case_ID", by.y = "case.ID")
+results_combined <- results_combined[, -c(6,7)]
+```
+
+For plotting with ggplot2, the dataframe needs to be gathered.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+library(tidyr)
+results_combined_gather <- results_combined %>%
+  gather(group_dates, date, date.of.onset:date.of.hospitalisation)
+
+results_combined_gather$group_dates <- factor(results_combined_gather$group_dates, levels = c("date.of.onset", "date.of.hospitalisation"))
+
+results_combined_gather$group_dates <- mapvalues(results_combined_gather$group_dates, from = c("date.of.onset", "date.of.hospitalisation"), 
+                                             to = c("Date of onset", "Date of hospitalisation"))
+
+results_combined_gather$gender <- mapvalues(results_combined_gather$gender, from = c("f", "m"), 
+                                             to = c("Female", "Male"))
+levels(results_combined_gather$gender) <- c(levels(results_combined_gather$gender), "unknown")
+results_combined_gather$gender[is.na(results_combined_gather$gender)] <- "unknown"
+
+results_combined_gather <- results_combined_gather %>%
+  gather(group_pred, prediction, predicted_outcome_xgboost:predicted_outcome_last_week)
+
+results_combined_gather$group_pred <- mapvalues(results_combined_gather$group_pred, from = c("predicted_outcome_xgboost", "predicted_outcome_last_week"), 
+                                             to = c("Predicted outcome from XGBoost", "Predicted outcome from last week"))
+```
+
+Setting a custom theme for plotting:
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+library(ggplot2)
+my_theme <- function(base_size = 12, base_family = "sans"){
+  theme_minimal(base_size = base_size, base_family = base_family) +
+  theme(
+    axis.text = element_text(size = 12),
+    axis.text.x = element_text(angle = 45, vjust = 0.5, hjust = 0.5),
+    axis.title = element_text(size = 14),
+    panel.grid.major = element_line(color = "grey"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "aliceblue"),
+    strip.background = element_rect(fill = "lightgrey", color = "grey", size = 1),
+    strip.text = element_text(face = "bold", size = 12, color = "black"),
+    legend.position = "bottom",
+    legend.justification = "top", 
+    legend.box = "horizontal",
+    legend.box.background = element_rect(colour = "grey50"),
+    legend.background = element_blank(),
+    panel.border = element_rect(color = "grey", fill = NA, size = 0.5),
+    panel.spacing = unit(1, "lines")
+  )
+}
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 18, fig.height = 6, fig.align = "center"}
+results_combined_gather$province <- mapvalues(results_combined_gather$province, 
+                                                from = c("Anhui", "Beijing", "Fujian", "Guangdong", "Hebei", "Henan", "Hunan", "Jiangxi", "Shandong", "Taiwan"), 
+                                                to = rep("Other", 10))
+
+levels(results_combined_gather$gender) <- c(levels(results_combined_gather$gender), "unknown")
+results_combined_gather$gender[is.na(results_combined_gather$gender)] <- "unknown"
+
+results_combined_gather$province <- factor(results_combined_gather$province, levels = c("Jiangsu",  "Shanghai", "Zhejiang", "Other"))
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 12, fig.height = 8, fig.align = "center"}
+ggplot(data = subset(results_combined_gather, group_dates == "Date of onset"), aes(x = date, y = as.numeric(age), fill = prediction)) +
+  stat_density2d(aes(alpha = ..level..), geom = "polygon") +
+  geom_jitter(aes(color = prediction, shape = gender), size = 2) +
+  geom_rug(aes(color = prediction)) +
+  labs(
+    fill = "Predicted outcome",
+    color = "Predicted outcome",
+    alpha = "Level",
+    shape = "Gender",
+    x = "Date of onset in 2013",
+    y = "Age",
+    title = "2013 Influenza A H7N9 cases in China",
+    subtitle = "Predicted outcome of cases with unknown outcome",
+    caption = ""
+  ) +
+  facet_grid(group_pred ~ province) +
+  my_theme() +
+  scale_shape_manual(values = c(15, 16, 17)) +
+  scale_color_brewer(palette="Set1", na.value = "grey50") +
+  scale_fill_brewer(palette="Set1")
+```
+
+---
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+set.seed(27)
+model_xgb <-train(outcome ~ .,
+                 data = train_data,
+                 method = "xgbTree",
+                 preProcess = c("scale", "center"),
+                 trControl = trainControl(method = "repeatedcv", number = 5, repeats = 10, verboseIter = FALSE))
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+pred <- predict(model_xgb, test_data)
+predb <- round(predict(model_xgb, test_data, type="prob"), digits = 2)
+
+result <- data.frame(case_ID = rownames(test_data),
+                       prediction = pred,
+                       predb)
+result$predicted_outcome <- ifelse(result$Death > 0.7, "Death",
+                                   ifelse(result$Recover > 0.7, "Recover", "uncertain"))
+result
+```
+
+<br>
+
+## Comparison with predicted outcome from last week's analyses
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+results_last_week <- read.table("results_prediction_unknown_outcome_ML_part1.txt", header = TRUE, sep = "\t")
+```
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+result <- merge(result[, c(1, 5)], results_last_week[, ncol(results_last_week), drop = FALSE], by.x = "case_ID", by.y = "row.names")
+colnames(result)[2:3] <- c("predicted_outcome_xgboost", "predicted_outcome_last_week")
+```
+
+<br>
+
+### Plotting predicted outcome
+
+Combining the table with predicted outcomes from this and last week with the original data.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+results_combined <- merge(result, fluH7N9.china.2013[which(fluH7N9.china.2013$case.ID %in% result$case_ID), ], 
+                          by.x = "case_ID", by.y = "case.ID")
+results_combined <- results_combined[, -c(6,7)]
+```
+
+For plotting with ggplot2, the dataframe needs to be gathered.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+library(tidyr)
+results_combined_gather <- results_combined %>%
+  gather(group_dates, date, date.of.onset:date.of.hospitalisation)
+
+results_combined_gather$group_dates <- factor(results_combined_gather$group_dates, levels = c("date.of.onset", "date.of.hospitalisation"))
+
+results_combined_gather$group_dates <- mapvalues(results_combined_gather$group_dates, from = c("date.of.onset", "date.of.hospitalisation"), 
+                                             to = c("Date of onset", "Date of hospitalisation"))
+
+results_combined_gather$gender <- mapvalues(results_combined_gather$gender, from = c("f", "m"), 
+                                             to = c("Female", "Male"))
+levels(results_combined_gather$gender) <- c(levels(results_combined_gather$gender), "unknown")
+results_combined_gather$gender[is.na(results_combined_gather$gender)] <- "unknown"
+
+results_combined_gather <- results_combined_gather %>%
+  gather(group_pred, prediction, predicted_outcome_xgboost:predicted_outcome_last_week)
+
+results_combined_gather$group_pred <- mapvalues(results_combined_gather$group_pred, from = c("predicted_outcome_xgboost", "predicted_outcome_last_week"), 
+                                             to = c("Predicted outcome from XGBoost", "Predicted outcome from last week"))
+```
+
+Setting a custom theme for plotting:
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+library(ggplot2)
+my_theme <- function(base_size = 12, base_family = "sans"){
+  theme_minimal(base_size = base_size, base_family = base_family) +
+  theme(
+    axis.text = element_text(size = 12),
+    axis.text.x = element_text(angle = 45, vjust = 0.5, hjust = 0.5),
+    axis.title = element_text(size = 14),
+    panel.grid.major = element_line(color = "grey"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "aliceblue"),
+    strip.background = element_rect(fill = "lightgrey", color = "grey", size = 1),
+    strip.text = element_text(face = "bold", size = 12, color = "black"),
+    legend.position = "bottom",
+    legend.justification = "top", 
+    legend.box = "horizontal",
+    legend.box.background = element_rect(colour = "grey50"),
+    legend.background = element_blank(),
+    panel.border = element_rect(color = "grey", fill = NA, size = 0.5),
+    panel.spacing = unit(1, "lines")
+  )
+}
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 18, fig.height = 6, fig.align = "center"}
+results_combined_gather$province <- mapvalues(results_combined_gather$province, 
+                                                from = c("Anhui", "Beijing", "Fujian", "Guangdong", "Hebei", "Henan", "Hunan", "Jiangxi", "Shandong", "Taiwan"), 
+                                                to = rep("Other", 10))
+
+levels(results_combined_gather$gender) <- c(levels(results_combined_gather$gender), "unknown")
+results_combined_gather$gender[is.na(results_combined_gather$gender)] <- "unknown"
+
+results_combined_gather$province <- factor(results_combined_gather$province, levels = c("Jiangsu",  "Shanghai", "Zhejiang", "Other"))
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 12, fig.height = 8, fig.align = "center"}
+ggplot(data = subset(results_combined_gather, group_dates == "Date of onset"), aes(x = date, y = as.numeric(age), fill = prediction)) +
+  stat_density2d(aes(alpha = ..level..), geom = "polygon") +
+  geom_jitter(aes(color = prediction, shape = gender), size = 2) +
+  geom_rug(aes(color = prediction)) +
+  labs(
+    fill = "Predicted outcome",
+    color = "Predicted outcome",
+    alpha = "Level",
+    shape = "Gender",
+    x = "Date of onset in 2013",
+    y = "Age",
+    title = "2013 Influenza A H7N9 cases in China",
+    subtitle = "Predicted outcome of cases with unknown outcome",
+    caption = ""
+  ) +
+  facet_grid(group_pred ~ province) +
+  my_theme() +
+  scale_shape_manual(values = c(15, 16, 17)) +
+  scale_color_brewer(palette="Set1", na.value = "grey50") +
+  scale_fill_brewer(palette="Set1")
+```
+
+---
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+set.seed(27)
+model_xgb <-train(outcome ~ .,
+                 data = train_data,
+                 method = "xgbTree",
+                 preProcess = "BoxCox",
+                 trControl = trainControl(method = "repeatedcv", number = 5, repeats = 10, verboseIter = FALSE))
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+pred <- predict(model_xgb, test_data)
+predb <- round(predict(model_xgb, test_data, type="prob"), digits = 2)
+
+result <- data.frame(case_ID = rownames(test_data),
+                       prediction = pred,
+                       predb)
+result$predicted_outcome <- ifelse(result$Death > 0.7, "Death",
+                                   ifelse(result$Recover > 0.7, "Recover", "uncertain"))
+result
+```
+
+<br>
+
+## Comparison with predicted outcome from last week's analyses
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+results_last_week <- read.table("results_prediction_unknown_outcome_ML_part1.txt", header = TRUE, sep = "\t")
+```
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+result <- merge(result[, c(1, 5)], results_last_week[, ncol(results_last_week), drop = FALSE], by.x = "case_ID", by.y = "row.names")
+colnames(result)[2:3] <- c("predicted_outcome_xgboost", "predicted_outcome_last_week")
+```
+
+<br>
+
+### Plotting predicted outcome
+
+Combining the table with predicted outcomes from this and last week with the original data.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+results_combined <- merge(result, fluH7N9.china.2013[which(fluH7N9.china.2013$case.ID %in% result$case_ID), ], 
+                          by.x = "case_ID", by.y = "case.ID")
+results_combined <- results_combined[, -c(6,7)]
+```
+
+For plotting with ggplot2, the dataframe needs to be gathered.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+library(tidyr)
+results_combined_gather <- results_combined %>%
+  gather(group_dates, date, date.of.onset:date.of.hospitalisation)
+
+results_combined_gather$group_dates <- factor(results_combined_gather$group_dates, levels = c("date.of.onset", "date.of.hospitalisation"))
+
+results_combined_gather$group_dates <- mapvalues(results_combined_gather$group_dates, from = c("date.of.onset", "date.of.hospitalisation"), 
+                                             to = c("Date of onset", "Date of hospitalisation"))
+
+results_combined_gather$gender <- mapvalues(results_combined_gather$gender, from = c("f", "m"), 
+                                             to = c("Female", "Male"))
+levels(results_combined_gather$gender) <- c(levels(results_combined_gather$gender), "unknown")
+results_combined_gather$gender[is.na(results_combined_gather$gender)] <- "unknown"
+
+results_combined_gather <- results_combined_gather %>%
+  gather(group_pred, prediction, predicted_outcome_xgboost:predicted_outcome_last_week)
+
+results_combined_gather$group_pred <- mapvalues(results_combined_gather$group_pred, from = c("predicted_outcome_xgboost", "predicted_outcome_last_week"), 
+                                             to = c("Predicted outcome from XGBoost", "Predicted outcome from last week"))
+```
+
+Setting a custom theme for plotting:
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+library(ggplot2)
+my_theme <- function(base_size = 12, base_family = "sans"){
+  theme_minimal(base_size = base_size, base_family = base_family) +
+  theme(
+    axis.text = element_text(size = 12),
+    axis.text.x = element_text(angle = 45, vjust = 0.5, hjust = 0.5),
+    axis.title = element_text(size = 14),
+    panel.grid.major = element_line(color = "grey"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "aliceblue"),
+    strip.background = element_rect(fill = "lightgrey", color = "grey", size = 1),
+    strip.text = element_text(face = "bold", size = 12, color = "black"),
+    legend.position = "bottom",
+    legend.justification = "top", 
+    legend.box = "horizontal",
+    legend.box.background = element_rect(colour = "grey50"),
+    legend.background = element_blank(),
+    panel.border = element_rect(color = "grey", fill = NA, size = 0.5),
+    panel.spacing = unit(1, "lines")
+  )
+}
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 18, fig.height = 6, fig.align = "center"}
+results_combined_gather$province <- mapvalues(results_combined_gather$province, 
+                                                from = c("Anhui", "Beijing", "Fujian", "Guangdong", "Hebei", "Henan", "Hunan", "Jiangxi", "Shandong", "Taiwan"), 
+                                                to = rep("Other", 10))
+
+levels(results_combined_gather$gender) <- c(levels(results_combined_gather$gender), "unknown")
+results_combined_gather$gender[is.na(results_combined_gather$gender)] <- "unknown"
+
+results_combined_gather$province <- factor(results_combined_gather$province, levels = c("Jiangsu",  "Shanghai", "Zhejiang", "Other"))
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 12, fig.height = 8, fig.align = "center"}
+ggplot(data = subset(results_combined_gather, group_dates == "Date of onset"), aes(x = date, y = as.numeric(age), fill = prediction)) +
+  stat_density2d(aes(alpha = ..level..), geom = "polygon") +
+  geom_jitter(aes(color = prediction, shape = gender), size = 2) +
+  geom_rug(aes(color = prediction)) +
+  labs(
+    fill = "Predicted outcome",
+    color = "Predicted outcome",
+    alpha = "Level",
+    shape = "Gender",
+    x = "Date of onset in 2013",
+    y = "Age",
+    title = "2013 Influenza A H7N9 cases in China",
+    subtitle = "Predicted outcome of cases with unknown outcome",
+    caption = ""
+  ) +
+  facet_grid(group_pred ~ province) +
+  my_theme() +
+  scale_shape_manual(values = c(15, 16, 17)) +
+  scale_color_brewer(palette="Set1", na.value = "grey50") +
+  scale_fill_brewer(palette="Set1")
+```
+
+---
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+set.seed(27)
+model_xgb <-train(outcome ~ .,
+                 data = train_data,
+                 method = "xgbTree",
+                 preProcess = "medianImpute",
+                 trControl = trainControl(method = "repeatedcv", number = 5, repeats = 10, verboseIter = FALSE))
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+pred <- predict(model_xgb, test_data)
+predb <- round(predict(model_xgb, test_data, type="prob"), digits = 2)
+
+result <- data.frame(case_ID = rownames(test_data),
+                       prediction = pred,
+                       predb)
+result$predicted_outcome <- ifelse(result$Death > 0.7, "Death",
+                                   ifelse(result$Recover > 0.7, "Recover", "uncertain"))
+result
+```
+
+<br>
+
+## Comparison with predicted outcome from last week's analyses
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+results_last_week <- read.table("results_prediction_unknown_outcome_ML_part1.txt", header = TRUE, sep = "\t")
+```
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+result <- merge(result[, c(1, 5)], results_last_week[, ncol(results_last_week), drop = FALSE], by.x = "case_ID", by.y = "row.names")
+colnames(result)[2:3] <- c("predicted_outcome_xgboost", "predicted_outcome_last_week")
+```
+
+<br>
+
+### Plotting predicted outcome
+
+Combining the table with predicted outcomes from this and last week with the original data.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+results_combined <- merge(result, fluH7N9.china.2013[which(fluH7N9.china.2013$case.ID %in% result$case_ID), ], 
+                          by.x = "case_ID", by.y = "case.ID")
+results_combined <- results_combined[, -c(6,7)]
+```
+
+For plotting with ggplot2, the dataframe needs to be gathered.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+library(tidyr)
+results_combined_gather <- results_combined %>%
+  gather(group_dates, date, date.of.onset:date.of.hospitalisation)
+
+results_combined_gather$group_dates <- factor(results_combined_gather$group_dates, levels = c("date.of.onset", "date.of.hospitalisation"))
+
+results_combined_gather$group_dates <- mapvalues(results_combined_gather$group_dates, from = c("date.of.onset", "date.of.hospitalisation"), 
+                                             to = c("Date of onset", "Date of hospitalisation"))
+
+results_combined_gather$gender <- mapvalues(results_combined_gather$gender, from = c("f", "m"), 
+                                             to = c("Female", "Male"))
+levels(results_combined_gather$gender) <- c(levels(results_combined_gather$gender), "unknown")
+results_combined_gather$gender[is.na(results_combined_gather$gender)] <- "unknown"
+
+results_combined_gather <- results_combined_gather %>%
+  gather(group_pred, prediction, predicted_outcome_xgboost:predicted_outcome_last_week)
+
+results_combined_gather$group_pred <- mapvalues(results_combined_gather$group_pred, from = c("predicted_outcome_xgboost", "predicted_outcome_last_week"), 
+                                             to = c("Predicted outcome from XGBoost", "Predicted outcome from last week"))
+```
+
+Setting a custom theme for plotting:
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+library(ggplot2)
+my_theme <- function(base_size = 12, base_family = "sans"){
+  theme_minimal(base_size = base_size, base_family = base_family) +
+  theme(
+    axis.text = element_text(size = 12),
+    axis.text.x = element_text(angle = 45, vjust = 0.5, hjust = 0.5),
+    axis.title = element_text(size = 14),
+    panel.grid.major = element_line(color = "grey"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "aliceblue"),
+    strip.background = element_rect(fill = "lightgrey", color = "grey", size = 1),
+    strip.text = element_text(face = "bold", size = 12, color = "black"),
+    legend.position = "bottom",
+    legend.justification = "top", 
+    legend.box = "horizontal",
+    legend.box.background = element_rect(colour = "grey50"),
+    legend.background = element_blank(),
+    panel.border = element_rect(color = "grey", fill = NA, size = 0.5),
+    panel.spacing = unit(1, "lines")
+  )
+}
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 18, fig.height = 6, fig.align = "center"}
+results_combined_gather$province <- mapvalues(results_combined_gather$province, 
+                                                from = c("Anhui", "Beijing", "Fujian", "Guangdong", "Hebei", "Henan", "Hunan", "Jiangxi", "Shandong", "Taiwan"), 
+                                                to = rep("Other", 10))
+
+levels(results_combined_gather$gender) <- c(levels(results_combined_gather$gender), "unknown")
+results_combined_gather$gender[is.na(results_combined_gather$gender)] <- "unknown"
+
+results_combined_gather$province <- factor(results_combined_gather$province, levels = c("Jiangsu",  "Shanghai", "Zhejiang", "Other"))
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 12, fig.height = 8, fig.align = "center"}
+ggplot(data = subset(results_combined_gather, group_dates == "Date of onset"), aes(x = date, y = as.numeric(age), fill = prediction)) +
+  stat_density2d(aes(alpha = ..level..), geom = "polygon") +
+  geom_jitter(aes(color = prediction, shape = gender), size = 2) +
+  geom_rug(aes(color = prediction)) +
+  labs(
+    fill = "Predicted outcome",
+    color = "Predicted outcome",
+    alpha = "Level",
+    shape = "Gender",
+    x = "Date of onset in 2013",
+    y = "Age",
+    title = "2013 Influenza A H7N9 cases in China",
+    subtitle = "Predicted outcome of cases with unknown outcome",
+    caption = ""
+  ) +
+  facet_grid(group_pred ~ province) +
+  my_theme() +
+  scale_shape_manual(values = c(15, 16, 17)) +
+  scale_color_brewer(palette="Set1", na.value = "grey50") +
+  scale_fill_brewer(palette="Set1")
+```
+
+There is much less uncertainty in the XGBoost data, even tough I used slightly different methods for classifying uncertainty: In last week's analysis I based uncertainty on the ratio of combined prediction values from all analyses, this week uncertainty is based on the prediction value from one analysis.
+
+<br>
+
+-----------------
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+sessionInfo()
+```

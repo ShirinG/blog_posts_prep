@@ -1,0 +1,567 @@
+---
+title: "Does money buy happiness afterall? Machine Learning with One Rule"
+author: "Shirin Glander"
+date: "`r Sys.Date()`"
+output:
+  md_document:
+    variant: markdown_github
+---
+
+This week, I am exploring [Holger K. von Jouanne-Diedrich's OneR package](https://cran.r-project.org/web/packages/OneR/vignettes/OneR.html) for machine learning. I will run an example analysis and compare the prediction accuracy with other machine learning models (decision trees, random forest, gradient boosting trees and neural nets).
+
+<br>
+
+## OneR
+
+OneR has been developed for the purpose of creating machine learning models that are easy to interpret and understand, while still being as accurate as possible. It is based on the one rule classification algorithm from Holte (1993), which is basically a decision tree cut at the first level. While the original algorithm has difficulties in handling missing values and numeric data, the package provides enhanced functionality to handle those cases better, e.g. the optbin-function to find optimal splitting points for each feature and introducing a separate class for NA values. The main function of the package is OneR, which finds an optimal split for each feature and only use the most important feature with highest training accuracy for classification. 
+
+> [R.C. Holte (1993). Very simple classification rules perform well on most commonly used datasets. Machine Learning. 11:63-91.](http://www.mlpack.org/papers/ds.pdf)
+
+<br>
+
+I installed the lastest stable version of the **OneR** package from [CRAN](https://cran.r-project.org/package=OneR).
+
+```{r}
+library(OneR)
+```
+
+<br>
+
+## The dataset
+
+I am using the [**World Happiness Report 2016** from Kaggle](https://www.kaggle.com/unsdsn/world-happiness).
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+
+data_16 <- read.table("world-happiness/2016.csv", sep = ",", header = TRUE)
+data_15 <- read.table("world-happiness/2015.csv", sep = ",", header = TRUE)
+```
+
+In the 2016 data there are upper and lower CI for the happiness score given, while in the 2015 data we have standard errors. Because I want to combine data from the two years, I am using only columns that are in both datasets.
+
+```{r message=FALSE, warning=FALSE}
+common_feats <- colnames(data_16)[which(colnames(data_16) %in% colnames(data_15))]
+
+# features and response variable for modeling
+feats <- setdiff(common_feats, c("Country", "Happiness.Rank", "Happiness.Score"))
+response <- "Happiness.Score"
+
+# combine data from 2015 and 2016
+data_15_16 <- rbind(select(data_15, one_of(c(feats, response))),
+              select(data_16, one_of(c(feats, response))))
+```
+
+The response variable **happiness score** is a numeric scale. OneR could also perform regression but here, I want to compare classification tasks. For classification, I want to create three bins for low, medium and high values. In order to not having to deal with unbalanced data, I am using the *bin()* function from OneR with `method = "content"`. For plotting the cut-points, I am extracting the numbers from the default level names.
+
+```{r}
+data_15_16$Happiness.Score.l <- bin(data_15_16$Happiness.Score, nbins = 3, method = "content")
+
+intervals <- paste(levels(data_15_16$Happiness.Score.l), collapse = " ")
+intervals <- gsub("\\(|]", "", intervals)
+intervals <- gsub(",", " ", intervals)
+intervals <- as.numeric(unique(strsplit(intervals, " ")[[1]]))
+```
+
+```{r warning=FALSE, message=FALSE, fig.width=5, fig.height=3}
+data_15_16 %>%
+  ggplot() +
+    geom_density(aes(x = Happiness.Score), color = "blue", fill = "blue", alpha = 0.4) +
+    geom_vline(xintercept = intervals[2]) +
+    geom_vline(xintercept = intervals[3])
+```
+
+Now I am removing the original happiness score column from the data for modeling and rename the factor levels of the response variable.
+
+```{r}
+data_15_16 <- select(data_15_16, -Happiness.Score) %>%
+  mutate(Happiness.Score.l = plyr::revalue(Happiness.Score.l, c("(2.83,4.79]" = "low", "(4.79,5.89]" = "medium", "(5.89,7.59]" = "high")))
+```
+
+Because there are only 9 features in this small dataset, I want to explore them all individually before modeling. First, I am plotting the only categorical variable: Region.
+
+This plots shows that there are a few regions with very strong biases in happiness: People in Western Europe, Australia, New Zealand, North America, Latin American and the Carribean tend to me in the high happiness group, while people in sub-saharan Africa and Southern Asia tend to be the least happiest. 
+
+```{r message=FALSE, warning=FALSE, fig.width=6, fig.height=3}
+data_15_16 %>%
+  ggplot(aes(x = Region, fill = Happiness.Score.l)) +
+    geom_bar(position = "dodge", alpha = 0.7) +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
+          plot.margin = unit(c(0, 0, 0, 1.5), "cm")) +
+    scale_fill_brewer(palette = "Set1")
+```
+
+The remaining quantitative variables show happiness biases to varying degrees: e.g. low health and life expectancy is strongly biased towards low happiness, economic factors, family and freedom show a bias in the same direction, albeit not as strong. 
+
+```{r message=FALSE, warning=FALSE, fig.width=15, fig.height=4}
+data_15_16 %>%
+  gather(x, y, Economy..GDP.per.Capita.:Dystopia.Residual) %>%
+  ggplot(aes(x = y, fill = Happiness.Score.l)) +
+    geom_histogram(alpha = 0.7) +
+    facet_wrap(~ x, scales = "free", ncol = 4) +
+    scale_fill_brewer(palette = "Set1")
+```
+
+While OneR could also handle categorical data, for this example, I only want to consider the quantitative features to show the differences between OneR and other machine learning algorithms.
+
+```{r}
+data_15_16 <- select(data_15_16, -Region)
+```
+
+```{r echo=FALSE, eval=FALSE}
+save(data_15_16, file = "data_15_16.RData")
+```
+
+<br>
+
+## Modeling
+
+The algorithms I will compare to OneR will be run via the **caret** package.
+
+```{r warning=FALSE, message=FALSE}
+# configure multicore
+library(doParallel)
+cl <- makeCluster(detectCores())
+registerDoParallel(cl)
+
+library(caret)
+```
+
+I will also use caret's *createDataPartition()* function to partition the data into training (70%) and test sets (30%).
+
+```{r}
+set.seed(42)
+index <- createDataPartition(data_15_16$Happiness.Score.l, p = 0.7, list = FALSE)
+train_data <- data_15_16[index, ]
+test_data  <- data_15_16[-index, ]
+```
+
+<br>
+
+### OneR
+
+OneR only accepts categorical features. Because we have numerical features, we need to convert them to factors by splitting them into appropriate bins. While the original OneR algorithm splits the values into ever smaller factors, this has been changed in this R-implementation with the argument of preventing overfitting. We can either split the data into pre-defined numbers of buckets (by length, content or cluster) or we can use the *optbin()* function to obtain the optimal number of factors from pairwise logistic regression or information gain.
+
+```{r}
+# default method length
+data_1 <- bin(train_data, nbins = 5, method = "length")
+
+# method content
+data_2 <- bin(train_data, nbins = 5, method = "content")
+
+# method cluster
+data_3 <- bin(train_data, nbins = 3, method = "cluster")
+
+# optimal bin number logistic regression
+data_4 <- optbin(formula = Happiness.Score.l ~., data = train_data, method = "logreg")
+
+# optimal bin number information gain
+data_5 <- optbin(formula = Happiness.Score.l ~., data = train_data, method = "infogain")
+```
+
+<br>
+
+This is how the data looks like followed discretization:
+
+- Default method
+
+```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=6, echo=FALSE}
+data_1 %>%
+  gather(x, y, Economy..GDP.per.Capita.:Dystopia.Residual) %>%
+  ggplot(aes(x = y, fill = Happiness.Score.l)) +
+    geom_bar(alpha = 0.7, position = "dodge") +
+    facet_wrap(~ x, scales = "free", ncol = 4) +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+    scale_fill_brewer(palette = "Set1")
+```
+
+<br>
+
+- 5 bins with `method = "content`
+
+```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=6, echo=FALSE}
+data_2 %>%
+  gather(x, y, Economy..GDP.per.Capita.:Dystopia.Residual) %>%
+  ggplot(aes(x = y, fill = Happiness.Score.l)) +
+    geom_bar(alpha = 0.7, position = "dodge") +
+    facet_wrap(~ x, scales = "free", ncol = 4) +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+    scale_fill_brewer(palette = "Set1")
+```
+
+<br>
+
+- 3 bins with `method = "cluster`
+
+```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=6, echo=FALSE}
+data_3 %>%
+  gather(x, y, Economy..GDP.per.Capita.:Dystopia.Residual) %>%
+  ggplot(aes(x = y, fill = Happiness.Score.l)) +
+    geom_bar(alpha = 0.7, position = "dodge") +
+    facet_wrap(~ x, scales = "free", ncol = 4) +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+    scale_fill_brewer(palette = "Set1")
+```
+
+<br>
+
+- optimal bin number according to logistic regression
+
+```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=6, echo=FALSE}
+data_4 %>%
+  gather(x, y, Economy..GDP.per.Capita.:Dystopia.Residual) %>%
+  ggplot(aes(x = y, fill = Happiness.Score.l)) +
+    geom_bar(alpha = 0.7, position = "dodge") +
+    facet_wrap(~ x, scales = "free", ncol = 4) +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+    scale_fill_brewer(palette = "Set1")
+```
+
+<br>
+
+- optimal bin number according to information gain
+
+```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=6, echo=FALSE}
+data_5 %>%
+  gather(x, y, Economy..GDP.per.Capita.:Dystopia.Residual) %>%
+  ggplot(aes(x = y, fill = Happiness.Score.l)) +
+    geom_bar(alpha = 0.7, position = "dodge") +
+    facet_wrap(~ x, scales = "free", ncol = 4) +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+    scale_fill_brewer(palette = "Set1")
+```
+
+<br>
+
+### Model building
+
+Now I am running the OneR models. During model building, the chosen attribute/feature with highest accuracy along with the top 7 features and accuracies are printed. Unfortunately, this information is not saved in the model object; this would have been nice in order to compare the importance of features across models later on.
+
+Here, all five models achieved highest prediction accuracy with the feature Economy GDP per capita.
+
+```{r }
+for (i in 1:5) {
+  data <- get(paste0("data_", i))
+  print(model <- OneR(formula = Happiness.Score.l ~., data = data, verbose = TRUE))
+  assign(paste0("model_", i), model)
+}
+```
+
+<br>
+
+### Model evaluation
+
+The function *eval_model()* prints confusion matrices for absolute and relative predictions, as well as accuracy, error and error rate reduction. For comparison with other models, I would have been convenient to be able to extract these performance metrics directly from the eval_model object, instead of only the confusion matrix and values of correct/all instances and having to re-calculate them again manually.
+
+```{r }
+for (i in 1:5) {
+  model <- get(paste0("model_", i))
+  eval_model(predict(model, test_data), test_data$Happiness.Score.l)
+}
+```
+
+Because I want to calculate performance measures for the different classes separately and like to have a more detailed look at the prediction probabilities I get from the models, I prefer to obtain predictions with `type = "prob`. While I am not looking at it here, this would also allow me to test different prediction thresholds.
+
+```{r warning=FALSE, message=FALSE}
+for (i in 1:5) {
+  model <- get(paste0("model_", i))
+  pred <- data.frame(model = paste0("model_", i),
+                     sample_id = 1:nrow(test_data),
+                     predict(model, test_data, type = "prob"),
+                     actual = test_data$Happiness.Score.l)
+  pred$prediction <- colnames(pred)[3:5][apply(pred[, 3:5], 1, which.max)]
+  pred$correct <- ifelse(pred$actual == pred$prediction, "correct", "wrong")
+  pred$pred_prob <- NA
+  
+  for (j in 1:nrow(pred)) {
+    pred[j, "pred_prob"] <- max(pred[j, 3:5])
+  }
+  
+  if (i == 1) {
+    pred_df <- pred
+  } else {
+    pred_df <- rbind(pred_df, pred)
+  }
+}
+```
+
+```{r fig.width=10, fig.height=3, echo=FALSE, eval=FALSE}
+pred_df %>%
+  ggplot(aes(x = actual, y = pred_prob, color = prediction, fill = prediction)) +
+    geom_boxplot(alpha = 0.7) +
+    facet_grid(correct ~ model) +
+    scale_color_brewer(palette = "Set1") +
+    scale_fill_brewer(palette = "Set1")
+```
+
+<br>
+
+### Comparing other algorithms
+
+#### Decision trees
+
+First, I am building a decision tree with the **rpart** package and *rpart()* function. This, we can plot with *rpart.plot()*.
+
+Economy GDP per capita is the second highest node here, the best predictor here would be health and life expectancy.
+
+```{r warning=FALSE, message=FALSE}
+library(rpart)
+library(rpart.plot)
+
+set.seed(42)
+fit <- rpart(Happiness.Score.l ~ .,
+            data = train_data,
+            method = "class",
+            control = rpart.control(xval = 10), 
+            parms = list(split = "information"))
+
+rpart.plot(fit, extra = 100)
+```
+
+In order to compare the models, I am producing the same output table for predictions from this model and combine it with the table from the OneR models.
+
+```{r warning=FALSE, message=FALSE}
+pred <- data.frame(model = "rpart",
+                   sample_id = 1:nrow(test_data),
+                   predict(fit, test_data, type = "prob"),
+                   actual = test_data$Happiness.Score.l)
+  pred$prediction <- colnames(pred)[3:5][apply(pred[, 3:5], 1, which.max)]
+  pred$correct <- ifelse(pred$actual == pred$prediction, "correct", "wrong")
+  pred$pred_prob <- NA
+  
+  for (j in 1:nrow(pred)) {
+    pred[j, "pred_prob"] <- max(pred[j, 3:5])
+  }
+```
+
+```{r}
+pred_df_final <- rbind(pred_df,
+                       pred)
+```
+
+<br>
+
+### Random Forest
+
+Next, I am training a Random Forest model. For more details on Random Forest, check out my [post "Can we predict flu deaths with Machine Learning and R?"](https://shiring.github.io/machine_learning/2016/11/27/flu_outcome_ML_post).
+
+```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=4, eval=FALSE}
+set.seed(42)
+model_rf <- caret::train(Happiness.Score.l ~ .,
+                         data = train_data,
+                         method = "rf",
+                         trControl = trainControl(method = "repeatedcv", 
+                                                  number = 10, 
+                                                  repeats = 5, 
+                                                  verboseIter = FALSE))
+```
+
+```{r echo=FALSE, eval=FALSE}
+save(model_rf, file = "model_rf.RData")
+```
+
+```{r echo=FALSE}
+load("model_rf.RData")
+```
+
+The *varImp()* function from caret shows us which feature was of highest importance for the model and its predictions.
+
+Here, we again find Economy GDP per captia on top.
+
+```{r message=FALSE, warning=FALSE}
+varImp(model_rf)
+```
+
+```{r warning=FALSE, message=FALSE}
+pred <- data.frame(model = "rf",
+                   sample_id = 1:nrow(test_data),
+                   predict(model_rf, test_data, type = "prob"),
+                   actual = test_data$Happiness.Score.l)
+  pred$prediction <- colnames(pred)[3:5][apply(pred[, 3:5], 1, which.max)]
+  pred$correct <- ifelse(pred$actual == pred$prediction, "correct", "wrong")
+  pred$pred_prob <- NA
+  
+  for (j in 1:nrow(pred)) {
+    pred[j, "pred_prob"] <- max(pred[j, 3:5])
+  }
+```
+
+```{r}
+pred_df_final <- rbind(pred_df_final,
+                       pred)
+```
+
+<br>
+
+### Extreme gradient boosting trees
+
+Gradient boosting is another decision tree-based algorithm, explained in more detail in [my post "Extreme Gradient Boosting and Preprocessing in Machine Learning"](https://shiring.github.io/machine_learning/2016/12/02/flu_outcome_ML_2_post).
+
+```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=4, eval=FALSE}
+set.seed(42)
+model_xgb <- caret::train(Happiness.Score.l ~ .,
+                         data = train_data,
+                         method = "xgbTree",
+                         trControl = trainControl(method = "repeatedcv", 
+                                                  number = 10, 
+                                                  repeats = 5, 
+                                                  verboseIter = FALSE))
+```
+
+```{r echo=FALSE, eval=FALSE}
+save(model_xgb, file = "model_xgb.RData")
+```
+
+```{r echo=FALSE}
+load("model_xgb.RData")
+```
+
+As before, we again find Economy GDP per capita as most important feature.
+
+```{r message=FALSE, warning=FALSE}
+varImp(model_xgb)
+```
+
+```{r warning=FALSE, message=FALSE}
+pred <- data.frame(model = "xgb",
+                   sample_id = 1:nrow(test_data),
+                   predict(model_xgb, test_data, type = "prob"),
+                   actual = test_data$Happiness.Score.l)
+  pred$prediction <- colnames(pred)[3:5][apply(pred[, 3:5], 1, which.max)]
+  pred$correct <- ifelse(pred$actual == pred$prediction, "correct", "wrong")
+  pred$pred_prob <- NA
+  
+  for (j in 1:nrow(pred)) {
+    pred[j, "pred_prob"] <- max(pred[j, 3:5])
+  }
+```
+
+```{r}
+pred_df_final <- rbind(pred_df_final,
+                       pred)
+```
+
+<br>
+
+### Neural network
+
+Finally, I am comparing a neural network model. Here as well, I have a post where I talk about what they are in more detail: ["Building deep neural nets with h2o and rsparkling that predict arrhythmia of the heart"](https://shiring.github.io/machine_learning/2017/02/27/h2o).
+
+```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=4, eval=FALSE}
+set.seed(42)
+model_nn <- caret::train(Happiness.Score.l ~ .,
+                         data = train_data,
+                         method = "mlp",
+                         trControl = trainControl(method = "repeatedcv", 
+                                                  number = 10, 
+                                                  repeats = 5, 
+                                                  verboseIter = FALSE))
+```
+
+```{r echo=FALSE, eval=FALSE}
+save(model_nn, file = "model_nn.RData")
+```
+
+```{r echo=FALSE}
+load("model_nn.RData")
+```
+
+And Economy GDP per capita is again the most important feature!
+
+```{r message=FALSE, warning=FALSE}
+varImp(model_nn)
+```
+
+```{r warning=FALSE, message=FALSE}
+pred <- data.frame(model = "nn",
+                   sample_id = 1:nrow(test_data),
+                   predict(model_nn, test_data, type = "prob"),
+                   actual = test_data$Happiness.Score.l)
+  pred$prediction <- colnames(pred)[3:5][apply(pred[, 3:5], 1, which.max)]
+  pred$correct <- ifelse(pred$actual == pred$prediction, "correct", "wrong")
+  pred$pred_prob <- NA
+  
+  for (j in 1:nrow(pred)) {
+    pred[j, "pred_prob"] <- max(pred[j, 3:5])
+  }
+```
+
+```{r fig.width=15, fig.height=5}
+pred_df_final <- rbind(pred_df_final,
+                       pred)
+```
+
+<br>
+
+## Model comparisons
+
+Now to the final verdict: How do the different models compare? 
+
+The first plot below shows the prediction probabilites for the three happiness levels low, medium and high for each test data instance. For each instance, only the prediction probability of the predicted class (i.e. with the highest value) is shown. The upper row shows correct predictions, the lower row shows wrong predictions.
+
+Sometimes, it is obvious from such a plot if a more stringent prediction threshold could improve things (when wrong predictions tend to be close to the threshold). With three classes to predict, this is obviously not as trivial as if we only had two but the same principle holds true: the smaller the prediction probability, the more uncertain it tends to be.
+
+```{r fig.width=15, fig.height=5}
+pred_df_final %>%
+  ggplot(aes(x = actual, y = pred_prob, fill = prediction, color = prediction)) +
+    geom_boxplot(alpha = 0.7) +
+    facet_grid(correct ~ model) +
+    scale_color_brewer(palette = "Set1") +
+    scale_fill_brewer(palette = "Set1")
+```
+
+Probably the most straight-forwards performance measure is accuracy: i.e. the proportion of correct predictions vs the total number of instances to predict. The closer to 1, the better the accuracy.
+
+Not surprisingly, the more complex models tend to be more accurate - albeit only slightly.
+
+```{r fig.width=10, fig.height=3}
+pred_df_final %>%
+  group_by(model) %>%
+  dplyr::summarise(correct = sum(correct == "correct")) %>%
+  mutate(accuracy = correct / nrow(test_data)) %>%
+  ggplot(aes(x = model, y = accuracy, fill = model)) +
+    geom_bar(stat = "identity") +
+    scale_fill_brewer(palette = "Set1")
+```
+
+When we look at the three classes individually, it looks a bit more complicated but all models, except the neural network, achieved best accuracy for high happiness instances and worst for medium.
+
+```{r fig.width=10, fig.height=2}
+pred_df_final %>%
+  group_by(model, actual) %>%
+  dplyr::summarise(correct = sum(correct == "correct"),
+            n = n()) %>%
+  mutate(accuracy = correct / n) %>%
+  ggplot(aes(x = model, y = accuracy, fill = actual)) +
+    geom_bar(stat = "identity", position = "dodge") +
+    scale_fill_brewer(palette = "Set1")
+```
+
+```{r fig.width=10, fig.height=2}
+pred_df_final %>%
+  group_by(model, prediction) %>%
+  dplyr::summarise(correct = sum(correct == "correct"),
+            n = n()) %>%
+  mutate(accuracy = correct / n) %>%
+  ggplot(aes(x = model, y = accuracy, fill = prediction)) +
+    geom_bar(stat = "identity", position = "dodge") +
+    scale_fill_brewer(palette = "Set1")
+```
+
+<br>
+
+## Conclusions
+
+All in all, based on this example, I would confirm that OneR models do indeed produce sufficiently accurate models for setting a good baseline. OneR was definitely faster than random forest, gradient boosting and neural nets. However, the latter were more complex models and included cross-validation. 
+
+If you prefer an easy to understand model that is very simple, OneR is a very good way to go. You could also use it as a starting point for developing more complex models with improved accuracy.
+
+---
+
+If you are interested in more machine learning posts, check out [the category listing for **machine_learning** on my blog](https://shiring.github.io/categories.html#machine_learning-ref).
+
+---
+
+```{r}
+sessionInfo()
+```
