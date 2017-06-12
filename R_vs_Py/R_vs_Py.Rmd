@@ -1,0 +1,574 @@
+---
+title: "R vs. Python"
+author: "Dr. Shirin Glander"
+date: '`r Sys.Date()`'
+output:
+  prettydoc::html_pretty:
+    theme: tactile
+    highlight: github
+---
+
+I'm an avid R user and rarely use anything else for data analysis and visualisations. But while R is my go-to, in some cases, [Python might actually be a better alternative](https://www.datacamp.com/community/tutorials/r-or-python-for-data-analysis#gs.JrY_3bk). 
+
+That's why I wanted to see how R and Python fare in a one-on-one comparison of an analysis that's representative of what I would typically work with.
+
+#### Conclusions
+
+All in all, the Python code could easily be translated into R and was comparable in length and simplicity between the two languages. While Python's syntax is inherently cleaner/ tidier, we can use packages that implement piping in R and achieve similar results (even though Python's dot-separated syntax is still much easier to type than using the piping operator of magrittr). For plotting and visualisation I still think that R's ggplot2 is top of the line in both syntax, customizability and outcome (admittedly, I don't know matplotlib as well as ggplot)! In terms of functionality, I couldn't find major differences between the two languages and I would say they both have their merits. For me, R comes more natural as that is what I'm more fluent in, but I can see why Python holds an appeal too and I think I'll make more of an effort to use both languages in my future projects.
+
+---
+
+<br>
+
+## R and Python
+
+R and Python are both open-source languages used in a wide range of data analysis fields.
+Their main difference is that R has traditionally been geared towards statistical analysis, while Python is more generalist. Both comprise a large collection of packages for specific tasks and have a growing community that offers support and tutorials online.
+
+For a nice overview of the languages respective strengths and weaknesses, check out [Datacamp's nice infographic](https://www.datacamp.com/community/tutorials/r-or-python-for-data-analysis#gs.JrY_3bk).
+
+<br>
+
+## Comparative analysis of genome data
+
+To directly compare R and Python, I am following [Zhuyi Xue's "A Comprehensive Introduction To Your Genome With the SciPy Stack"](https://www.toptal.com/python/comprehensive-introduction-your-genome-scipy) (with some minor tweaks here and there).
+He gives a nice introduction to the data, so I will not repeat it here but focus on the comparison between the code lines.
+
+For R, I am working with [RStudio](https://www.rstudio.com/), for Python with [Anaconda](https://docs.continuum.io/) and [Spyder](https://pythonhosted.org/spyder/).
+
+*Python*:
+
+For this analysis, we need the [SciPy stack](https://www.scipy.org/index.html) with [pandas](http://pandas.pydata.org/) for data wrangling and [matplotlib](http://matplotlib.org/) for visualisation. [Anaconda](https://docs.continuum.io/) already comes with all these packages that we need. Zhuyi Xue first imports pandas as "pd", so that we can call pandas function by prefixing them with "pd.".
+
+```{python eval = FALSE}
+import pandas as pd
+```
+
+*R:*
+
+While the code could be replicated with base R, I prefer [dplyr](https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html) for data wrangling and [ggplot2](http://ggplot2.org/) for visualisation.
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(ggplot2)
+```
+
+
+### Reading in data
+
+Reading in data is straight forward in both R and Python. The code we need to read in the file is comparable between R and Python.
+Zhuyi Xue specified "compression = 'gzip'", but this would not have been necessary as the default is to infer it from the file suffix.
+
+One big difference in the general syntax we can see here too: Boolean true/false values are written in all caps in R (TRUE/FALSE), while Python uses first letter capitalisation (True/False). The same prinicple applies to "none".
+
+*Python:*
+
+```{python eval = FALSE}
+df = pd.read_csv('Homo_sapiens.GRCh38.85.gff3.gz', 
+                         compression = 'gzip',
+                         sep = '\t', 
+                         comment = '#', 
+                         low_memory = False,
+                         header = None, 
+                         names = ['seqid', 'source', 'type', 'start', 'end', 'score', 'strand', 'phase', 'attributes'])
+df.head()
+```
+
+*R:*
+
+```{r cache=TRUE}
+df <- read.csv("U:/Github_blog/Homo_sapiens.GRCh38.85.gff3.gz", 
+               header = FALSE, 
+               sep = "\t", 
+               col.names = c('seqid', 'source', 'type', 'start', 'end', 'score', 'strand', 'phase', 'attributes'), 
+               comment.char = "#")
+head(df)
+```
+
+
+### Examining data
+
+- listing unique strings
+
+The first thing we want to know from the data is how many unique entries there are in the "seqid" column.
+
+Here, we can already see the main difference in syntax between R and Python:
+
+Python concatenates the object name ("df) with the column name and the functions that we want to run on this column in a sequential manner, separated by a dot.
+Base R uses nested functions, where each function is called with "function_name()" and we specify columns with "object_name$column_name".
+
+However, both R and Python can also call columns in a dataframe with "[ ]" with the difference that Python per default subsets data columns df["seqid"], while R always needs index specifications for rows and columns, separated by ",": e.g. df[, "seqid"] would subset every row and only the column named "seqid". 
+
+The sequential calling of functions is indeed very handy, it makes the code easier to read and understand than lots of interwoven functions and brackets. But while this isn't the concept of base R, dplyr uses the [magrittr](https://www.r-bloggers.com/why-bother-with-magrittr/) principle of chaining functions with the pipe symbol "%>%". Even though this symbol isn't as easily typed, it's functionality is often superior to base R, especially if you need to run many functions on a dataframe. However, with just or two functions, I usually keep to base R as it is shorter.
+
+*Python:*
+
+```{python eval=FALSE}
+df.seqid.unique() # alternatively: df['seqid'].unique()
+```
+
+*R:*
+
+```{r}
+unique(df$seqid)
+
+# with dplyr:
+# df %>% select(seqid) %>% unique
+```
+
+- how many unique seqids are there?
+
+To get the number of unique entries in the "seqid" column, we simply need to append ".shape" to the above Python code. In R, we can either wrap the above R code with the "length()" function or use dplyr and piping instead. If we use the latter, we need to use the "nrow()" function because base R returns a vector, while dplyr returns a dataframe. Here, we can see that with two functions, using dplyr is still a bit more code but it already looks much [tidier](https://blog.rstudio.org/2014/07/22/introducing-tidyr/).
+
+*Python:*
+
+```{python eval=FALSE}
+df.seqid.unique().shape
+```
+
+*R:*
+
+```{r}
+length(unique(df$seqid))
+
+# with dplyr:
+# df %>% select(seqid) %>% unique %>% nrow
+```
+
+
+- counting occurrences
+
+To count the frequencies of each unique entry in the "source" column, we use the "value_counts()" function in Python and the "table()" function in R. These two functions differ in how they sort the output table: value_counts() sorts by decreasing frequency, while R alphabetically sorts the variables. To order the data as in Python, we need to add the "sort()" function to our R code.
+
+*Python:*
+
+```{python eval=FALSE}
+df.source.value_counts()
+```
+
+*R:*
+
+```{r}
+# table(df$source) is per default ordered alphabetically, if we want it ordered by decreasing counts, like with Python:
+sort(table(df$source), decreasing = TRUE)
+
+# dplyr:
+df %>% group_by(source) %>% summarize(count = n()) %>% arrange(desc(count))
+```
+
+
+#### How Much of the Genome Is Incomplete?
+
+- subsetting a dataframe
+
+We are now subsetting our original dataframe and assign it a new object name with " = " or " <- ".
+
+To subset the dataframe to keep only rows which say "GRCh38" in the "source" column, ther are several ways to do this in R: the way that would be directly comparable to how it was done in Python would be to also use the square bracket indexing. However, there are two solutions which are more elegant: 1) base R's "subset()" or dplyr's "filter()" function. But with this short example, there is no big difference between the three.
+
+Python's "shape" gives us the same information as R's "dim()" function: how many rows and columns our dataframe has.
+
+To preview a random subset of 10 rows from our dataframe, we use Python's "sample()" and dplyr's "sample_n()" function.
+
+*Python:*
+
+```{python eval=FALSE}
+gdf = df[df.source == 'GRCh38']
+
+gdf.shape
+gdf.sample(10)
+```
+
+*R:*
+
+```{r}
+gdf <- df[df$source == "GRCh38", ]
+
+# alternatively:
+# gdf <- subset(df, source == "GRCh38")
+
+# dplyr:
+# gdf <- df %>% filter(source == "GRCh38")
+
+# get number of rows and columns
+dim(gdf)
+
+# randomly sample 10 rows for observation
+sample_n(gdf, 10)
+```
+
+
+- creating new columns and performing calculations
+
+Now we want to create a new column called "length". It should contain the gene lengths, i.e. the distance in base pairs between the start and end point on the chromosomes ("start" and "end" columns). In R we don't need to copy the dataframe first but the rest of the code is very similar: we define a new column name for the dataframe and assign its value by subtracting the values of the "start" from the values of the "end" column (+1). Here, we can see again that in Python we use a dot to define columns, while R uses the Dollar sign.
+
+The sum of all lengths is calculated with the "sum()" function in both languages.
+
+*Python:*
+
+```{python eval=FALSE}
+gdf = gdf.copy()
+gdf['length'] = gdf.end - gdf.start + 1
+
+gdf.length.sum()
+```
+
+*R:*
+
+```{r}
+gdf$length <- gdf$end - gdf$start + 1
+
+sum(gdf$length)
+```
+
+
+Next, we want to calculating the proportion of the genome that is not on main chromosome assemblies. For that, we first define a character string with the main chromosomes: 1 to 23, X, Y and MT (mitochondrial chromosome). Defining this string is a bit easier in R.
+
+We will use this string to calculate the sum of lengths of the subsetted dataframe and divide it by the sum of lengths of the whole dataframe. For subsetting, we use the "isin()" function of Python, which corresponds to R's "%in%".
+
+*Python:*
+
+```{python eval=FALSE}
+chrs = [str(_) for _ in range(1, 23)] + ['X', 'Y', 'MT']
+gdf[-gdf.seqid.isin(chrs)].length.sum() / gdf.length.sum()
+
+# or
+gdf[(gdf['type'] == 'supercontig')].length.sum() / gdf.length.sum()
+```
+
+*R:*
+
+```{r}
+chrs <- c(1:23, "X", "Y", "MT")
+sum(subset(gdf, !seqid %in% chrs)$length) / sum(gdf$length)
+```
+
+
+#### How Many Genes Are There?
+
+Here, we are again using the same functions as above for subsetting the dataframe, asking for its dimensions, printing 10 random lines and asking for the frequencies of each unique item in the "type" column. For the latter I am using base R over dplyr, because it's faster to type.
+
+*Python:*
+
+```{python eval=FALSE}
+edf = df[df.source.isin(['ensembl', 'havana', 'ensembl_havana'])]
+edf.shape
+
+edf.sample(10)
+edf.type.value_counts()
+```
+
+*R:*
+
+```{r}
+edf <- subset(df, source %in% c("ensembl", "havana", "ensembl_havana"))
+dim(edf)
+
+sample_n(edf, 10)
+sort(table(edf$type), decreasing = TRUE)
+```
+
+
+Now we want to subset the dataframe to rows with the attribute "gene" in the "type" column, look at 10 random lines from the "attributes" column and get the dataframe dimensions.
+
+*Python:*
+
+```{python eval=FALSE}
+ndf = edf[edf.type == 'gene']
+ndf = ndf.copy()
+ndf.sample(10).attributes.values
+ndf.shape
+```
+
+*R:*
+
+```{r cache=TRUE}
+ndf <- subset(edf, type == "gene")
+sample_n(ndf, 10)$attributes
+dim(ndf)
+```
+
+- extracting gene information from attributes field
+
+I don't know if there is an easier way in Python but in R we don't need to create big helper functions around it. We can simply use "gsub()" with defining the regular expression for what we want to extract. This makes the R code much shorter and easier to understand!
+We then drop the original "attributes" column.
+
+To have a look at the dataframe, we use "head()" this time.
+
+*Python:*
+
+```{python eval=FALSE}
+import re
+
+RE_GENE_NAME = re.compile(r'Name=(?P<gene_name>.+?);')
+def extract_gene_name(attributes_str):
+    res = RE_GENE_NAME.search(attributes_str)
+    return res.group('gene_name')
+
+
+ndf['gene_name'] = ndf.attributes.apply(extract_gene_name)
+
+RE_GENE_ID = re.compile(r'gene_id=(?P<gene_id>ENSG.+?);')
+def extract_gene_id(attributes_str):
+    res = RE_GENE_ID.search(attributes_str)
+    return res.group('gene_id')
+
+
+ndf['gene_id'] = ndf.attributes.apply(extract_gene_id)
+
+
+RE_DESC = re.compile('description=(?P<desc>.+?);')
+def extract_description(attributes_str):
+    res = RE_DESC.search(attributes_str)
+    if res is None:
+        return ''
+    else:
+        return res.group('desc')
+
+
+ndf['desc'] = ndf.attributes.apply(extract_description)
+
+ndf.drop('attributes', axis=1, inplace=True)
+ndf.head()
+```
+
+*R:*
+
+```{r}
+ndf$gene_name <- gsub("(.*Name=)(.*?)(;biotype.*)", "\\2", ndf$attributes)
+ndf$gene_id <- gsub("(ID=gene:)(.*?)(;Name.*)", "\\2", ndf$attributes)
+ndf$desc <- gsub("(.*description=)(.*?)(;.*)", "\\2", ndf$attributes)
+
+# some genes don't have a description
+ndf$desc <- ifelse(grepl("^ID=.*", ndf$desc), "", ndf$desc)
+
+ndf <- subset(ndf, select = -attributes)
+head(ndf)
+```
+
+Next, we want to know how many unique gene names and gene IDs there are. As above we use the "unique()", "shape()" (Python) and "length()" (R) functions.
+
+The count table for gene names can again be obtained with R's "table()" function, even though Zhuyi Xue uses a slightly different approach: he first groups the "gene_name" column, then counts and sorts.
+
+Finally, we can calculate the proportion of genes that have more than appear more than once and we can have a closer look at the SCARNA20 gene.
+
+*Python:*
+
+```{python eval=FALSE}
+ndf.shape
+ndf.gene_id.unique().shape
+ndf.gene_name.unique().shape
+
+count_df = ndf.groupby('gene_name').count().ix[:, 0].sort_values().ix[::-1]
+count_df.head(10)
+
+count_df[count_df > 1].shape
+count_df.shape
+count_df[count_df > 1].shape[0] / count_df.shape[0]
+
+ndf[ndf.gene_name == 'SCARNA20']
+```
+
+*R:*
+
+```{r}
+dim(ndf)
+length(unique(ndf$gene_id))
+length(unique(ndf$gene_name))
+
+count_df <- sort(table(ndf$gene_name), decreasing = TRUE)
+head(count_df, n = 10)
+
+length(count_df[count_df > 1])
+length(count_df)
+length(count_df[count_df > 1]) / length(count_df)
+
+ndf[ndf$gene_name == "SCARNA20", ]
+
+# dplyr:
+# ndf %>% filter(gene_name == "SCARNA20")
+```
+
+
+#### How Long Is a Typical Gene?
+
+To calculate gene lengths we use the same code as before. R's summary() is not exactly the same as Python's describe() but it's close enough.
+
+*Python:*
+
+```{python eval=FALSE}
+ndf['length'] = ndf.end - ndf.start + 1
+ndf.length.describe()
+```
+
+*R:*
+
+```{r}
+ndf$length <- ndf$end - ndf$start + 1
+summary(ndf$length)
+```
+
+Now we produce the first plot, showing a histogram of gene length. In base R you can't really plot a histogram with logarithmic y-axis scales (at least not without manually tweaking the hist() output but it isn't recommended anyway because 0 will become -Inf). But we can do it easily with ggplot2 with "scale_y_log10()". The code we need for ggplot2 is a bit longer than with matplotlib. We could of course further customize our plot but for now, let's keep it simple.
+
+*Python:*
+
+```{python eval=FALSE}
+import matplotlib as plt
+
+ndf.length.plot(kind='hist', bins=50, logy=True)
+plt.show()
+```
+
+*R:*
+
+```{r message=FALSE, warning=FALSE}
+ndf %>% ggplot(aes(x = length)) + 
+  geom_histogram(bins = 50, fill = "blue") + 
+  scale_y_log10()
+```
+
+
+Now, we subset the dataframe to keep only rows where the "length" column contains values bigger than 2 million and order it by descending gene length. To see the shortest genes, we order the original dataframe and view the first 6 rows. Instead of "sort()", we use dplyr's "arrange()" function this time (I didn't use it before because it can only be applied to dataframes).
+
+*Python:*
+
+```{python eval=FALSE}
+ndf[ndf.length > 2e6].sort_values('length').ix[::-1]
+ndf.sort_values('length').head()
+```
+
+*R:*
+
+```{r}
+ndf %>% filter(length > 2e6) %>% arrange(desc(length))
+head(arrange(ndf, length))
+```
+
+
+#### Gene Distribution Among Chromosomes
+
+The number of genes per chromosome are counted with the "subset()", "table()" and "sort()" functions as described earlier.
+
+*Python:*
+
+```{python eval=FALSE}
+ndf = ndf[ndf.seqid.isin(chrs)]
+chr_gene_counts = ndf.groupby('seqid').count().ix[:, 0].sort_values().ix[::-1]
+chr_gene_counts
+```
+
+*R:*
+
+```{r}
+ndf$seqid <- as.character(ndf$seqid) # as factors it will subset the dataframe but keep the factor levels
+ndf <- subset(ndf, seqid %in% chrs)
+chr_gene_counts <- sort(table(ndf$seqid), decreasing = TRUE)
+chr_gene_counts
+```
+
+
+To see all genes that are on mitochondrial chromosome, we subset the first dataframe by two conditions. In both, R and Python this is done with the ampersand symbol but in R we don't need brackets around the individual conditions.
+
+*Python:*
+
+```{python eval=FALSE}
+df[(df.type == 'gene') & (df.seqid == 'MT')]
+```
+
+*R:*
+
+```{r}
+subset(df, type == "gene" & seqid == "MT")
+```
+
+
+We can get the chromosome lengths from the dataframe as well. We again subset to only the main chromosomes, then drop unwanted columns and order by length.
+
+*Python:*
+
+```{python eval=FALSE}
+gdf = gdf[gdf.seqid.isin(chrs)]
+gdf.drop(['start', 'end', 'score', 'strand', 'phase' ,'attributes'], axis=1, inplace=True)
+gdf.sort_values('length').ix[::-1]
+```
+
+*R:*
+
+```{r}
+gdf$seqid <- as.character(gdf$seqid) # as factors it will subset the dataframe but keep the factor levels
+gdf <- subset(gdf, as.character(seqid) %in% chrs) %>%
+  select(-(start:attributes))
+arrange(gdf, desc(length))
+```
+
+
+Now, we merge the dataframe with the number of genes per chromosome with the dataframe of chromosome lengths. Because R's "table()" function produces a vector, we need to convert it to a dataframe first and define the column names. Then, we use the "merge()" function and point to the name of the column we want to merge by.
+
+*Python:*
+
+```{python eval=FALSE}
+cdf = chr_gene_counts.to_frame(name='gene_count').reset_index()
+cdf.head(2)
+
+merged = gdf.merge(cdf, on='seqid')
+```
+
+*R:*
+
+```{r}
+cdf <- as.data.frame(chr_gene_counts)
+colnames(cdf) <- c("seqid", "gene_count")
+head(cdf, n = 2)
+
+merged <- merge(gdf, cdf, by = "seqid")
+merged
+```
+
+
+To calculate the correlation between length and gene count, we subset the merged dataframe to those two columns and use the "corr()" (Python) or "cor()" (R) function.
+
+*Python:*
+
+```{python eval=FALSE}
+merged[['length', 'gene_count']].corr()
+```
+
+*R:*
+
+```{r}
+cor(merged[, c("length", "gene_count")])
+```
+
+
+And now we produce the final plot: a line plot of chromosome length by number of genes per chromosome. For Python, we again use the matplotlib and for R the ggplot2 packages. Because Zhuyi Xue creates a new dataframe and tweaks the plot somewhat, our ggplot2 code is simpler and tidier here.
+
+*Python:*
+
+```{python eval=FALSE}
+ax = merged[['length', 'gene_count']].sort_values('length').plot(x='length', y='gene_count', style='o-')
+# add some margin to both ends of x axis
+xlim = ax.get_xlim()
+margin = xlim[0] * 0.1
+ax.set_xlim([xlim[0] - margin, xlim[1] + margin])
+# Label each point on the graph
+for (s, x, y) in merged[['seqid', 'length', 'gene_count']].sort_values('length').values:
+    ax.text(x, y - 100, str(s))
+```
+
+*R:*
+
+```{r}
+merged[, c("seqid", "length", "gene_count")] %>%
+  arrange(desc(length)) %>%
+  ggplot(aes(x = length, y = gene_count, label = seqid)) +
+  geom_point(color = "blue") +
+  geom_line(color = "blue") +
+  geom_text()
+```
+
+------------------
+
+<br>
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=6, fig.height=4, fig.align="center", cache=FALSE}
+sessionInfo()
+```
