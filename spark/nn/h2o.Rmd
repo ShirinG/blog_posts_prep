@@ -1,0 +1,663 @@
+---
+title: "Building deep neural nets with h2o and rsparkling that predict arrhythmia of the heart"
+author: "Dr. Shirin Glander"
+date: '`r Sys.Date()`'
+output:
+  md_document:
+    variant: markdown_github
+---
+
+Last week, I introduced how to run machine learning applications on Spark from within R, using the **sparklyr** package.
+This week, I am showing how to build feed-forward deep neural networks or multilayer perceptrons. The models in this example are built to classify ECG data into being either from *healthy* hearts or from someone suffering from *arrhythmia*. I will show how to prepare a dataset for modeling, setting weights and other modeling parameters and finally, how to evaluate model performance with the **h2o** package via **rsparkling**.
+
+<br>
+
+### Deep learning with neural networks
+
+Deep learning with neural networks is arguably one of the most rapidly growing applications of machine learning and AI today. They allow building complex models that consist of multiple hidden layers within artifical networks and are able to find non-linear patterns in unstructured data. Deep neural networks are usually feed-forward, which means that each layer feeds its output to subsequent layers, but recurrent or feed-back neural networks can also be built. Feed-forward neural networks are also called multilayer perceptrons (MLPs).
+
+<br>
+
+### H2O and Sparkling Water
+
+The R package h2o provides a convient interface to H2O, which is an open-source machine learning and deep learning platform. [H2O](http://www.h2o.ai/h2o/) can be integrated with Apache Spark ([**Sparkling Water**](http://www.h2o.ai/sparkling-water/)) and therefore allows the implementation of complex or big models in a fast and scalable manner. H2O distributes a wide range of common machine learning algorithms for classification, regression and deep learning.
+
+[**Sparkling Water** can be accessed from R](http://spark.rstudio.com/h2o.html) with the **rsparkling** extension package to **sparklyr** and **h2o**. Check the documentation for **rsparkling** to find out which H2O, Sparkling Water and Spark versions are compatible.
+
+<br>
+
+### Preparing the R session
+
+First, we need to load the packages and connect to the Spark instance (for demontration purposes, I am using a local instance).
+
+```{r echo=FALSE, eval=FALSE}
+install.packages("rsparkling")
+```
+
+```{r message=FALSE, warning=FALSE, tidy=FALSE}
+library(rsparkling)
+options(rsparkling.sparklingwater.version = "2.0.3")
+
+library(h2o)
+library(dplyr)
+library(sparklyr)
+
+sc <- spark_connect(master = "local", version = "2.0.0")
+```
+
+```{r}
+h2o_context(sc, strict_version_check = FALSE)
+rsparkling::h2o_flow(sc, strict_version_check = FALSE)
+```
+
+I am also preparing my custom plotting theme.
+
+```{r message=FALSE, warning=FALSE, tidy=FALSE}
+library(ggplot2)
+library(ggrepel)
+
+my_theme <- function(base_size = 12, base_family = "sans"){
+  theme_minimal(base_size = base_size, base_family = base_family) +
+  theme(
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14),
+    panel.grid.major = element_line(color = "grey"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "aliceblue"),
+    strip.background = element_rect(fill = "darkgrey", color = "grey", size = 1),
+    strip.text = element_text(face = "bold", size = 12, color = "white"),
+    legend.position = "right",
+    legend.justification = "top", 
+    panel.border = element_rect(color = "grey", fill = NA, size = 0.5)
+  )
+}
+```
+
+<br>
+
+### Arrhythmia data
+
+The data I am using to demonstrate the building of neural nets is the arrhythmia dataset from [UC Irvine's machine learning database](https://archive.ics.uci.edu/ml/datasets/Arrhythmia). It contains 279 features from ECG heart rhythm diagnostics and one output column. I am not going to rename the feature columns because they are too many and the descriptions are too complex. Also, we don't need to know specifically which features we are looking at for building the models. For a description of each feature, see [https://archive.ics.uci.edu/ml/machine-learning-databases/arrhythmia/arrhythmia.names](https://archive.ics.uci.edu/ml/machine-learning-databases/arrhythmia/arrhythmia.names). The output column defines 16 classes: class 1 samples are from healthy ECGs, the remaining classes belong to different types of arrhythmia, with class 16 being all remaining arrhythmia cases that didn't fit into distinct classes.
+
+```{r, tidy=FALSE}
+arrhythmia <- read.table("arrhythmia.data.txt", sep = ",")
+
+# making sure, that all feature columns are numeric
+arrhythmia[-280] <- lapply(arrhythmia[-280], as.numeric)
+
+#  renaming output column and converting to factor
+colnames(arrhythmia)[280] <- "class"
+arrhythmia$class <- as.factor(arrhythmia$class)
+```
+
+As usual, I want to get acquainted with the data and explore it's properties before I am building any model. So, I am first going to look at the distribution of classes and of healthy and arrhythmia samples.
+
+```{r fig.width=4, fig.height=2, fig.align='center', tidy=FALSE}
+p1 <- ggplot(arrhythmia, aes(x = class)) +
+  geom_bar(fill = "navy", alpha = 0.7) +
+  my_theme()
+```
+
+Because I am interested in distinguishing healthy from arrhythmia ECGs, I am converting the output to binary format by combining all arrhythmia cases into one class.
+
+```{r tidy=FALSE}
+arrhythmia$diagnosis <- ifelse(arrhythmia$class == 1, "healthy", "arrhythmia")
+arrhythmia$diagnosis <- as.factor(arrhythmia$diagnosis)
+```
+
+```{r fig.width=3, fig.height=2, fig.align='center', tidy=FALSE}
+p2 <- ggplot(arrhythmia, aes(x = diagnosis)) +
+  geom_bar(fill = "navy", alpha = 0.7) +
+  my_theme()
+```
+
+```{r fig.align='center', fig.width=7, fig.height=2, message=FALSE, warning=FALSE}
+library(gridExtra)
+library(grid)
+
+grid.arrange(p1, p2, ncol = 2)
+```
+
+With binary classification, we have almost the same numbers of healthy and arrhythmia cases in our dataset. 
+
+I am also interested in how much the normal and arrhythmia cases cluster in a Principal Component Analysis (PCA). I am first preparing the PCA plotting function and then run it on the feature data.
+
+```{r warning=FALSE, message=FALSE, tidy=FALSE}
+library(pcaGoPromoter)
+
+pca_func <- function(pcaOutput2, group_name){
+    centroids <- aggregate(cbind(PC1, PC2) ~ groups, pcaOutput2, mean)
+    conf.rgn  <- do.call(rbind, lapply(unique(pcaOutput2$groups), function(t)
+          data.frame(groups = as.character(t),
+                     ellipse(cov(pcaOutput2[pcaOutput2$groups == t, 1:2]),
+                           centre = as.matrix(centroids[centroids$groups == t, 2:3]),
+                           level = 0.95),
+                     stringsAsFactors = FALSE)))
+        
+    plot <- ggplot(data = pcaOutput2, aes(x = PC1, y = PC2, group = groups, color = groups)) + 
+      geom_polygon(data = conf.rgn, aes(fill = groups), alpha = 0.2) +
+      geom_point(size = 2, alpha = 0.5) + 
+      labs(color = paste(group_name),
+           fill = paste(group_name),
+           x = paste0("PC1: ", round(pcaOutput$pov[1], digits = 2) * 100, "% variance"),
+           y = paste0("PC2: ", round(pcaOutput$pov[2], digits = 2) * 100, "% variance")) +
+      my_theme()
+    
+    return(plot)
+}
+```
+
+```{r fig.width=10, fig.height=4, tidy=FALSE}
+pcaOutput <- pca(t(arrhythmia[-c(280, 281)]), printDropped = FALSE, scale = TRUE, center = TRUE)
+pcaOutput2 <- as.data.frame(pcaOutput$scores)
+
+pcaOutput2$groups <- arrhythmia$class
+p1 <- pca_func(pcaOutput2, group_name = "class")
+
+pcaOutput2$groups <- arrhythmia$diagnosis
+p2 <- pca_func(pcaOutput2, group_name = "diagnosis")
+
+grid.arrange(p1, p2, ncol = 2)
+```
+
+The PCA shows that there is a big overlap between healthy and arrhythmia samples, i.e. there does not seem to be major global differences in all features. The class that is most distinct from all others seems to be class 9. I want to give the arrhythmia cases that are very different from the rest a stronger weight in the neural network, so I define a weight column where every sample outside the central PCA cluster will get a "2", they will in effect be used twice in the model. 
+
+```{r tidy=FALSE}
+weights <- ifelse(pcaOutput2$PC1 < -5 & abs(pcaOutput2$PC2) > 10, 2, 1)
+```
+
+I also want to know what the variance is within features.
+
+```{r warning=FALSE, message=FALSE, fig.width=17, fig.height=4, fig.align='center'}
+library(matrixStats)
+
+colvars <- data.frame(feature = colnames(arrhythmia[-c(280, 281)]),
+                      variance = colVars(as.matrix(arrhythmia[-c(280, 281)])))
+
+subset(colvars, variance > 50) %>%
+  mutate(feature = factor(feature, levels = colnames(arrhythmia[-c(280, 281)]))) %>%
+  ggplot(aes(x = feature, y = variance)) +
+    geom_bar(stat = "identity", fill = "navy", alpha = 0.7) +
+    my_theme() +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+Features with low variance are less likely to strongly contribute to a differentiation between healthy and arrhthmia cases, so I am going to remove them. I am also concatenating the weights column:
+
+```{r tidy=FALSE}
+arrhythmia_subset <- cbind(weights, arrhythmia[, c(281, 280, which(colvars$variance > 50))])
+```
+
+```{r echo=FALSE, eval=FALSE}
+save(arrhythmia_subset, file = "arrhythmia_subset.RData")
+```
+
+<br>
+
+### Working with rsparkling and h2o
+
+Now that I have my final dataframe for modeling, I copy it to the Spark instance. For working with **h2o** functions, the data needs to be converted from a Spark DataFrame to an H2O Frame. This is done with the *as_h2o_frame()* function.
+
+```{r tidy=FALSE}
+arrhythmia_sc <- copy_to(sc, arrhythmia_subset)
+arrhythmia_hf <- as_h2o_frame(sc, arrhythmia_sc, strict_version_check = FALSE)
+```
+
+We can now access all functions from the **h2o** package that are built to work on H2O Frames. A useful such function is *h2o.describe()*. It is similar to base R's *summary()* function but outputs many more descriptive measures for our data. To get a good overview about these measures, I am going to plot them.
+
+```{r warning=FALSE, message=FALSE, fig.width=17, fig.height=8, fig.align='center', tidy=FALSE}
+library(tidyr) # for gathering
+h2o.describe(arrhythmia_hf[, -1]) %>% # excluding the weights column
+  gather(x, y, Zeros:Sigma) %>%
+  mutate(group = ifelse(x %in% c("Min", "Max", "Mean"), "min, mean, max", 
+                        ifelse(x %in% c("NegInf", "PosInf"), "Inf", "sigma, zeros"))) %>% # separating them into facets makes them easier to see
+  mutate(Label = factor(Label, levels = colnames(arrhythmia_hf[, -1]))) %>%
+  ggplot(aes(x = Label, y = as.numeric(y), color = x)) +
+    geom_point(size = 4, alpha = 0.6) +
+    scale_color_brewer(palette = "Set1") +
+    my_theme() +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+    facet_grid(group ~ ., scales = "free") +
+    labs(x = "Feature",
+         y = "Value",
+         color = "")
+```
+
+I am also interested in the correlation between features and the output. We can use the *h2o.cor()* function to calculate the correlation matrix. It is again much easier to understand the data when we visualize it, so I am going to create another plot.
+
+```{r warning=FALSE, message=FALSE, fig.width=20, fig.height=20, fig.align='center', tidy=FALSE}
+library(reshape2) # for melting
+
+arrhythmia_hf[, 2] <- h2o.asfactor(arrhythmia_hf[, 2]) # diagnosis is now a characer column and we need to convert it again
+arrhythmia_hf[, 3] <- h2o.asfactor(arrhythmia_hf[, 3]) # same for class
+
+cor <- h2o.cor(arrhythmia_hf[, -c(1, 3)])
+rownames(cor) <- colnames(cor)
+
+melt(cor) %>%
+  mutate(Var2 = rep(rownames(cor), nrow(cor))) %>%
+  mutate(Var2 = factor(Var2, levels = colnames(cor))) %>%
+  mutate(variable = factor(variable, levels = colnames(cor))) %>%
+  ggplot(aes(x = variable, y = Var2, fill = value)) + 
+    geom_tile(width = 0.9, height = 0.9) +
+    scale_fill_gradient2(low = "white", high = "red", name = "Cor.") +
+    my_theme() +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+    labs(x = "", 
+         y = "")
+```
+
+<br>
+
+### Training, test and validation data
+
+```{r eval=FALSE, echo=FALSE}
+partitions <- arrhythmia_sc %>%
+  sdf_partition(training = 0.5, test = 0.5)
+
+training <- as_h2o_frame(sc, partitions$training, strict_version_check = FALSE)
+test <- as_h2o_frame(sc, partitions$test, strict_version_check = FALSE)
+
+summary(as.factor(training$class), exact_quantiles=TRUE)
+summary(as.factor(test$class), exact_quantiles=TRUE)
+```
+
+Now we can use the *h2o.splitFrame()* function to split the data into training, validation and test data. Here, I am using 70% for training and 15% each for validation and testing. We could also just split the data into two sections, a training and test set but when we have sufficient samples, it is a good idea to evaluate model performance on an independent test set on top of training with a validation set. Because we can easily overfit a model, we want to get an idea about how generalizable it is - this we can only assess by looking at how well it works on previously unknown data.
+
+I am also defining reponse, feature and weight column names now.
+
+```{r tidy=FALSE}
+splits <- h2o.splitFrame(arrhythmia_hf, 
+                         ratios = c(0.7, 0.15), 
+                         seed = 1)
+
+train <- splits[[1]]
+valid <- splits[[2]]
+test <- splits[[3]]
+
+response <- "diagnosis"
+weights <- "weights"
+features <- setdiff(colnames(train), c(response, weights, "class"))
+```
+
+```{r tidy=FALSE}
+summary(train$diagnosis, exact_quantiles = TRUE)
+summary(valid$diagnosis, exact_quantiles = TRUE)
+summary(test$diagnosis, exact_quantiles = TRUE)
+```
+
+If we had more categorical features, we could use the *h2o.interaction()* function to define interaction terms, but since we only have numeric features here, we don't need this.
+
+```{r echo=FALSE, eval=FALSE}
+h2o.hist(arrhythmia_hf$V1)
+?h2o.interaction
+```
+
+We can also run a PCA on the training data, using the *h2o.prcomp()* function to calculate the singular value decomposition of the Gram matrix with the power method.
+
+```{r tidy=FALSE}
+pca <- h2o.prcomp(training_frame = train,
+           x = features,
+           validation_frame = valid,
+           transform = "NORMALIZE",
+           k = 3,
+           seed = 42)
+
+pca
+```
+
+```{r fig.width=10, fig.height=10, tidy=FALSE}
+eigenvec <- as.data.frame(pca@model$eigenvectors)
+eigenvec$label <- features
+
+ggplot(eigenvec, aes(x = pc1, y = pc2, label = label)) +
+  geom_point(color = "navy", alpha = 0.7) +
+  geom_text_repel() +
+  my_theme()
+```
+
+```{r echo=FALSE, eval=FALSE}
+rf_model <- h2o.randomForest(x = features, 
+                             y = response,
+                             training_frame = train,
+                             validation_frame = valid,
+                             model_id = "rf_model",
+                             seed = 1,
+                             nfolds = 5)
+
+h2o.confusionMatrix(rf_model, valid = TRUE)
+
+rf_perf <- h2o.performance(model = rf_model, newdata = test)
+h2o.auc(rf_perf, xval = TRUE)
+
+h2o.varimp_plot(rf_model)
+
+h2o.varimp(rf_model)
+```
+
+```{r echo=FALSE, eval=FALSE}
+gbm_fit3 <- h2o.gbm(x = features,
+                    y = response,
+                    training_frame = train,
+                    model_id = "gbm_fit3",
+                    validation_frame = valid,  #only used if stopping_rounds > 0
+                    ntrees = 500,
+                    score_tree_interval = 5,      #used for early stopping
+                    stopping_rounds = 3,          #used for early stopping
+                    stopping_metric = "AUC",      #used for early stopping
+                    stopping_tolerance = 0.0005,  #used for early stopping
+                    seed = 1)
+
+gbm_perf3 <- h2o.performance(model = gbm_fit3,
+                             newdata = test)
+
+h2o.auc(gbm_perf3)
+
+h2o.scoreHistory(gbm_fit3)
+
+plot(gbm_fit3,
+     timestep = "number_of_trees",
+     metric = "AUC")
+plot(gbm_fit3,
+     timestep = "number_of_trees",
+     metric = "logloss")
+
+finalRf_predictions <- h2o.predict(
+  object = gbm_fit3,
+  newdata = test)
+```
+
+<br>
+
+### Modeling
+
+Now, we can build a deep neural network model. We can specifiy quite a few parameters, like
+
+- **Cross-validation**: Cross validation can tell us the training and validation errors for each model. The final model will be overwritten with the best model, if we don't specify otherwise.
+
+- **Adaptive learning rate**: For deep learning with h2o, we by default use stochastic gradient descent optimization with an an adaptive learning rate. The two corresponding parameters *rho* and *epsilon* help us find global (or near enough) optima.
+
+- **Activation function**: The activation function defines the node output relative to a given set of inputs. We want our activation function to be non-linear and continuously differentiable.
+
+- **Hidden nodes**: Defines the number of hidden layers and the number of nodes per layer.
+
+- **Epochs**: Increasing the number of epochs (one full training cycle on all training samples) can increase model performance, but we also run the risk of overfitting. To determine the optimal number of epochs, we need to use early stopping.
+
+- **Early stopping**: By default, early stopping is enabled. This means that training will be stopped when we reach a certain validation error to prevent overfitting.
+
+
+Of course, you need quite a bit of experience and intuition to hit on a good combination of parameters. That's why it usually makes sense to do a grid search for hyper-parameter tuning. Here, I want to focus on building and evaluating deep learning models, though. I will cover grid search in next week's post.
+
+```{r tidy=FALSE, eval=FALSE}
+dl_model <- h2o.deeplearning(x = features,
+                             y = response,
+                             weights_column = weights,
+                             model_id = "dl_model",
+                             training_frame = train,
+                             validation_frame = valid,
+                             nfolds = 15,                                   # 10x cross validation
+                             keep_cross_validation_fold_assignment = TRUE,
+                             fold_assignment = "Stratified",
+                             activation = "RectifierWithDropout",
+                             score_each_iteration = TRUE,
+                             hidden = c(200, 200, 200, 200, 200),           # 5 hidden layers, each of 200 neurons
+                             epochs = 100,
+                             variable_importances = TRUE,
+                             export_weights_and_biases = TRUE,
+                             seed = 42)
+```
+
+Because training can take a while, depending on how many samples, features, nodes and hidden layers you are training on, it is a good idea to save your model.
+
+```{r echo=TRUE, eval=FALSE}
+h2o.saveModel(dl_model, path="dl_model", force = TRUE)
+```
+
+We can then re-load the model again any time to check the model quality and make predictions on new data.
+
+```{r}
+dl_model <- h2o.loadModel("/Users/Shirin/Documents/Github/blog_posts_prep/wip/nn/dl_model/dl_model")
+```
+
+<br>
+
+### Model performance
+
+We now want to know how our model performed on the validation data. The *summary()* function will give us a detailed overview of our model.
+
+```{r }
+summary(dl_model)
+```
+
+```{r echo=FALSE, eval=FALSE}
+h2o.cross_validation_fold_assignment(dl_model)
+```
+
+One performance metric we are interested in is the mean per class error for training and validation data.
+
+```{r }
+h2o.mean_per_class_error(dl_model, train = TRUE, valid = TRUE, xval = TRUE)
+```
+
+The confusion matrix tells us, how many classes have been predicted correctly and how many predictions were accurate. Here, we see the errors in predictions on validation data
+
+```{r }
+h2o.confusionMatrix(dl_model, valid = TRUE)
+```
+
+We can also plot the classification error over all epochs or samples.
+
+```{r fig.width=8, fig.height=4, fig.align='center'}
+plot(dl_model,
+     timestep = "epochs",
+     metric = "classification_error")
+```
+
+```{r echo=TRUE, eval=TRUE, fig.width=8, fig.height=4, fig.align='center'}
+plot(dl_model,
+     timestep = "samples",
+     metric = "classification_error")
+```
+
+```{r echo=FALSE, eval=FALSE, fig.width=8, fig.height=4, fig.align='center'}
+plot(dl_model,
+     timestep = "duration",
+     metric = "classification_error")
+```
+
+Next to the classification error, we are usually interested in the logistic loss (negative log-likelihood or log loss). It describes the sum of errors for each sample in the training or validation data or the negative logarithm of the likelihood of error for a given prediction/ classification. Simply put, the lower the loss, the better the model (if we ignore potential overfitting).
+
+```{r fig.width=8, fig.height=4, fig.align='center'}
+plot(dl_model,
+     timestep = "epochs",
+     metric = "logloss")
+```
+
+We can also plot the mean squared error (MSE). The MSE tells us the average of the prediction errors squared, i.e. the estimator's variance and bias. The closer to zero, the better a model.
+
+```{r fig.width=8, fig.height=4, fig.align='center'}
+plot(dl_model,
+     timestep = "epochs",
+     metric = "rmse")
+```
+
+Next, we want to know the area under the curve (AUC). AUC is an important metric for measuring binary classification model performances. It gives the area under the curve, i.e. the integral, of true positive vs false positive rates. The closer to 1, the better a model. AUC is especially useful, when we have unbalanced datasets (meaning datasets where one class is much more common than the other), because it is independent of class labels.
+
+```{r }
+h2o.auc(dl_model, train = TRUE)
+h2o.auc(dl_model, valid = TRUE)
+h2o.auc(dl_model, xval = TRUE)
+```
+
+```{r eval=FALSE, echo=FALSE}
+cv_models <- h2o.cross_validation_models(dl_model)
+```
+
+```{r fig.width=8, fig.height=4, fig.align='center', eval=FALSE, echo=FALSE}
+plot(cv_models[[1]],
+     timestep = "epochs",
+     metric = "classification_error")
+```
+
+```{r fig.width=6, fig.height=5, fig.align='center', eval=FALSE, echo=FALSE}
+plot(cv_models[[1]],
+     timestep = "epochs",
+     metric = "AUC")
+```
+
+```{r eval=FALSE, echo=FALSE}
+h2o.deepfeatures(dl_model, train, layer = 1)
+```
+
+The weights for connecting two adjacent layers and per-neuron biases that we specified the model to save, can be accessed with:
+
+```{r eval=FALSE}
+w <- h2o.weights(dl_model, matrix_id = 1)
+b <- h2o.biases(dl_model, vector_id = 1)
+```
+
+Variable importance can be extracted as well (but keep in mind, that variable importance in deep neural networks is difficult to assess and should be considered only as rough estimates).
+
+```{r fig.height=15, fig.width=5}
+h2o.varimp(dl_model)
+#h2o.varimp_plot(dl_model)
+```
+
+<br>
+
+#### Test data
+
+Now that we have a good idea about model performance on validation data, we want to know how it performed on unseen test data. A good model should find an optimal balance between accuracy on training and test data. A model that has 0% error on the training data but 40% error on the test data is in effect useless. It overfit on the training data and is thus not able to generalize to unknown data.
+
+```{r fig.width=6, fig.height=5, fig.align='center'}
+perf <- h2o.performance(dl_model, test)
+perf
+```
+
+Plotting the test performance's AUC plot shows us approximately how good the predictions are.
+
+```{r fig.width=6, fig.height=5, fig.align='center'}
+plot(perf)
+```
+
+We also want to know the log loss, MSE and AUC values, as well as other model metrics for the test data:
+
+```{r }
+h2o.logloss(perf)
+h2o.mse(perf)
+h2o.auc(perf)
+
+head(h2o.metric(perf))
+```
+
+```{r echo=FALSE, eval=FALSE}
+h2o.gainsLift(dl_model, valid = TRUE, xval = TRUE)
+h2o.gainsLift(dl_model, test)
+```
+
+The confusion matrix alone can be seen with the *h2o.confusionMatrix()* function, but is is also part of the performance summary.
+
+```{r eval=FALSE}
+h2o.confusionMatrix(dl_model, test)
+```
+
+The final predictions with probabilities can be extracted with the *h2o.predict()* function. Beware though, that the number of correct and wrong classifications can be slightly different from the confusion matrix above.
+Here, I combine the predictions with the actual test diagnoses and classes into a dataframe. For plotting I also want to have a column, that tells me whether the predictions were correct. By default, a prediction probability above 0.5 will get scored as a prediction for the respective category. I find it often makes sense to be more stringent with this, though and set a higher threshold. Therefore, I am creating another column with stringent predictions, where I only count predictions that were made with more than 80% probability. Everything that does not fall within this range gets scored as "uncertain". For these stringent predictions, I am also creating a column that tells me whether they were accurate.
+
+```{r fig.width=10, fig.height=5}
+finalRf_predictions <- data.frame(class = as.vector(test$class), actual = as.vector(test$diagnosis), as.data.frame(h2o.predict(object = dl_model, newdata = test)))
+finalRf_predictions$accurate <- ifelse(finalRf_predictions$actual == finalRf_predictions$predict, "yes", "no")
+
+finalRf_predictions$predict_stringent <- ifelse(finalRf_predictions$arrhythmia > 0.8, "arrhythmia", 
+                                                ifelse(finalRf_predictions$healthy > 0.8, "healthy", "uncertain"))
+finalRf_predictions$accurate_stringent <- ifelse(finalRf_predictions$actual == finalRf_predictions$predict_stringent, "yes", 
+                                       ifelse(finalRf_predictions$predict_stringent == "uncertain", "na", "no"))
+```
+
+```{r}
+finalRf_predictions %>%
+  group_by(actual, predict) %>%
+  summarise(n = n())
+```
+
+```{r}
+finalRf_predictions %>%
+  group_by(actual, predict_stringent) %>%
+  summarise(n = n())
+```
+
+To get a better overview, I am going to plot the predictions (default and stringent):
+
+```{r fig.width=10, fig.height=4}
+p1 <- finalRf_predictions %>%
+  ggplot(aes(x = actual, fill = accurate)) +
+    geom_bar(position = "dodge") +
+    scale_fill_brewer(palette = "Set1") +
+    my_theme() +
+    labs(fill = "Were\npredictions\naccurate?",
+         title = "Default predictions")
+
+p2 <- finalRf_predictions %>%
+  subset(accurate_stringent != "na") %>%
+  ggplot(aes(x = actual, fill = accurate_stringent)) +
+    geom_bar(position = "dodge") +
+    scale_fill_brewer(palette = "Set1") +
+    my_theme() +
+    labs(fill = "Were\npredictions\naccurate?",
+         title = "Stringent predictions")
+
+grid.arrange(p1, p2, ncol = 2)
+```
+
+Being more stringent with the prediction threshold slightly reduced the number of errors but not by much.
+
+I also want to know whether there are certain classes of arrhythmia that are especially prone to being misclassified:
+
+```{r fig.width=10, fig.height=4}
+p1 <- subset(finalRf_predictions, actual == "arrhythmia") %>%
+  ggplot(aes(x = predict, fill = class)) +
+    geom_bar(position = "dodge") +
+    my_theme() +
+    labs(title = "Prediction accuracy of arrhythmia cases",
+         subtitle = "Default predictions",
+         x = "predicted to be")
+
+p2 <- subset(finalRf_predictions, actual == "arrhythmia") %>%
+  ggplot(aes(x = predict_stringent, fill = class)) +
+    geom_bar(position = "dodge") +
+    my_theme() +
+    labs(title = "Prediction accuracy of arrhythmia cases",
+         subtitle = "Stringent predictions",
+         x = "predicted to be")
+
+grid.arrange(p1, p2, ncol = 2)
+```
+
+There are no obvious biases towards some classes but with the small number of samples for most classes, this is difficult to assess.
+
+```{r fig.width=10, fig.height=5, eval=FALSE, echo=FALSE}
+finalRf_predictions %>%
+  ggplot(aes(x = arrhythmia, y = healthy, color = predict_stringent)) +
+    geom_point(alpha = 0.7, size = 4) +
+    scale_color_brewer(palette = "Set1") +
+    facet_wrap( ~ actual, ncol = 2, scales = "free") +
+    my_theme()
+```
+
+<br>
+
+### Final conclusions: How useful is the model?
+
+Most samples were classified correctly, but the total error was not particularly good. Moreover, when evaluating the usefulness of a specific model, we need to keep in mind what we want to achieve with it and which questions we want to answer. If we wanted to deploy this model in a clinical setting, it should assist with diagnosing patients. So, we need to think about what the consequences of wrong classifications would be. Would it be better to optimize for high sensitivity, in this example as many arrhythmia cases as possible get detected - with the drawback that we probably also diagnose a few healthy people? Or do we want to maximize precision, meaning that we could be confident that a patient who got predicted to have arrhythmia does indeed have it, while accepting that a few arrhythmia cases would remain undiagnosed? When we consider stringent predictions, this model correctly classified 19 out of 27 arrhythmia cases, but 6 were misdiagnosed. This would mean that some patients who were actually sick, wouldn't have gotten the correct treatment (if decided solely based on this model). For real-life application, this is obviously not sufficient!
+
+Next week, I'll be trying to improve the model by doing a grid search for hyperparameter tuning. 
+
+So, stay tuned... (sorry, couldn't resist ;-))
+
+------------------
+
+<br>
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=6, fig.height=4, fig.align="center", cache=FALSE}
+sessionInfo()
+```

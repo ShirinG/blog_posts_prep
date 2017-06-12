@@ -1,0 +1,438 @@
+---
+title: "Hyper-parameter Tuning with Grid Search for Deep Learning"
+author: "Shirin Glander"
+date: "February 21, 2017"
+output:
+  md_document:
+    variant: markdown_github
+---
+
+[Last week I showed how to build a deep neural network with **h2o** and **rsparkling**](https://shiring.github.io/machine_learning/2017/02/27/h2o). As we could see there, it is not trivial to optimize the hyper-parameters for modeling. Hyper-parameter tuning with grid search allows us to test different combinations of hyper-parameters and find one with improved accuracy.
+
+Keep in mind though, that hyperparameter tuning can only improve the model so much without overfitting. If you can't achieve sufficient accuracy, the input features might simply not be adequate for the predictions you are trying to model. It might be necessary to go back to the original features and try e.g. feature engineering methods.
+
+<br>
+
+### Preparing Spark instance and plotting theme
+
+Check out last week's post for details on how I prepared the data.
+
+```{r message=FALSE, warning=FALSE, tidy=FALSE}
+library(rsparkling)
+options(rsparkling.sparklingwater.version = "2.0.3")
+
+library(h2o)
+library(dplyr)
+library(sparklyr)
+
+sc <- spark_connect(master = "local", version = "2.0.0")
+```
+
+```{r message=FALSE, warning=FALSE, tidy=FALSE}
+library(ggplot2)
+library(ggrepel)
+
+my_theme <- function(base_size = 12, base_family = "sans"){
+  theme_minimal(base_size = base_size, base_family = base_family) +
+  theme(
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14),
+    panel.grid.major = element_line(color = "grey"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "aliceblue"),
+    strip.background = element_rect(fill = "darkgrey", color = "grey", size = 1),
+    strip.text = element_text(face = "bold", size = 12, color = "white"),
+    legend.position = "right",
+    legend.justification = "top", 
+    panel.border = element_rect(color = "grey", fill = NA, size = 0.5)
+  )
+}
+```
+
+```{r echo=FALSE}
+load("arrhythmia_subset.RData")
+```
+
+```{r tidy=FALSE}
+arrhythmia_sc <- copy_to(sc, arrhythmia_subset)
+arrhythmia_hf <- as_h2o_frame(sc, arrhythmia_sc, strict_version_check = FALSE)
+```
+
+```{r tidy=FALSE}
+arrhythmia_hf[, 2] <- h2o.asfactor(arrhythmia_hf[, 2])
+arrhythmia_hf[, 3] <- h2o.asfactor(arrhythmia_hf[, 3])
+
+splits <- h2o.splitFrame(arrhythmia_hf, 
+                         ratios = c(0.7, 0.15), 
+                         seed = 1)
+
+train <- splits[[1]]
+valid <- splits[[2]]
+test <- splits[[3]]
+
+response <- "diagnosis"
+weights <- "weights"
+features <- setdiff(colnames(train), c(response, weights, "class"))
+```
+
+<br>
+
+### Grid Search
+
+We can use the *h2o.grid()* function to perform e.g. Random Grid Search (RGS). We could also test all possible combinations of parameters with Cartesian Grid or exhaustive search, but RGS is much faster and usually finds sufficiently accurate models.
+
+For RGS we first define a set of hyper-parameters and search criteria. Hyper-parameters are the settings we can specify to fine-tune our models. Because there are many hyper-parameters, each with a range of possible values, we want to find an (ideally) optimal combination to maximize our model's accuracy.
+
+We can also specify how long we want to run the grid search for. Based on the results of each model tested in the grid, we can choose the one with the highest accuracy or best performance for the question on hand.
+
+#### Activation Functions
+- **Rectifier**: is the default activation function. It is the fastest and most versatile option. It can lead to instabilities though and tends to be lower in accuracy.
+- **Tanh**: The hyperbolic tangent is a scaled and shifted variant of the sigmoid activation function. It can take on values from -1 to 1 and centers around 0. Tanh needs more computational power than e.g. the Rectifier function.
+- **Maxout**: is an activation function that is the max of the inputs. It is computationally quite demanding but can produce high accuracy models.
+
+- **...WithDropout**: When we specify *with dropout*, a random subset of the network is trained and the weights of all subnetworks are averaged. Works together with the parameter *hidden_dropout_ratios* (controls the amount of layer neurons that are randomly dropped for each hidden layer). Hidden dropout ratios are useful for preventing overfitting on learned features.
+
+#### Hidden layers
+- are the most important hyper-parameter to set for deep neural networks, as they specify how many hidden layers and how many nodes per hidden layer the model should learn
+
+#### L1 and L2 penalties
+- **L1**: lets only strong weights survive
+- **L2**: prevents any single weight from getting too big. 
+
+`rho` and `epsilon`, which balance the global and local search efficiencies. `rho` is the similarity to prior weight updates (similar to momentum), and `epsilon` is a parameter that prevents the optimization to get stuck in local optima. Defaults are `rho=0.99` and `epsilon=1e-8`. For cases where convergence speed is very important, it might make sense to perform a few runs to optimize these two parameters (e.g., with `rho in c(0.9,0.95,0.99,0.999)` and `epsilon in c(1e-10,1e-8,1e-6,1e-4)`). Of course, as always with grid searches, caution has to be applied when extrapolating grid search results to a different parameter regime (e.g., for more epochs or different layer topologies or activation functions, etc.).
+
+
+```{r}
+hyper_params <- list(
+                     activation = c("Rectifier", "Maxout", "Tanh", "RectifierWithDropout", "MaxoutWithDropout", "TanhWithDropout"), 
+                     hidden = list(c(5, 5, 5, 5, 5), c(10, 10, 10, 10), c(50, 50, 50), c(100, 100, 100)),
+                     epochs = c(50, 100, 200),
+                     l1 = c(0, 0.00001, 0.0001), 
+                     l2 = c(0, 0.00001, 0.0001),
+                     rate = c(0, 01, 0.005, 0.001),
+                     rate_annealing = c(1e-8, 1e-7, 1e-6),
+                     rho = c(0.9,0.95,0.99,0.999),
+                     epsilon = c(1e-10,1e-8,1e-6,1e-4),
+                     momentum_start = c(0, 0.5),
+                     momentum_stable = c(0.99, 0.5, 0),
+                     input_dropout_ratio = c(0, 0.1, 0.2),
+                     max_w2 = c(10, 100, 1000, 3.4028235e+38)
+                     )
+```
+
+#### Early stopping criteria
+- **stopping_metric**: metric that we want to use as stopping criterion
+- **stopping_tolerance** and **stopping_rounds**: trainig stops when the the stopping metric does not improve by the stopping tolerance proportion any more (e.g. by 0.05 or 5%) for the number of consecutive rounds defined by stopping rounds.
+
+```{r}
+search_criteria <- list(strategy = "RandomDiscrete", 
+                        max_models = 100,
+                        max_runtime_secs = 900,
+                        stopping_tolerance = 0.001,
+                        stopping_rounds = 15,
+                        seed = 42)
+```
+
+Now, we can train the model with combinations of hyper-parameters from our specified stopping criteria and hyper-parameter grid.
+
+```{r}
+dl_grid <- h2o.grid(algorithm = "deeplearning", 
+                    x = features,
+                    y = response,
+                    weights_column = weights,
+                    grid_id = "dl_grid",
+                    training_frame = train,
+                    validation_frame = valid,
+                    nfolds = 25,                           
+                    fold_assignment = "Stratified",
+                    hyper_params = hyper_params,
+                    search_criteria = search_criteria,
+                    seed = 42
+                    )
+```
+
+We now want to extract the best model from this list. What makes a model *the best* depends on the question you want to address with it: in some cases, the model with highst AUC is the most suitable, or the one with the lowest mean squared error, etc. See [last week's post](https://shiring.github.io/machine_learning/2017/02/27/h2o) again for a more detailed discussion of performance metrics. 
+
+For demonstration purposes, I am choosing the best models from a range of possible quality criteria. We first use the *h2o.getGrid()* function to sort all models by the quality metric we choose (depending on the metric, you want it order by descending or ascending values). We can then get the model that's the first in the list to work with further. This model's hyper-parameters can be accessed via *best_model@allparameters*. You can now work with your best model as with any regular model in **h2o** (for an example see [last week's post](https://shiring.github.io/machine_learning/2017/02/27/h2o)).
+
+```{r}
+# performance metrics where smaller is better -> order with decreasing = FALSE
+sort_options_1 <- c("mean_per_class_error", "mse", "err")
+
+for (sort_by_1 in sort_options_1) {
+  
+  grid <- h2o.getGrid("dl_grid", sort_by = sort_by_1, decreasing = FALSE)
+  
+  model_ids <- grid@model_ids
+  best_model <- h2o.getModel(model_ids[[1]])
+  
+  assign(paste0("best_model_", sort_by_1), best_model)
+  
+}
+
+
+# performance metrics where bigger is better -> order with decreasing = TRUE
+sort_options_2 <- c("auc", "precision", "accuracy", "recall", "specificity")
+
+for (sort_by_2 in sort_options_2) {
+  
+  grid <- h2o.getGrid("dl_grid", sort_by = sort_by_2, decreasing = TRUE)
+  
+  model_ids <- grid@model_ids
+  best_model <- h2o.getModel(model_ids[[1]])
+  
+  assign(paste0("best_model_", sort_by_2), best_model)
+  
+}
+```
+
+Let's plot the mean per class error for each best model:
+
+```{r }
+library(tibble)
+
+sort_options <- c("mean_per_class_error", "mse", "err", "auc", "precision", "accuracy", "recall", "specificity")
+
+for (sort_by in sort_options) {
+  
+  best_model <- get(paste0("best_model_", sort_by))
+  errors <- h2o.mean_per_class_error(best_model, train = TRUE, valid = TRUE, xval = TRUE)
+ 
+  errors_df <- data.frame(model_id = best_model@model_id, sort = sort_by, errors) %>%
+    rownames_to_column(var = "rowname")
+  
+  if (sort_by == "mean_per_class_error") {
+    
+    errors_df_comb <- errors_df
+    
+  } else {
+    
+    errors_df_comb <- rbind(errors_df_comb, errors_df)
+    
+  }
+}
+```
+
+```{r fig.height=6, fig.width=8}
+order <- subset(errors_df_comb, rowname == "xval") %>%
+  arrange(errors)
+  
+errors_df_comb %>%
+  mutate(sort = factor(sort, levels = order$sort)) %>%
+  ggplot(aes(x = sort, y = errors, fill = model_id)) +
+    facet_grid(rowname ~ ., scales = "free") +
+    geom_bar(stat = "identity", alpha = 0.8) +
+    scale_fill_brewer(palette = "Set1") +
+    my_theme() +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+          plot.margin = unit(c(0.5, 0, 0, 1), "cm")) +
+    labs(x = "")
+```
+
+<br>
+
+### Model performance
+
+The ultimate performance test for our model will be it's prediction accuracy on the test set it hasn't seen before. Here, I will compare the AUC and mean squared error for each best model from before. You could of course look at any other quality metric that is most appropriate for your model.
+
+```{r fig.height=5, fig.width=8}
+for (sort_by in sort_options) {
+  
+  best_model <- get(paste0("best_model_", sort_by))
+  mse_auc_test <- data.frame(model_id = best_model@model_id,
+                             sort = sort_by, 
+                             mse = h2o.mse(h2o.performance(best_model, test)),
+                             auc = h2o.auc(h2o.performance(best_model, test)))
+  
+  if (sort_by == "mean_per_class_error") {
+    
+    mse_auc_test_comb <- mse_auc_test
+    
+  } else {
+    
+    mse_auc_test_comb <- rbind(mse_auc_test_comb, mse_auc_test)
+    
+  }
+}
+```
+
+```{r fig.height=5, fig.width=8}
+library(tidyr)
+
+mse_auc_test_comb %>%
+  gather(x, y, mse:auc) %>%
+  ggplot(aes(x = sort, y = y, fill = model_id)) +
+    facet_grid(x ~ ., scales = "free") +
+    geom_bar(stat = "identity", alpha = 0.8, position = "dodge") +
+    scale_fill_brewer(palette = "Set1") +
+    my_theme() +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+          plot.margin = unit(c(0.5, 0, 0, 1.5), "cm")) +
+    labs(x = "", y = "value", fill = "")
+```
+
+```{r fig.width=10, fig.height=5}
+for (sort_by in sort_options) {
+  
+  best_model <- get(paste0("best_model_", sort_by))
+  
+  finalRf_predictions <- data.frame(model_id = rep(best_model@model_id, nrow(test)),
+                                    sort = rep(sort_by, nrow(test)),
+                                    class = as.vector(test$class), 
+                                    actual = as.vector(test$diagnosis), 
+                                    as.data.frame(h2o.predict(object = best_model, newdata = test)))
+  
+  finalRf_predictions$accurate <- ifelse(finalRf_predictions$actual == finalRf_predictions$predict, "yes", "no")
+  
+  finalRf_predictions$predict_stringent <- ifelse(finalRf_predictions$arrhythmia > 0.8, "arrhythmia", 
+                                                  ifelse(finalRf_predictions$healthy > 0.8, "healthy", "uncertain"))
+  finalRf_predictions$accurate_stringent <- ifelse(finalRf_predictions$actual == finalRf_predictions$predict_stringent, "yes", 
+                                         ifelse(finalRf_predictions$predict_stringent == "uncertain", "na", "no"))
+  
+  if (sort_by == "mean_per_class_error") {
+    
+    finalRf_predictions_comb <- finalRf_predictions
+    
+  } else {
+    
+    finalRf_predictions_comb <- rbind(finalRf_predictions_comb, finalRf_predictions)
+    
+  }
+}
+```
+
+To get a better overview, I am going to plot the predictions (default and stringent):
+
+```{r fig.width=10, fig.height=4, message=FALSE, warning=FALSE}
+finalRf_predictions_comb %>%
+  ggplot(aes(x = actual, fill = accurate)) +
+    geom_bar(position = "dodge") +
+    scale_fill_brewer(palette = "Set1") +
+    my_theme() +
+    facet_wrap(~ sort, ncol = 4) +
+    labs(fill = "Were\npredictions\naccurate?",
+         title = "Default predictions")
+```
+
+```{r fig.width=10, fig.height=4, message=FALSE, warning=FALSE}
+finalRf_predictions_comb %>%
+  subset(accurate_stringent != "na") %>%
+  ggplot(aes(x = actual, fill = accurate_stringent)) +
+    geom_bar(position = "dodge") +
+    scale_fill_brewer(palette = "Set1") +
+    my_theme() +
+    facet_wrap(~ sort, ncol = 4) +
+    labs(fill = "Were\npredictions\naccurate?",
+         title = "Stringent predictions")
+```
+
+
+
+```{r echo=FALSE, eval=FALSE}
+scores <- cbind(as.data.frame(unlist((lapply(dl_grid@model_ids, function(x)
+{ h2o.confusionMatrix(h2o.performance(h2o.getModel(x),valid=T))$Error[3] })) )), unlist(dl_grid@model_ids))
+
+names(scores) <- c("misclassification","model")
+sorted_scores <- scores[order(scores$misclassification),]
+head(sorted_scores)
+best_model <- h2o.getModel(as.character(sorted_scores$model[1]))
+print(best_model@allparameters)
+best_err <- sorted_scores$misclassification[1]
+print(best_err)
+```
+
+```{r echo=FALSE, eval=FALSE}
+models <- c()
+
+for (i in 1:10) {
+
+  rand_activation <- c("TanhWithDropout", "RectifierWithDropout")[sample(1:2, 1)]
+  rand_numlayers <- sample(2:5,1)
+  rand_hidden <- c(sample(10:50, rand_numlayers, T))
+  rand_l1 <- runif(1, 0, 1e-3)
+  rand_l2 <- runif(1, 0, 1e-3)
+  rand_dropout <- c(runif(rand_numlayers, 0, 0.6))
+  rand_input_dropout <- runif(1, 0, 0.5)
+  
+  dlmodel <- h2o.deeplearning(model_id = paste0("dl_random_model_", i),
+                              training_frame = train,
+                              validation_frame = valid,
+                              x = features,
+                              y = response,
+                              nfolds = 10,
+                              max_w2 = 10,                      ## can help improve stability for Rectifier
+                              
+                              ### Random parameters
+                              activation = rand_activation,
+                              hidden = rand_hidden,
+                              l1 = rand_l1,
+                              l2 = rand_l2,
+                              input_dropout_ratio = rand_input_dropout,
+                              hidden_dropout_ratios = rand_dropout)
+  
+  models <- c(models, dlmodel)
+}
+```
+
+```{r echo=FALSE, eval=FALSE}
+best_err <- 1
+for (i in 1:length(models)) {
+  err <- h2o.confusionMatrix(h2o.performance(models[[i]],valid=T))$Error[3]
+  if (err < best_err) {
+    best_err <- err
+    best_model <- models[[i]]
+  }
+}
+h2o.confusionMatrix(best_model,valid=T)
+best_params <- best_model@allparameters
+best_params$hidden
+best_params$l1
+best_params$l2
+best_params$input_dropout_ratio
+```
+
+```{r echo=FALSE, eval=FALSE}
+max_epochs <- 12 ## Add two more epochs
+m_cont <- h2o.deeplearning(model_id="dl_model_tuned_continued",
+                          training_frame=train,
+                          validation_frame=valid,
+                          x=features,
+                          y=response,
+                          hidden=c(128,128,128),          ## more hidden layers -> more complex interactions
+                          epochs=max_epochs,              ## hopefully long enough to converge (otherwise restart again)
+                          stopping_metric="logloss",      ## logloss is directly optimized by Deep Learning
+                          stopping_tolerance=1e-2,        ## stop when validation logloss does not improve by >=1% for 2 scoring events
+                          stopping_rounds=2,
+                          score_validation_samples=10000, ## downsample validation set for faster scoring
+                          score_duty_cycle=0.025,         ## don't score more than 2.5% of the wall time
+                          adaptive_rate=F,                ## manually tuned learning rate
+                          rate=0.01,
+                          rate_annealing=2e-6,
+                          momentum_start=0.2,             ## manually tuned momentum
+                          momentum_stable=0.4,
+                          momentum_ramp=1e7,
+                          l1=1e-5,                        ## add some L1/L2 regularization
+                          l2=1e-5,
+                          max_w2=10                       ## helps stability for Rectifier
+)
+summary(m_cont)
+plot(m_cont)
+```
+
+------------------------------------------------------------------------
+
+Other machine learning topics I have covered include
+
+- how to run machine learning with Apache Spark in R: [Predicting food preferences with sparklyr (machine learning)
+](https://shiring.github.io/machine_learning/2017/02/19/food_spark)
+- a basic machine learning workflow: [Can we predict flu deaths with Machine Learning and R?](https://shiring.github.io/machine_learning/2016/11/27/flu_outcome_ML_post)
+- extreme gradient boosting: [Extreme Gradient Boosting and Preprocessing in Machine Learning - Addendum to predicting flu outcome with R](https://shiring.github.io/machine_learning/2016/12/02/flu_outcome_ML_2_post)
+- feature selection: [Feature Selection in Machine Learning (Breast Cancer Datasets)](https://shiring.github.io/machine_learning/2017/01/15/rfe_ga_post)
+
+------------------------------------------------------------------------
+
+<br>
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=6, fig.height=4, fig.align="center", cache=FALSE}
+sessionInfo()
+```
