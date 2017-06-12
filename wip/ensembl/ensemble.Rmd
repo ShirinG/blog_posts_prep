@@ -1,0 +1,277 @@
+---
+title: "Ensemble learning"
+author: "Dr. Shirin Glander"
+date: "April 18, 2017"
+output: html_document
+---
+
+https://www.analyticsvidhya.com/blog/2017/02/introduction-to-ensembling-along-with-implementation-in-r/
+
+
+
+
+
+Previous research in data mining has devised numerous different algorithms for learning tasks. While an individual algorithm might already work decently, one can usually obtain a better predictive by combining several. This approach is referred to as ensemble learning.
+Common examples include random forests, boosting and AdaBost in particular.
+
+I would like to give a basic overview of ensemble learning. Ensemble learning involves combining multiple predictions derived by different techniques in order to create a stronger overall prediction. For example, the predictions of a random forest, a support vector machine, and a simple linear model may be combined to create a stronger final prediction set. The key to creating a powerful ensemble is model diversity. An ensemble with two techniques that are very similar in nature will perform more poorly than a more diverse model set.
+
+Some ensemble learning techniques, such as Bayesian model combination and stacking, attempt to weight the models prior to combining them.
+
+Random Forests are an ensemble learning method for classification
+and regression
+I It combines multiple individual decision trees by means of bagging
+I Overcomes the problem of overfitting decision trees
+
+Create many decision trees by bagging
+2 Inject randomness into decision trees
+a. Tree grows to maximum size and is left unpruned
+I Deliberate overfitting: i. e. each tree is a good model on its own
+b. Each split is based on randomly selected subset of attributes
+I Reduces correlation between different trees
+I Otherwise, many trees would just select the very strong predictors
+3 Ensemble trees (i. e. the random forest) vote on categories by majority
+
+<br>
+
+## The data
+
+https://archive.ics.uci.edu/ml/datasets/Mammographic+Mass
+
+Attribute Information:
+   1. BI-RADS assessment: 1 to 5 (ordinal)  
+   2. Age: patient's age in years (integer)
+   3. Shape: mass shape: round=1 oval=2 lobular=3 irregular=4 (nominal)
+   4. Margin: mass margin: circumscribed=1 microlobulated=2 obscured=3 ill-defined=4 spiculated=5 (nominal)
+   5. Density: mass density high=1 iso=2 low=3 fat-containing=4 (ordinal)
+   6. Severity: benign=0 or malignant=1 (binominal)
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+
+data <- read.table("mammographic_masses.data.txt", sep = ",") %>%
+  mutate(V2 = as.numeric(as.character(V2)),
+         V6 = as.factor(V6))
+
+data[data == "?"] <- NA
+
+# Remove NA observations
+data <- na.omit(data)
+```
+
+```{r mds_plot, echo=FALSE, eval=FALSE}
+# Multidimensional Scaling 
+select(data, -6) %>%
+  dist() %>%
+  cmdscale %>%
+  as.data.frame() %>%
+  mutate(group = data$V6) %>%
+  ggplot(aes(x = V1, y = V2, color = group)) +
+    geom_point()
+```
+
+```{r fig.width=5, fig.height=3}
+data %>%
+  ggplot(aes(x = V6)) +
+    geom_bar()
+```
+
+## 
+
+```{r warning=FALSE, message=FALSE}
+# configure multicore
+library(doParallel)
+cl <- makeCluster(detectCores())
+registerDoParallel(cl)
+
+library(caret)
+```
+
+```{r}
+set.seed(42)
+index <- createDataPartition(data$V6, p = 0.7, list = FALSE)
+train_data <- data[index, ]
+test_data  <- data[-index, ]
+```
+
+```{r}
+models <- c("rf", "xgbTree", "knn")
+```
+
+```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=4, eval=FALSE}
+for (model in models) {
+  set.seed(42)
+  model_train <- caret::train(V6 ~ .,
+                           data = train_data,
+                           method = model,
+                           trControl = trainControl(method = "repeatedcv", 
+                                                    number = 10, 
+                                                    repeats = 5,
+                                                    verboseIter = FALSE)) 
+  assign(paste0("model_", model), model_train)
+}
+```
+
+```{r echo=FALSE, eval=FALSE}
+save(model_rf, file = "model_rf.RData")
+save(model_xgbTree, file = "model_xgbTree.RData")
+save(model_knn, file = "model_knn.RData")
+```
+
+```{r echo=FALSE}
+for (model in models) {
+  load(paste0("model_", model, ".RData"))
+}
+```
+
+```{r}
+predictions <- data.frame()
+for (model in models) {
+  prediction <- data.frame(id = 1:nrow(test_data),
+                           model = model,
+                           predict(get(paste0("model_", model)), test_data, type = "prob"),
+                           actual = test_data$V6)
+  prediction$prediction <- gsub("X", "", colnames(prediction)[3:4][apply(prediction[, 3:4], 1, which.max)])
+  prediction$correct <- ifelse(prediction$actual == prediction$prediction, "correct", "wrong")
+  predictions <- rbind(predictions, prediction)
+}
+```
+
+```{r}
+ensemble <- predictions %>%
+  group_by(id) %>%
+  dplyr::summarise(X0 = sum(X0) / 3,
+                   X1 = sum(X1) / 3) %>%
+  mutate(actual = test_data$V6)
+
+ensemble$prediction <- gsub("X", "", colnames(ensemble)[2:3][apply(ensemble[, 2:3], 1, which.max)])
+ensemble$correct <- ifelse(ensemble$actual == ensemble$prediction, "correct", "wrong")
+```
+
+```{r}
+predictions %>%
+  group_by(model) %>%
+  dplyr::summarise(correct = sum(correct == "correct"),
+            n = n()) %>%
+  mutate(accuracy = correct / n)
+
+ensemble %>%
+  dplyr::summarise(correct = sum(correct == "correct"),
+            n = n()) %>%
+  mutate(accuracy = correct / n)
+```
+
+```{r}
+ensemble2 <- predictions %>%
+  mutate(X0 = ifelse(model == "rf", X0 * 2, ifelse(model == "xgbTree", X0 * 2, X0)),
+         X1 = ifelse(model == "rf", X1 * 2, ifelse(model == "xgbTree", X1 * 2, X0))) %>%
+  group_by(id) %>%
+  dplyr::summarise(X0 = sum(X0) / 3,
+                   X1 = sum(X1) / 3) %>%
+  mutate(actual = test_data$V6)
+
+ensemble2$prediction <- gsub("X", "", colnames(ensemble2)[2:3][apply(ensemble2[, 2:3], 1, which.max)])
+ensemble2$correct <- ifelse(ensemble2$actual == ensemble2$prediction, "correct", "wrong")
+
+
+ensemble2 %>%
+  dplyr::summarise(correct = sum(correct == "correct"),
+            n = n()) %>%
+  mutate(accuracy = correct / n)
+```
+
+```{r}
+predictions %>%
+  group_by(model) %>%
+  dplyr::summarise(correct = sum(correct == "correct"),
+            n = n()) %>%
+  mutate(accuracy = correct / n)
+
+ensemble %>%
+  dplyr::summarise(correct = sum(correct == "correct"),
+            n = n()) %>%
+  mutate(accuracy = correct / n)
+
+```
+
+```{r}
+predictions %>%
+  group_by(model, actual) %>%
+  dplyr::summarise(correct = sum(correct == "correct"),
+            n = n()) %>%
+  mutate(accuracy = correct / n)
+
+predictions %>%
+  group_by(model, prediction) %>%
+  dplyr::summarise(correct = sum(correct == "correct"),
+            n = n()) %>%
+  mutate(accuracy = correct / n)
+```
+
+
+```{r}
+ensemble %>%
+  group_by(actual) %>%
+  dplyr::summarise(correct = sum(correct == "correct"),
+            n = n()) %>%
+  mutate(accuracy = correct / n)
+
+ensemble %>%
+  group_by(prediction) %>%
+  dplyr::summarise(correct = sum(correct == "correct"),
+            n = n()) %>%
+  mutate(accuracy = correct / n)
+```
+
+## Bayesian model combination
+
+## Model stacking
+
+## Boosting & AdaBoost
+
+Bagging: Bootstrap Aggregation
+I Meta strategy design to accuracy of machine learning algorithms
+I Improvements for unstable procedures
+→ Neural networks, trees and linear regression with subset selection,
+rule learning (opposed to k-NN, linear regression, SVM)
+I Idea: Reuse the same training algorithm several times on different
+subsets of the training data
+I When classifier needs random initialization (e. g. k-means), very these
+across each run
+
+Combine multiple classifiers to improve classification accuracy
+I Works together with many different types of classifiers
+I None of the classifier needs extremely good, only better than chance
+
+Idea: train classifiers on a subset of the training data that is most
+informative given the current classifiers
+
+High-level algorithm
+1 Fit a simple model to a subsample of the data
+2 Identify misclassified observations, i. e. that are hard to predict
+3 Focus subsequent learners on these samples and get them right
+4 Combine weak learners to form a complex predictor
+
+```{r}
+library(mboost)
+```
+
+AdaBoosting
+Instead of resampling, reweight misclassified training examples
+
+
+```{r}
+library(ada)
+
+```
+
+---
+
+If you are interested in more machine learning posts, check out [the category listing for **machine_learning** on my blog](https://shiring.github.io/categories.html#machine_learning-ref).
+
+---
+
+```{r}
+sessionInfo()
+```
+

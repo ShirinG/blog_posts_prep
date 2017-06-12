@@ -1,0 +1,28 @@
+---
+title: "gpx"
+output: html_document
+---
+
+```{r eval=FALSE, echo=TRUE, message=FALSE, warning=FALSE, cache=TRUE}
+library(rgdal)
+library(plotKML)
+
+t <- readGPX("tracks/2017-04-30_16021834_steinbruch-lienen-holperdorp-malepartus-waldschaenke-loop-from-twe-hoeste_export.gpx")
+  
+geodf <- data.frame(lon = t$tracks[[1]][[1]]$lon,
+                    lat = t$tracks[[1]][[1]]$lat,
+                    ele = t$tracks[[1]][[1]]$ele,
+                    tour = names(t$tracks[[1]]))
+```
+
+```{r}
+library(rangl)
+```
+
+https://r-gris.github.io/rangl/articles/rangl-examples.html
+
+https://r-gris.github.io/rangl/articles/index.html
+
+https://github.com/r-gris/rangl
+
+
