@@ -1,0 +1,192 @@
+---
+title: "Plotting Random Forest final model trees with ggraph"
+author: "Dr. Shirin Glander"
+date: '`r Sys.Date()`'
+output:
+  md_document:
+    variant: markdown_github
+---
+
+Today, I want to show how I use Thomas Lin Pederson's awesome [ggraph](https://github.com/thomasp85/ggraph) package to plot final decision trees from Random Forest models.
+
+I am very much a visual person, so I try to plot as much of my results as possible because it helps me to get a better feel for what is going on.
+
+A nice aspect of using tree-based machine learning, like Random Forest models is that that they are more easily interpreted than e.g. neural networks as they are based on decision trees. So, when I am using such models, I like to plot the final decision tree (if it isn't too large) to get a sense of which decisions are underlying my predictions.
+
+There are a few very convient ways to plot the outcome if you are using the `randomForest` package but I like to have as much control as possible about the layout, colors, labels, etc. 
+
+So, because I didn't find a solution I liked for `caret` models, I developed the following little function (below you may find information about how I built the model):
+
+As input it takes part of the output from `model_rf <- caret::train(... "rf" ...)`, that gives the trees of the final model: `model_rf$finalModel$forest`. From these trees, you can specify by index which one to plot.
+
+```{r echo=FALSE}
+load("U:/Github_blog/Webinar/Webinar_ML_for_disease/models/model_rf.RData")
+```
+
+```{r}
+library(dplyr)
+library(ggraph)
+library(igraph)
+
+tree_func <- function(final_model, 
+                      tree_num) {
+  
+  # get tree by index
+  tree <- randomForest::getTree(final_model, 
+                                k = tree_num, 
+                                labelVar = TRUE) %>%
+    tibble::rownames_to_column() %>%
+    # make leaf split points to NA, so the 0s won't get plotted
+    mutate(`split point` = ifelse(is.na(prediction), `split point`, NA))
+  
+  # prepare data frame for graph
+  graph_frame <- data.frame(from = rep(tree$rowname, 2),
+                            to = c(tree$`left daughter`, tree$`right daughter`))
+  
+  # convert to graph and delete the last node that we don't want to plot
+  graph <- graph_from_data_frame(graph_frame) %>%
+    delete_vertices("0")
+  
+  # set node labels
+  V(graph)$node_label <- gsub("_", " ", as.character(tree$`split var`))
+  V(graph)$leaf_label <- as.character(tree$prediction)
+  V(graph)$split <- as.character(round(tree$`split point`, digits = 2))
+  
+  # plot
+  plot <- ggraph(graph, 'dendrogram') + 
+    theme_bw() +
+    geom_edge_link() +
+    geom_node_point() +
+    geom_node_text(aes(label = node_label), na.rm = TRUE, repel = TRUE) +
+    geom_node_label(aes(label = split), vjust = 2.5, na.rm = TRUE, fill = "white") +
+    geom_node_label(aes(label = leaf_label, fill = leaf_label), na.rm = TRUE, repel = TRUE, colour = "white", fontface = "bold", show.legend = FALSE) +
+    theme(panel.grid.minor = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.background = element_blank(),
+          plot.background = element_rect(fill = "white"),
+          panel.border = element_blank(),
+          axis.line = element_blank(),
+          axis.text.x = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          plot.title = element_text(size = 18))
+  
+  print(plot)
+}
+```
+
+<br>
+
+We can now plot, e.g. the tree with the smalles number of nodes:
+
+```{r fig.width=15, fig.height=8, warning=FALSE, message=FALSE}
+tree_num <- which(model_rf$finalModel$forest$ndbigtree == min(model_rf$finalModel$forest$ndbigtree))
+
+tree_func(final_model = model_rf$finalModel, tree_num)
+```
+
+<br>
+
+Or we can plot the tree with the biggest number of nodes:
+
+```{r fig.width=20, fig.height=10, warning=FALSE, message=FALSE}
+tree_num <- which(model_rf$finalModel$forest$ndbigtree == max(model_rf$finalModel$forest$ndbigtree))
+
+tree_func(final_model = model_rf$finalModel, tree_num)
+```
+
+---
+
+<br>
+
+### Preparing the data and modeling
+
+The data set I am using in these example analyses, is the **Breast Cancer Wisconsin (Diagnostic) Dataset**.
+The data was downloaded from the [UC Irvine Machine Learning Repository](http://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+%28Diagnostic%29). 
+
+The first data set looks at the predictor classes:
+
+- malignant or
+- benign breast mass.
+
+The features characterize cell nucleus properties and were generated from image analysis of [fine needle aspirates (FNA)](https://en.wikipedia.org/wiki/Fine-needle_aspiration) of breast masses:
+
+- Sample ID (code number)
+- Clump thickness
+- Uniformity of cell size
+- Uniformity of cell shape
+- Marginal adhesion
+- Single epithelial cell size
+- Number of bare nuclei
+- Bland chromatin
+- Number of normal nuclei
+- Mitosis
+- Classes, i.e. diagnosis
+
+```{r eval=FALSE}
+bc_data <- read.table("datasets/breast-cancer-wisconsin.data.txt", header = FALSE, sep = ",")
+colnames(bc_data) <- c("sample_code_number", 
+                       "clump_thickness", 
+                       "uniformity_of_cell_size", 
+                       "uniformity_of_cell_shape", 
+                       "marginal_adhesion", 
+                       "single_epithelial_cell_size", 
+                       "bare_nuclei", 
+                       "bland_chromatin", 
+                       "normal_nucleoli", 
+                       "mitosis", 
+                       "classes")
+
+bc_data$classes <- ifelse(bc_data$classes == "2", "benign",
+                          ifelse(bc_data$classes == "4", "malignant", NA))
+
+bc_data[bc_data == "?"] <- NA
+
+# impute missing data
+library(mice)
+
+bc_data[,2:10] <- apply(bc_data[, 2:10], 2, function(x) as.numeric(as.character(x)))
+dataset_impute <- mice(bc_data[, 2:10],  print = FALSE)
+bc_data <- cbind(bc_data[, 11, drop = FALSE], mice::complete(dataset_impute, 1))
+
+bc_data$classes <- as.factor(bc_data$classes)
+
+# how many benign and malignant cases are there?
+summary(bc_data$classes)
+
+# separate into training and test data
+library(caret)
+
+set.seed(42)
+index <- createDataPartition(bc_data$classes, p = 0.7, list = FALSE)
+train_data <- bc_data[index, ]
+test_data  <- bc_data[-index, ]
+
+# run model
+set.seed(42)
+model_rf <- caret::train(classes ~ .,
+                         data = train_data,
+                         method = "rf",
+                         preProcess = c("scale", "center"),
+                         trControl = trainControl(method = "repeatedcv", 
+                                                  number = 10, 
+                                                  repeats = 10, 
+                                                  savePredictions = TRUE, 
+                                                  verboseIter = FALSE))
+```
+
+---
+
+<br>
+
+If you are interested in more machine learning posts, check out [the category listing for **machine_learning** on my blog](https://shiring.github.io/categories.html#machine_learning-ref).
+
+------------------
+
+<br>
+
+```{r }
+sessionInfo()
+```
