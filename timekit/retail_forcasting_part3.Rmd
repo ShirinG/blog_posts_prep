@@ -1,0 +1,473 @@
+---
+title: "Data Science for Business - Time Series Forcasting Part 3: Exploratory Models"
+author: "Dr. Shirin Glander"
+date: "May 22, 2017"
+output: html_document
+---
+
+
+http://ggobi.github.io/ggally/rd.html
+http://ggobi.github.io/ggally/#ggally
+
+https://stats.idre.ucla.edu/other/mult-pkg/whatstat/
+
+When you run the prototypical Pearson's product moment correlation, you get a measure of the strength of association and you get a test of the significance of that association. More typically however, the significance test and the measure of effect size differ.
+
+Significance tests:
+
+Continuous vs. Nominal: run an ANOVA. In R, you can use ?aov.
+Nominal vs. Nominal: run a chi-squared test. In R, you use ?chisq.test.
+Effect size (strength of association):
+
+Continuous vs. Nominal: calculate the intraclass correlation. In R, you can use ?ICC in the psych package; there is also an ICC package.
+Nominal vs. Nominal: calculate Cramer's V. In R, you can use ?assocstats in the vcd package.
+
+```{r warning=FALSE, message=FALSE}
+library(tidyverse)
+library(tidyquant)
+
+library(modelr)
+options(na.action = na.warn)
+
+library(broom)
+```
+
+```{r echo=FALSE}
+load("retail_p_day.RData")
+```
+
+Understanding the long-term trend is challenging because there’s a day-of-week effect (lower values on Sundays) that dominates the subtler patterns.
+
+```{r fig.width=5, fig.height=3}
+retail_p_day %>%
+  ggplot(aes(x = day_of_week, y = sum_income)) +
+    geom_boxplot(alpha = 0.8, fill = palette_light()[[1]]) +
+    theme_tq()
+```
+
+```{r fig.width=15, fig.height=3, warning=FALSE, message=FALSE, echo=FALSE}
+retail_p_day %>%
+  ggplot(aes(x = day, y = sum_income)) +
+    geom_line(alpha = 0.5) +
+    geom_point(aes(color = day_of_week), size = 2) +
+    scale_color_manual(values = palette_light()) +
+    theme_tq() +
+    xlim(c(as.Date("2011-10-01", format = "%Y-%m-%d"),
+           as.Date("2011-11-01", format = "%Y-%m-%d")))
+```
+
+```{r}
+retail_p_day <- retail_p_day %>%
+  mutate(model = ifelse(day <= "2011-11-01", "train", "test"))
+
+colnames(retail_p_day)[grep("^[0-9]+", colnames(retail_p_day))] <- paste0("P_", colnames(retail_p_day)[grep("^[0-9]+", colnames(retail_p_day))])
+```
+
+```{r fig.width=15, fig.height=8}
+retail_p_day %>%
+  gather(x, y, P_47566, P_22960, sum_income) %>%
+  ggplot(aes(x = day, y = y)) +
+    facet_wrap(~ x, ncol = 1, scales = "free") +
+    geom_line(alpha = 0.5) +
+    geom_point(aes(color = day_of_week), alpha = 0.8) +
+    scale_color_manual(values = palette_light()) +
+    theme_tq()
+```
+
+```{r fig.width=8, fig.height=3}
+retail_p_day %>%
+  gather(x, y, P_47566, P_22960, sum_income) %>%
+  ggplot(aes(x = y, fill = model, color = model)) +
+    facet_wrap(~ x, ncol = 3, scales = "free") +
+    geom_density(alpha = 0.6) +
+    scale_fill_manual(values = palette_light()) +
+    scale_color_manual(values = palette_light()) +
+    theme_tq()
+```
+
+```{r  fig.width=10, fig.height=5, message=FALSE, warning=FALSE, eval=FALSE}
+retail_p_day %>%
+  select(sum_income, P_47566, P_22960, model) %>%
+  gather(x, y, P_47566, P_22960) %>%
+  ggplot(aes(x = y, y = sum_income, color = model)) +
+    facet_wrap(~ x, scales = "free") +
+    geom_point(alpha = 0.5) +
+    scale_color_manual(values = palette_light()) +
+    theme_tq()
+```
+
+<br>
+
+## Modeling
+
+The goal of a model is to provide a simple low-dimensional summary of a dataset. In the context of this book we’re going to use models to partition data into patterns and residuals. Strong patterns will hide subtler trends, so we’ll use models to help peel back layers of structure as we explore a dataset.
+
+However, before we can start using models on interesting, real, datasets, you need to understand the basics of how models work. For that reason, this chapter of the book is unique because it uses only simulated datasets. These datasets are very simple, and not at all interesting, but they will help you understand the essence of modelling before you apply the same techniques to real data in the next chapter.
+
+There are two parts to a model:
+
+First, you define a family of models that express a precise, but generic, pattern that you want to capture. For example, the pattern might be a straight line, or a quadatric curve. You will express the model family as an equation like y = a_1 * x + a_2 or y = a_1 * x ^ a_2. Here, x and y are known variables from your data, and a_1 and a_2 are parameters that can vary to capture different patterns.
+
+Next, you generate a fitted model by finding the model from the family that is the closest to your data. This takes the generic model family and makes it specific, like y = 3 * x + 7 or y = 9 * x ^ 2.
+
+It’s important to understand that a fitted model is just the closest model from a family of models. That implies that you have the “best” model (according to some criteria); it doesn’t imply that you have a good model and it certainly doesn’t imply that the model is “true”. George Box puts this well in his famous aphorism:
+
+All models are wrong, but some are useful.
+
+It’s worth reading the fuller context of the quote:
+
+Now it would be very remarkable if any system existing in the real world could be exactly represented by any simple model. However, cunningly chosen parsimonious models often do provide remarkably useful approximations. For example, the law PV = RT relating pressure P, volume V and temperature T of an “ideal” gas via a constant R is not exactly true for any real gas, but it frequently provides a useful approximation and furthermore its structure is informative since it springs from a physical view of the behavior of gas molecules.
+
+For such a model there is no need to ask the question “Is the model true?”. If “truth” is to be the “whole truth” the answer must be “No”. The only question of interest is “Is the model illuminating and useful?”.
+
+The goal of a model is not to uncover truth, but to discover a simple approximation that is still useful.
+
+We will take advantage of the fact that you can think about a model partitioning your data into pattern and residuals. We’ll find patterns with visualisation, then make them concrete and precise with a model. We’ll then repeat the process, but replace the old response variable with the residuals from the model. The goal is to transition from implicit knowledge in the data and your head to explicit knowledge in a quantitative model. This makes it easier to apply to new domains, and easier for others to use.
+
+For very large and complex datasets this will be a lot of work. There are certainly alternative approaches - a more machine learning approach is simply to focus on the predictive ability of the model. These approaches tend to produce black boxes: the model does a really good job at generating predictions, but you don’t know why. This is a totally reasonable approach, but it does make it hard to apply your real world knowledge to the model. That, in turn, makes it difficult to assess whether or not the model will continue to work in the long-term, as fundamentals change. For most real models, I’d expect you to use some combination of this approach and a more classic automated approach.
+
+```{r}
+train <- filter(retail_p_day, model == "train") %>%
+  select(-season, -prop_other_country, -other_country, -month, -model) %>%
+  droplevels()
+```
+
+```{r fig.width=8, fig.height=6}
+cor(select(train, -day, -day_of_week), use = "na.or.complete") %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column() %>%
+  gather(x, y, sum_income:diff_sum_income) %>%
+  ggplot(aes(x = x, y = rowname, fill = y)) +
+    geom_tile(alpha = 0.8, color = "white") +
+    scale_fill_gradientn(colours = c(palette_light()[[1]], palette_light()[[2]])) +
+    theme_tq() +
+    theme(legend.position = "right") +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+```
+
+<br>
+
+### Linear models
+
+One way to remove this day of the week pattern is to use a model. First, we fit the model, and display its predictions overlaid on the original data:
+
+```{r}
+lm_dow <- lm(sum_income ~ day_of_week, data = select(train, -day))
+
+pred <- train %>%
+  add_predictions(lm_dow) %>%
+  add_residuals(lm_dow)
+```
+
+```{r fig.width=5, fig.height=3}
+pred %>%
+  ggplot(aes(x = day_of_week, y = sum_income)) +
+    geom_boxplot(alpha = 0.8, fill = palette_light()[[1]]) +
+    geom_point(aes(y = pred), color = palette_light()[[2]], size = 3) +
+    theme_tq()
+```
+
+Note the change in the y-axis: now we are seeing the deviation from the expected number of flights, given the day of week. This plot is useful because now that we’ve removed much of the large day-of-week effect, we can see some of the subtler patterns that remain:
+
+Our model seems to fail starting in June: you can still see a strong regular pattern that our model hasn’t captured. Drawing a plot with one line for each day of the week makes the cause easier to see:
+
+```{r}
+test <- filter(retail_p_day, model == "test") %>%
+  add_predictions(lm_dow) %>%
+  add_residuals(lm_dow)
+```
+
+```{r fig.width=8, fig.height=3}
+rbind(select(pred, day, sum_income, pred),
+      select(test, day, sum_income, pred)) %>%
+  rename(original = sum_income) %>%
+  gather(x, y, original, pred) %>%
+  ggplot(aes(x = day, y = y, color = x)) +
+    geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    scale_color_manual(values = palette_light()) +
+    theme_tq()
+```
+
+```{r fig.width=8, fig.height=3}
+rbind(select(pred, day, day_of_week, resid),
+      select(test, day,day_of_week, resid)) %>%
+  ggplot(aes(x = day, y = resid)) + 
+    geom_ref_line(h = 0, colour = "grey") + 
+    geom_line(aes(color = day_of_week), alpha = 0.7) +
+    scale_color_manual(values = palette_light()) +
+    geom_smooth(method = "loess") +
+    theme_tq()
+```
+
+Our model fails to accurately predict the number of flights on Saturday: during summer there are more flights than we expect, and during Fall there are fewer. We’ll see how we can do better to capture this pattern in the next section.
+
+There are fewer flights in January (and December), and more in summer (May-Sep). We can’t do much with this pattern quantitatively, because we only have a single year of data. But we can use our domain knowledge to brainstorm potential explanations.
+
+What drives the income? Which variable is the strongest predictor?
+
+The flip-side of predictions are residuals. The predictions tells you the pattern that the model has captured, and the residuals tell you what the model has missed. The residuals are just the distances between the observed and predicted values that we computed above.
+
+```{r warning=FALSE, message=FALSE}
+lm_train_income <- lm(sum_income ~ ., data = select(train, -day))
+
+test <- filter(retail_p_day, model == "test") %>%
+  add_predictions(lm_train_income) %>%
+  add_residuals(lm_train_income)
+```
+
+how far away are the predictions from the observed values? Note that the average of the residual will always be 0. if it looks like random noise, suggesting that our model has done a good job of capturing the patterns in the dataset.
+
+```{r fig.width=4, fig.height=3}
+ggplot(test, aes(sum_income, resid)) + 
+  geom_ref_line(h = 0, colour = "grey") +
+  geom_point(alpha = 0.5) +
+  scale_color_manual(values = palette_light()) +
+  theme_tq()
+```
+
+The residuals show that the model has clearly missed some pattern in sum_income
+
+```{r fig.width=4, fig.height=3, eval=FALSE, echo=FALSE}
+test %>%
+  ggplot(aes(x = sum_income, y = pred)) +
+    geom_smooth(method = "lm") +
+    geom_abline() +
+    geom_point(alpha = 0.5) +
+    scale_color_manual(values = palette_light()) +
+    theme_tq()
+```
+
+```{r fig.width=8, fig.height=3}
+test %>%
+  gather(x, y, sum_income, pred) %>%
+  ggplot(aes(x = day, y = y, color = x)) +
+    geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    scale_color_manual(values = palette_light()) +
+    theme_tq()
+```
+
+```{r fig.width=8, fig.height=3, eval=FALSE, echo=FALSE}
+data.frame(day = c(retail_p_day$day, test$day),
+           sum_income = c(retail_p_day$sum_income, test$pred),
+           group = c(rep("original", nrow(retail_p_day)), rep("prediction", nrow(test)))) %>%
+  ggplot(aes(x = day, y = sum_income, color = group)) +
+    geom_point(alpha = 0.5) +
+    geom_line() +
+    scale_color_manual(values = palette_light()) +
+    theme_tq()
+```
+
+```{r warning=FALSE, message=FALSE}
+lm_train_income_int <- lm(sum_income ~ mean_unit_price * income * return, data = select(train, -day))
+lm_train_income_int_step <- step(lm_train_income_int, direction = "backward", trace = 0)
+#tidy(lm_train_income_int_step)
+
+test <- test %>%
+  add_predictions(lm_train_income_int_step, "pred_lm_int_step") %>%
+  add_residuals(lm_train_income_int_step, "resid_lm_int_step")
+```
+
+```{r fig.width=4, fig.height=3}
+ggplot(test, aes(sum_income, resid_lm_int_step)) + 
+  geom_ref_line(h = 0, colour = "grey") +
+  geom_point(alpha = 0.5) +
+  scale_color_manual(values = palette_light()) +
+  theme_tq()
+```
+
+
+Maybe lag is a better respone to predict?
+
+Try ns()
+
+Try MASS::rlm
+
+```{r}
+rlm_fit <- MASS::rlm(sum_income ~ day_of_week * poly(mean_unit_price, 5) + income + return, data = select(train, -day))
+
+test <- test %>%
+  add_predictions(rlm_fit, "pred_rlm") %>%
+  add_residuals(rlm_fit, "resid_rlm")
+```
+
+```{r fig.width=4, fig.height=3}
+ggplot(test, aes(sum_income, resid_rlm)) + 
+  geom_ref_line(h = 0, colour = "grey") +
+  geom_point(alpha = 0.5) +
+  scale_color_manual(values = palette_light()) +
+  theme_tq()
+```
+
+```{r fig.width=8, fig.height=3}
+test %>%
+  gather(x, y, sum_income, pred_rlm) %>%
+  ggplot(aes(x = day, y = y, color = x)) +
+    geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    scale_color_manual(values = palette_light()) +
+    theme_tq()
+```
+
+```{r fig.width=10, fig.height=5}
+broom::augment(rlm_fit, data = train) %>%
+  gather(x, y, .fitted:.hat) %>%
+  ggplot(aes(x = day)) +
+    facet_wrap(~ x, scales = "free") +
+    geom_line(aes(y = sum_income), color = palette_light()[[1]]) +
+    geom_line(aes(y = y), color = palette_light()[[2]]) +
+    theme_tq()
+```
+
+Note that the statistics computed by glance are different for glm objects than for lm (e.g. deviance rather than R2):
+
+```{r}
+glm_fit <- glm(sum_income ~ day_of_week * poly(mean_unit_price, 5) + income + return, data = select(train, -day))
+
+test <- test %>%
+  add_predictions(glm_fit, "pred_glm") %>%
+  add_residuals(glm_fit, "resid_glm")
+```
+
+```{r fig.width=4, fig.height=3}
+ggplot(test, aes(sum_income, resid_glm)) + 
+  geom_ref_line(h = 0, colour = "grey") +
+  geom_point(alpha = 0.5) +
+  scale_color_manual(values = palette_light()) +
+  theme_tq()
+```
+
+```{r fig.width=8, fig.height=3}
+test %>%
+  gather(x, y, sum_income, pred_glm) %>%
+  ggplot(aes(x = day, y = y, color = x)) +
+    geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    scale_color_manual(values = palette_light()) +
+    theme_tq()
+```
+
+```{r fig.width=10, fig.height=5}
+broom::augment(glm_fit, data = train) %>%
+  gather(x, y, .fitted:.hat) %>%
+  ggplot(aes(x = day)) +
+    facet_wrap(~ x, scales = "free") +
+    geom_line(aes(y = sum_income), color = palette_light()[[1]]) +
+    geom_line(aes(y = y), color = palette_light()[[2]]) +
+    theme_tq()
+```
+
+One way is to use the same approach as in the last chapter: there’s a strong signal (overall linear growth) that makes it hard to see subtler trends. We’ll tease these factors apart by fitting a model with a linear trend. The model captures steady growth over time, and the residuals will show what’s left.
+
+Instead of repeating an action for each variable, we want to repeat an action for each country, a subset of rows. To do that, we need a new data structure: the nested data frame. To create a nested data frame we start with a grouped data frame, and “nest” it:
+
+This creates an data frame that has one row per group (per country), and a rather unusual column: data. data is a list of data frames (or tibbles, to be precise). This seems like a crazy idea: we have a data frame with a column that is a list of other data frames! I’ll explain shortly why I think this is a good idea.
+
+The data column is a little tricky to look at because it’s a moderately complicated list, and we’re still working on good tools to explore these objects. Unfortunately using str() is not recommended as it will often produce very long output. But if you pluck out a single element from the data column you’ll see that it contains all the data for that country (in this case, Afghanistan).
+
+```{r}
+dow_model <- function(df) {
+  lm(sum_income ~ mean_unit_price * income + return, data = df)
+}
+```
+
+```{r}
+by_dof <- train %>% 
+  group_by(day_of_week) %>% 
+  nest() %>%
+  mutate(model = purrr::map(data, dow_model),
+         preds = purrr::map2(data, model, add_predictions),
+         resids = purrr::map2(data, model, add_residuals))
+```
+
+```{r warning=FALSE, message=FALSE, fig.width=10, fig.height=5}
+unnest(by_dof, resids) %>%
+  ggplot(aes(x = sum_income, y = resid)) +
+    facet_wrap(~day_of_week, scales = "free") +
+    geom_ref_line(h = 0, colour = "grey") +
+    geom_point(aes(color = day_of_week), alpha = 0.5) +
+    geom_line(aes(color = day_of_week), alpha = 0.8) + 
+    scale_color_manual(values = palette_light()) +
+    geom_smooth(se = FALSE, method = "lm") +
+    theme_tq()
+```
+
+It looks like we’ve missed some mild patterns. There’s also something interesting going on in Africa: we see some very large residuals which suggests our model isn’t fitting so well there. We’ll explore that more in the next section, attacking it from a slightly different angle.
+
+Instead of looking at the residuals from the model, we could look at some general measurements of model quality. You learned how to compute some specific measures in the previous chapter. Here we’ll show a different approach using the broom package. The broom package provides a general set of functions to turn models into tidy data. Here we’ll use broom::glance() to extract some model quality metrics. If we apply it to a model, we get a data frame with a single row:
+
+```{r fig.width=10, fig.height=5}
+by_dof %>% 
+  mutate(glance = map(model, broom::glance)) %>% 
+  unnest(glance) %>%
+  gather(x, y, r.squared:df.residual) %>%
+  ggplot(aes(x = day_of_week, y = y)) +
+    facet_wrap(~ x, scales = "free", ncol = 4) +
+    geom_bar(stat = "identity", fill = palette_light()[[1]], alpha = 0.8) +
+    theme_tq()
+```
+
+The Tuesday model is particularly bad. What's going on there?
+
+```{r fig.width=10, fig.height=5}
+train %>%
+  ggplot(aes(x = day, y = sum_income)) +
+    facet_wrap(~ day_of_week) +
+    geom_point(alpha = 0.5) +
+    geom_line(alpha = 0.5) +
+    scale_color_manual(values = palette_light()) +
+    theme_tq()
+```
+
+Tuesday has a few very strong outliers.
+
+The broom package takes the messy output of built-in functions in R, such as lm, nls, or t.test, and turns them into tidy data frames.
+
+The concept of “tidy data”, as introduced by Hadley Wickham, offers a powerful framework for data manipulation and analysis. That paper makes a convincing statement of the problem this package tries to solve (emphasis mine):
+
+While model inputs usually require tidy inputs, such attention to detail doesn't carry over to model outputs. Outputs such as predictions and estimated coefficients aren't always tidy. This makes it more difficult to combine results from multiple models. For example, in R, the default representation of model coefficients is not tidy because it does not have an explicit variable that records the variable name for each estimate, they are instead recorded as row names. In R, row names must be unique, so combining coefficients from many models (e.g., from bootstrap resamples, or subgroups) requires workarounds to avoid losing important information. This knocks you out of the flow of analysis and makes it harder to combine the results from multiple models. I'm not currently aware of any packages that resolve this problem.
+
+broom is an attempt to bridge the gap from untidy outputs of predictions and estimations to the tidy data we want to work with. It centers around three S3 methods, each of which take common objects produced by R statistical functions (lm, t.test, nls, etc) and convert them into a data frame. broom is particularly designed to work with Hadley's dplyr package (see the broom+dplyr vignette for more).
+
+broom should be distinguished from packages like reshape2 and tidyr, which rearrange and reshape data frames into different forms. Those packages perform critical tasks in tidy data analysis but focus on manipulating data frames in one specific format into another. In contrast, broom is designed to take format that is not in a data frame (sometimes not anywhere close) and convert it to a tidy data frame.
+
+Tidying model outputs is not an exact science, and it's based on a judgment of the kinds of values a data scientist typically wants out of a tidy analysis (for instance, estimates, test statistics, and p-values). You may lose some of the information in the original object that you wanted, or keep more information than you need. If you think the tidy output for a model should be changed, or if you're missing a tidying function for an S3 class that you'd like, I strongly encourage you to open an issue or a pull request.
+
+Tidying functions
+
+This package provides three S3 methods that do three distinct kinds of tidying.
+
+tidy: constructs a data frame that summarizes the model's statistical findings. This includes coefficients and p-values for each term in a regression, per-cluster information in clustering applications, or per-test information for multtest functions.
+augment: add columns to the original data that was modeled. This includes predictions, residuals, and cluster assignments.
+glance: construct a concise one-row summary of the model. This typically contains values such as R2, adjusted R2, and residual standard error that are computed once for the entire model.
+Note that some classes may have only one or two of these methods defined.
+
+
+
+------------------
+
+<br>
+
+```{r }
+sessionInfo()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
