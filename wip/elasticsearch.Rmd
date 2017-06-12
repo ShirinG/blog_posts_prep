@@ -1,0 +1,270 @@
+---
+title: "Elasticsearch with R"
+author: "Dr. Shirin Glander"
+date: "May 12, 2017"
+output: html_document
+---
+
+> "Elasticsearch is a distributed, RESTful search and analytics engine capable of solving a growing number of use cases. As the heart of the Elastic Stack, it centrally stores your data so you can discover the expected and uncover the unexpected." https://www.elastic.co/products/elasticsearch
+
+https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html
+
+https://www.elastic.co/webinars/getting-started-elasticsearch
+
+Elasticsearch is maintained by elastic and serves as a platform for fast (real-time) data analysis.
+
+The main components of the Elastic Stack are Kibana (UI) and Elasticsearch (storing, indexing and analyzing data).
+
+https://www.elastic.co/de/downloads/x-pack
+
+https://www.elastic.co/guide/en/elasticsearch/reference/current/_installation.html
+
+**Kibana**
+cd kibana-5.4.0-darwin-x86_64
+bin/kibana
+http://localhost:5601
+
+**Elastisearch**
+cd elasticsearch-5.4.0
+bin/elasticsearch
+http://localhost:2900
+127.0.0.1:9200
+
+> Elasticsearch is a highly scalable open-source full-text search and analytics engine. It allows you to store, search, and analyze big volumes of data quickly and in near real time. It is generally used as the underlying engine/technology that powers applications that have complex search features and requirements.
+
+> Elasticsearch is a near real time search platform. What this means is there is a slight latency (normally one second) from the time you index a document until the time it becomes searchable.
+
+> An index is a collection of documents that have somewhat similar characteristics. For example, you can have an index for customer data, another index for a product catalog, and yet another index for order data. An index is identified by a name (that must be all lowercase) and this name is used to refer to the index when performing indexing, search, update, and delete operations against the documents in it.
+
+https://www.elastic.co/products/x-pack/machine-learning
+https://www.elastic.co/blog/introducing-machine-learning-for-the-elastic-stack
+https://www.elastic.co/blog/using-machine-learning-and-elasticsearch-for-security-analytics-deep-dive
+https://www.elastic.co/de/elasticon/conf/2017/sf/machine-learning-in-the-elastic-stack
+
+---
+
+## elasticsearchr: a Lightweight Elasticsearch Client for R by Alex Ioannides
+
+> "The elasticsearchr package implements a simple Domain-Specific Language (DSL) for indexing, deleting, querying, sorting and aggregating data in Elasticsearch, from within R. The main purpose of this package is to remove the labour involved with assembling HTTP requests to Elasticsearch’s REST APIs and processing the responses. Instead, users of this package need only send and receive data frames to Elasticsearch resources. Users needing richer functionality are encouraged to investigate the excellent elastic package from the good people at rOpenSci." https://github.com/AlexIoannides/elasticsearchr/blob/master/README.md
+
+This package is available on CRAN or from his GitHub repository.
+
+```{r eval=FALSE}
+install.packages("elasticsearchr")
+```
+
+```{r}
+library(elasticsearchr)
+```
+
+If you followed the installation steps above, you have just installed a single Elasticsearch ‘node’. When not testing on your laptop, Elasticsearch usually comes in clusters of nodes (usually there are at least 3). The easiest easy way to get access to a managed Elasticsearch cluster is by using the Elastic Cloud managed service provided by Elastic (note that Amazon Web Services offer something similar too). For the rest of this brief tutorial I will assuming you’re running a single node on your laptop (a great way of working with data that is too big for memory).
+
+In Elasticsearch a ‘row’ of data is stored as a ‘document’. A document is a JSON object - for example, the first row of R’s iris dataset,
+
+#   sepal_length sepal_width petal_length petal_width species
+# 1          5.1         3.5          1.4         0.2  setosa
+would be represented as follows using JSON,
+
+{
+  "sepal_length": 5.1,
+  "sepal_width": 3.5,
+  "petal_length": 1.4,
+  "petal_width": 0.2,
+  "species": "setosa"
+}
+
+Documents are classified into ‘types’ and stored in an ‘index’. In a crude analogy with traditional SQL databases that is often used, we would associate an index with a database instance and the document types as tables within that database. In practice this example is not accurate - it is better to think of all documents as residing in a single - possibly sparse - table (defined by the index), where the document types represent non-unique sub-sets of columns in the table. This is especially so as fields that occur in multiple document types (within the same index), must have the same data-type - for example, if "name" exists in document type customer as well as in document type address, then "name" will need to be a string in both.
+
+Each document is considered a ‘resource’ that has a Uniform Resource Locator (URL) associated with it. Elasticsearch URLs all have the following format: http://your_cluster:9200/your_index/your_doc_type/your_doc_id. For example, the above iris document could be living at http://localhost:9200/iris/data/1 - you could even point a web browser to this location and investigate the document’s contents.
+
+Although Elasticsearch - like most NoSQL databases - is often referred to as being ‘schema free’, as we have already see this is not entirely correct. What is true, however, is that the schema - or ‘mapping’ as it’s called in Elasticsearch - does not need to be declared up-front (although you certainly can do this). Elasticsearch is more than capable of guessing the types of fields based on new data indexed for the first time.
+
+elasticsearchr is a lightweight client - by this I mean that it only aims to do ‘just enough’ work to make using Elasticsearch with R easy and intuitive. You will still need to read the Elasticsearch documentation to understand how to compose queries and aggregations. What follows is a quick summary of what is possible.
+
+Elasticsearch resources, as defined by the URLs described above, are defined as elastic objects in elasticsearchr. For example,
+
+```{r}
+es <- elastic("http://127.0.0.1:9200", "iris", "data")
+es <- elastic("http://localhost:9200", "iris", "data")
+```
+
+Refers to documents of type ‘data’ in the ‘iris’ index located on an Elasticsearch node on my laptop. Note that: - it is possible to leave the document type empty if you need to refer to all documents in an index; and, - elastic objects can be defined even if the underling resources have yet to be brought into existence.
+
+To index (insert) data from a data frame, use the %index% operator as follows:
+
+```{r}
+elastic("http://127.0.0.1:9200", "iris", "data") %index% iris
+elastic("http://localhost:9200", "iris", "data") %index% iris
+```
+
+In this example, the iris dataset is indexed into the ‘iris’ index and given a document type called ‘data’. Note that I have not provided any document ids here. To explicitly specify document ids there must be a column in the data frame that is labelled id, from which the document ids will be taken.
+
+Documents can be deleted in three different ways using the %delete% operator. Firstly, an entire index (including the mapping information) can be erased by referencing just the index in the resource - e.g.,
+
+```{r eval=FALSE}
+elastic("http://127.0.0.1:9200", "iris") %delete% TRUE
+```
+
+Alternatively, documents can be deleted on a type-by-type basis leaving the index and it’s mappings untouched, by referencing both the index and the document type as the resource - e.g.,
+
+```{r eval=FALSE}
+elastic("http://127.0.0.1:9200", "iris", "data") %delete% TRUE
+```
+
+Finally, specific documents can be deleted by referencing their ids directly - e.g.,
+
+```{r eval=FALSE}
+elastic("http://127.0.0.1:9200", "iris", "data") %delete% c("1", "2", "3", "4", "5")
+```
+
+Any type of query that Elasticsearch makes available can be defined in a query object using the native Elasticsearch JSON syntax - e.g. to match every document we could use the match_all query,
+
+```{r}
+for_everything <- query('{
+  "match_all": {}
+}')
+```
+
+
+To execute this query we use the %search% operator on the appropriate resource - e.g.,
+
+```{r}
+elastic("http://127.0.0.1:9200", "iris", "data") %search% for_everything
+```
+
+
+Sorting Query Results
+
+Query results can be sorted on multiple fields by defining a sort object using the same Elasticsearch JSON syntax - e.g. to sort by sepal_width in ascending order the required sort object would be defined as,
+
+This is then added to a query object whose results we want sorted and executed using the %search% operator as before - e.g.,
+
+```{r}
+by_sepal_width <- sort_on('{"sepal_width": {"order": "asc"}}')
+elastic("http://127.0.0.1:9200", "iris", "data") %search% (for_everything + by_sepal_width)
+```
+
+Aggregations
+
+Similarly, any type of aggregation that Elasticsearch makes available can be defined in an aggs object - e.g. to compute the average sepal_width per-species of flower we would specify the following aggregation,
+
+```{r}
+avg_sepal_width <- aggs('{
+  "avg_sepal_width_per_species": {
+    "terms": {
+      "field": "species",
+      "size": 3
+    },
+    "aggs": {
+      "avg_sepal_width": {
+        "avg": {
+          "field": "sepal_width"
+        }
+      }
+    }
+  }
+}')
+```
+
+(Elasticsearch 5.x users please note that when using the out-of-the-box mappings the above aggregation requires that "field": "species" be changed to "field": "species.keyword" - see here for more information as to why)
+
+This aggregation is also executed via the %search% operator on the appropriate resource - e.g.,
+
+```{r}
+elastic("http://127.0.0.1:9200", "iris", "data") %search% avg_sepal_width
+```
+
+
+#          key doc_count avg_sepal_width.value
+# 1     setosa        50                 3.428
+# 2 versicolor        50                 2.770
+# 3  virginica        50                 2.974
+Queries and aggregations can be combined such that the aggregations are computed on the results of the query. For example, to execute the combination of the above query and aggregation, we would execute,
+
+elastic("http://localhost:9200", "iris", "data") %search% (for_everything + avg_sepal_width)
+
+#          key doc_count avg_sepal_width.value
+# 1     setosa        50                 3.428
+# 2 versicolor        50                 2.770
+# 3  virginica        50                 2.974
+where the combination yields,
+
+print(for_everything + avg_sepal_width)
+
+# {
+#     "size": 0,
+#     "query": {
+#         "match_all": {
+#
+#         }
+#     },
+#     "aggs": {
+#         "avg_sepal_width_per_species": {
+#             "terms": {
+#                 "field": "species",
+#                 "size": 0
+#             },
+#             "aggs": {
+#                 "avg_sepal_width": {
+#                     "avg": {
+#                         "field": "sepal_width"
+#                     }
+#                 }
+#             }
+#         }
+#     }
+# }
+For comprehensive coverage of all query and aggregations types please refer to the rather excellent official documentation (newcomers to Elasticsearch are advised to start with the ‘Query String’ query).
+
+Mappings
+
+Finally, I have included the ability to create an empty index with a custom mapping, using the %create% operator - e.g.,
+
+elastic("http://localhost:9200", "iris") %create% mapping_default_simple()
+Where in this instance mapping_default_simple() is a default mapping that I have shipped with elasticsearchr. It switches-off the text analyser for all fields of type ‘string’ (i.e. switches off free text search), allows all text search to work with case-insensitive lower-case terms, and maps any field with the name ‘timestamp’ to type ‘date’, so long as it has the appropriate string or long format.
+
+Forthcoming Attractions
+
+I do not have a grand vision for elasticsearchr - I want to keep it a lightweight client that requires knowledge of Elasticsearch - but I would like to add the ability to compose major query and aggregation types, without having to type-out lots of JSON, and to be able to retrieve simple information like the names of all indices in a cluster, and all the document types within an index, etc. Future development will likely be focused in these areas, but I am open to your suggestions (open an issue here).
+
+Acknowledgements
+
+A big thank you to Hadley Wickham and Jeroen Ooms, the authors of the httr and jsonlite packages that elasticsearchr leans upon heavily.
+
+
+---
+
+https://ropensci.org/tutorials/elastic_tutorial.html
+
+```{r eval=FALSE}
+install.packages("elastic")
+```
+
+```{r}
+library(elastic)
+```
+
+Initialize connection
+The function connect() is used before doing anything else to set the connection details to your remote or local elasticsearch store. The details created by connect() are written to your options for the current session, and are used by elastic functions.
+
+```{r}
+connect()
+```
+
+On package load, your base url and port are set to http://127.0.0.1 and 9200, respectively. You can of course override these settings per session or for all sessions.
+
+
+Elasticsearch has a bulk load API to load data in fast. The format is pretty weird though. It's sort of JSON, but would pass no JSON linter. I include a few data sets in elastic so it's easy to get up and running, and so when you run examples in this package they'll actually run the same way (hopefully).
+
+I have prepared a non-exported function useful for preparing the weird format that Elasticsearch wants for bulk data loads (see below). See elastic:::make_bulk_plos and elastic:::make_bulk_gbif.
+
+Shakespeare data
+Elasticsearch provides some data on Shakespeare plays. I've provided a subset of this data in this package. Get the path for the file specific to your machine:
+
+```{r}
+shakespeare <- system.file("examples", "shakespeare_data.json", package = "elastic")
+docs_bulk(shakespeare)
+```
+
+
+

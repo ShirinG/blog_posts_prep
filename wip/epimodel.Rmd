@@ -1,0 +1,76 @@
+---
+title: "EpiModel"
+author: "Dr. Shirin Glander"
+date: "May 3, 2017"
+output: html_document
+---
+
+http://www.epimodel.org/
+
+```{r warning=FALSE, message=FALSE}
+library(EpiModel)
+```
+
+http://statnet.github.io/tut/EpiModelVignette.pdf
+
+```{r}
+nw <- network::network.initialize(n = 1000, directed = FALSE)
+nw <- network::set.vertex.attribute(nw, "risk", rep(0:1, each = 500))
+```
+
+```{r}
+formation <- ~edges + nodefactor("risk") + nodematch("risk") + concurrent
+target.stats <- c(250, 375, 225, 100)
+```
+
+```{r}
+coef.diss <- dissolution_coefs(dissolution = ~offset(edges), duration = 80)
+print(coef.diss)
+```
+
+```{r}
+est1 <- netest(nw, formation, target.stats, coef.diss)
+```
+
+```{r}
+dx <- netdx(est1, nsims = 10, nsteps = 1000)
+print(dx)
+```
+
+```{r}
+plot(dx)
+```
+
+```{r}
+par(mfrow = c(1, 2))
+plot(dx, type = "duration")
+plot(dx, type = "dissolution")
+```
+
+http://www.epimodel.org/tut.html
+
+http://statnet.github.io/sb/
+
+http://sherrytowers.com/2012/12/11/simple-epidemic-modelling-with-an-sir-model/
+
+https://arxiv.org/pdf/1605.01421.pdf
+
+http://www.unc.edu/~rls/s940/samsidisdyntut.pdf
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
