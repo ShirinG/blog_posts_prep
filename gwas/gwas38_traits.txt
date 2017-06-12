@@ -1,0 +1,1321 @@
+"Var1"	"Freq"
+"Obesity-related traits"	957
+"Height"	822
+"IgG glycosylation"	699
+"Type 2 diabetes"	340
+"Rheumatoid arthritis"	294
+"Crohn's disease"	249
+"Schizophrenia"	248
+"Blood metabolite levels"	245
+"HDL cholesterol"	222
+"Breast cancer"	199
+"Body mass index"	194
+"Menarche (age at onset)"	191
+"LDL cholesterol"	184
+"Prostate cancer"	183
+"Multiple sclerosis"	177
+"Ulcerative colitis"	161
+"Triglycerides"	160
+"QT interval"	156
+"Cholesterol, total"	142
+"Bipolar disorder"	137
+"Systemic lupus erythematosus"	132
+"Trans fatty acid levels"	131
+"Bone mineral density"	129
+"Bipolar disorder and schizophrenia"	122
+"Cognitive performance"	121
+"Parkinson's disease"	120
+"Coronary heart disease"	118
+"Blood pressure"	117
+"Inflammatory bowel disease"	116
+"Metabolite levels"	104
+"PR interval in Tripanosoma cruzi seropositivity"	102
+"Type 1 diabetes"	97
+"Obesity"	96
+"Amyotrophic lateral sclerosis (sporadic)"	95
+"Age-related macular degeneration"	94
+"Colorectal cancer"	94
+"Lipid metabolism phenotypes"	91
+"Platelet counts"	91
+"Inflammatory skin disease"	88
+"Response to amphetamines"	86
+"Red blood cell traits"	84
+"Major depressive disorder"	83
+"Myopia (pathological)"	81
+"Educational attainment"	77
+"Attention deficit hyperactivity disorder"	75
+"Migraine"	75
+"Glucose homeostasis traits"	74
+"Autism spectrum disorder, attention deficit-hyperactivity disorder, bipolar disorder, major depressive disorder, and schizophrenia (combined)"	73
+"Celiac disease"	73
+"Urate levels"	73
+"Mean platelet volume"	72
+"Phospholipid levels (plasma)"	72
+"Intraocular pressure"	70
+"Amyotrophic lateral sclerosis"	69
+"Alzheimer's disease"	68
+"Dental caries"	68
+"Alzheimer's disease (late onset)"	67
+"Pulmonary function"	67
+"Acute lymphoblastic leukemia (childhood)"	63
+"Hypertension"	62
+"Psoriasis"	62
+"Cognitive function"	61
+"Thyroid hormone levels"	60
+"Thiazide-induced adverse metabolic effects in hypertensive patients"	59
+"Adiponectin levels"	58
+"Orofacial clefts"	58
+"Intelligence"	57
+"Response to antipsychotic treatment"	57
+"Chronic lymphocytic leukemia"	56
+"Coronary artery calcification"	56
+"Asthma"	54
+"Blood metabolite ratios"	54
+"Iron status biomarkers"	53
+"Autism"	52
+"F-cell distribution"	51
+"Prostate cancer (gene x gene interaction)"	51
+"Pulmonary function (interaction)"	51
+"Bilirubin levels"	50
+"Bipolar disorder (body mass index interaction)"	50
+"HIV-1 control"	50
+"Sudden cardiac arrest"	50
+"Age-related hearing impairment (interaction)"	49
+"Pancreatic cancer"	49
+"Protein quantitative trait loci"	49
+"Metabolic traits"	48
+"Metabolic syndrome"	47
+"Diastolic blood pressure"	46
+"Immune response to smallpox vaccine (IL-6)"	46
+"Optic cup area"	46
+"Primary biliary cirrhosis"	46
+"Smoking behavior"	46
+"Systolic blood pressure"	45
+"Alzheimer's disease (cognitive decline)"	44
+"Mean corpuscular volume"	44
+"Tuberculosis"	44
+"Visceral adipose tissue adjusted for BMI"	44
+"Longevity"	43
+"Verbal declarative memory"	43
+"Atopic dermatitis"	42
+"Calcium levels"	42
+"Menopause (age at onset)"	42
+"Smooth-surface caries"	42
+"Visceral adipose tissue/subcutaneous adipose tissue ratio"	42
+"IgA nephropathy"	41
+"Uric acid levels"	41
+"Testicular germ cell tumor"	40
+"Fibrinogen"	39
+"Pulmonary function decline"	39
+"Subcutaneous adipose tissue"	39
+"Urinary metabolites (H-NMR features)"	39
+"Visceral fat"	39
+"C-reactive protein"	38
+"QRS duration in Tripanosoma cruzi seropositivity"	38
+"Response to statin therapy"	38
+"Sex hormone-binding globulin levels"	38
+"Blood pressure (smoking interaction)"	37
+"Disc degeneration (lumbar)"	37
+"Heart rate"	37
+"Migraine - clinic-based"	37
+"Periodontitis (Mean PAL)"	37
+"Vitiligo"	37
+"PR interval"	36
+"Venous thromboembolism (gene x gene interaction)"	36
+"White blood cell count"	36
+"Allergic rhinitis"	35
+"Lung cancer"	35
+"Motion sickness"	35
+"Self-reported allergy"	35
+"Chronic obstructive pulmonary disease-related biomarkers"	34
+"Hippocampal atrophy"	34
+"Mean corpuscular hemoglobin"	34
+"Response to efavirenz-containing treatment in HIV 1 infection (virologic failure)"	34
+"Endometriosis"	33
+"Glycated hemoglobin levels"	33
+"Heschl's gyrus morphology"	33
+"Optic disc area"	33
+"Quantitative traits"	33
+"Weight"	33
+"Electrocardiographic traits"	32
+"Fasting plasma glucose"	32
+"Immune reponse to smallpox (secreted IFN-alpha)"	32
+"Migraine without aura"	32
+"Asthma (childhood onset)"	31
+"Basal cell carcinoma"	31
+"Bone mineral density (spine)"	31
+"Breast size"	31
+"Chronic kidney disease"	31
+"Corneal structure"	31
+"Fasting glucose-related traits (interaction with BMI)"	31
+"Leprosy"	31
+"Lewy body disease"	31
+"Lipid traits"	31
+"Neutrophil count"	31
+"Symmetrical dimethylarginine levels"	31
+"Telomere length"	31
+"Airflow obstruction"	30
+"Bladder cancer"	30
+"Corneal astigmatism"	30
+"Fasting glucose-related traits"	30
+"Hemostatic factors and hematological phenotypes"	30
+"Age-related hearing impairment"	29
+"Alcohol dependence"	29
+"Inflammatory biomarkers"	29
+"Metabolite levels  (X-11787)"	29
+"Refractive error"	29
+"Systemic sclerosis"	29
+"Cardiovascular disease risk factors"	28
+"Clozapine-induced agranulocytosis"	28
+"Diabetic retinopathy"	28
+"Hematological and biochemical traits"	28
+"Periodontitis (CDC/AAP)"	28
+"Response to tocilizumab in rheumatoid arthritis"	28
+"Venous thromboembolism"	28
+"Ankylosing spondylitis"	27
+"Bone mineral density (hip)"	27
+"Electroencephalogram traits"	27
+"Epithelial ovarian cancer"	27
+"Melanoma"	27
+"Ovarian cancer"	27
+"QRS duration"	27
+"Response to abacavir-containing treatment in HIV-1 infection (virologic failure)"	27
+"Smoking initiation"	27
+"Vertical cup-disc ratio"	27
+"Airway responsiveness in chronic obstructive pulmonary disease"	26
+"Alcohol dependence (age at onset)"	26
+"Anorexia nervosa"	26
+"Attention deficit hyperactivity disorder and conduct disorder"	26
+"Bronchopulmonary dysplasia"	26
+"Coronary artery disease"	26
+"Dementia and core Alzheimer's disease neuropathologic changes"	26
+"Dialysis-related mortality"	26
+"Liver enzyme levels (gamma-glutamyl transferase)"	26
+"Waist-hip ratio"	26
+"Attention deficit hyperactivity disorder (hyperactivity-impulsivity symptoms)"	25
+"C-reactive protein levels"	25
+"Classic bladder exstrophy"	25
+"Ejection fraction in Tripanosoma cruzi seropositivity"	25
+"Fractional exhaled nitric oxide (childhood)"	25
+"Hypospadias"	25
+"Information processing speed"	25
+"Metabolite levels (HVA/MHPG ratio)"	25
+"Multiple myeloma (IgH translocation)"	25
+"Post-traumatic stress disorder"	25
+"Pubertal anthropometrics"	25
+"Alzheimer's disease biomarkers"	24
+"Chronic hepatitis B infection"	24
+"Graves' disease"	24
+"Hippocampal volume"	24
+"HIV-1 viral setpoint"	24
+"Magnesium levels"	24
+"Obesity (early onset extreme)"	24
+"Parasitemia in Tripanosoma cruzi seropositivity"	24
+"Response to citalopram treatment"	24
+"Serum dimethylarginine levels (asymmetric/symetric ratio)"	24
+"Waist circumference"	24
+"Bulimia nervosa"	23
+"End-stage coagulation"	23
+"Eosinophilic esophagitis"	23
+"Erectile dysfunction and prostate cancer treatment"	23
+"Hematology traits"	23
+"Local histogram emphysema pattern"	23
+"Metabolite levels (Pyroglutamine)"	23
+"Migraine with aura"	23
+"Type 1 diabetes autoantibodies"	23
+"Asymmetrical dimethylarginine levels"	22
+"Attention deficit hyperactivity disorder (inattention symptoms)"	22
+"Axial length"	22
+"Hodgkin's lymphoma"	22
+"Neurofibrillary tangles"	22
+"Personality dimensions"	22
+"Pit-and-Fissure caries"	22
+"Response to anti-depressant treatment in major depressive disorder"	22
+"Response to cytadine analogues (cytosine arabinoside)"	22
+"Serum thyroid-stimulating hormone levels"	22
+"Age at smoking initiation in chronic obstructive pulmonary disease"	21
+"Alcohol consumption"	21
+"Asthma and hay fever"	21
+"Atrial fibrillation"	21
+"Attention deficit hyperactivity disorder (combined symptoms)"	21
+"Brain structure"	21
+"Homocysteine levels"	21
+"Idiopathic membranous nephropathy"	21
+"Lipoprotein-associated phospholipase A2 activity and mass"	21
+"Methotrexate phramacokinetics (acute lymphoblastic leukemia)"	21
+"Mitochondrial DNA levels"	21
+"Response to inhaled corticosteroid treatment in asthma (percentage change of FEV1)"	21
+"Response to platinum-based chemotherapy (cisplatin)"	21
+"Select biomarker traits"	21
+"Social communication problems"	21
+"Very long-chain saturated fatty acid levels (fatty acid 20:0)"	21
+"Antibody status in Tripanosoma cruzi seropositivity"	20
+"Behavioural disinhibition (generation interaction)"	20
+"Bone properties (heel)"	20
+"Capecitabine sensitivity"	20
+"Chronic obstructive pulmonary disease"	20
+"Fasting insulin-related traits (interaction with BMI)"	20
+"Hypothyroidism"	20
+"Metabolite levels (Dihydroxy docosatrienoic acid)"	20
+"Metabolite levels (MHPG)"	20
+"Non-alcoholic fatty liver disease histology (other)"	20
+"Primary tooth development (number of teeth)"	20
+"Response to angiotensin II receptor blocker therapy"	20
+"Response to serotonin reuptake inhibitors in major depressive disorder"	20
+"RR interval (heart rate)"	20
+"Sleep duration"	20
+"Systemic lupus erythematosus and Systemic sclerosis"	20
+"White blood cell types"	20
+"Airway wall thickness"	19
+"Bone mineral density (paediatric, skull)"	19
+"Cardiac hypertrophy"	19
+"DNA methylation (variation)"	19
+"Eye color"	19
+"Hair color"	19
+"Intracranial aneurysm"	19
+"Kawasaki disease"	19
+"Neuritic plaque"	19
+"Political ideology"	19
+"Polycystic ovary syndrome"	19
+"Post-traumatic stress disorder (asjusted for relatedness)"	19
+"Primary tooth development (time to first tooth eruption)"	19
+"Response to hepatitis C treatment"	19
+"Serum metabolite levels"	19
+"Total ventricular volume"	19
+"Behcet's disease"	18
+"Breast cancer (early onset)"	18
+"Cardiac Troponin-T levels"	18
+"Chagas cardiomyopathy in Tripanosoma cruzi seropositivity"	18
+"Clozapine-induced cytotoxicity"	18
+"Corneal curvature"	18
+"Estradiol plasma levels (breast cancer)"	18
+"Glaucoma (primary open-angle)"	18
+"Glioma"	18
+"IgE levels"	18
+"Interstitial lung disease"	18
+"Periodontitis (PAL4Q3)"	18
+"Preeclampsia"	18
+"Response to antipsychotic therapy (extrapyramidal side effects)"	18
+"Response to platinum-based chemotherapy (carboplatin)"	18
+"Acne (severe)"	17
+"Antineutrophil cytoplasmic antibody-associated vasculitis"	17
+"Biochemical measures"	17
+"Conduct disorder (symptom count)"	17
+"Coronary artery disease or large artery stroke"	17
+"Economic and political preferences"	17
+"Economic and political preferences (environmentalism)"	17
+"Fat distribution (HIV)"	17
+"Heart failure"	17
+"Immune reponse to smallpox (secreted IL-2)"	17
+"Lupus nephritis in systemic lupus erythematosus"	17
+"Monocyte count"	17
+"Non-small cell lung cancer"	17
+"Obesity (extreme)"	17
+"Panic disorder"	17
+"QT interval (interaction)"	17
+"Refractive astigmatism"	17
+"Response to methotrexate in juvenile idiopathic arthritis"	17
+"Addiction"	16
+"Bipolar disorder with mood-incongruent psychosis"	16
+"Cervical cancer"	16
+"Common traits (Other)"	16
+"Hip geometry"	16
+"HIV-1 susceptibility"	16
+"Metabolic syndrome (bivariate traits)"	16
+"Periodontal microbiota"	16
+"Response to anti-retroviral therapy (ddI/d4T) in HIV-1 infection (Grade 3 peripheral neuropathy)"	16
+"Serum albumin level"	16
+"Temperament"	16
+"Toenail selenium levels"	16
+"Age-related nuclear cataracts"	15
+"Anxiety disorder"	15
+"Body mass index (interaction)"	15
+"Bone mineral density (paediatric, total body less head)"	15
+"Celiac disease or Rheumatoid arthritis"	15
+"Cocaine dependence"	15
+"Conduct disorder (interaction)"	15
+"Coronary artery disease or ischemic stroke"	15
+"D-dimer levels"	15
+"Eating disorders"	15
+"Economic and political preferences (immigration/crime)"	15
+"Hair morphology"	15
+"Homeostasis model assessment of insulin resistance (interaction)"	15
+"Inattentive symptoms"	15
+"Infant length"	15
+"Insulin resistance/response"	15
+"Lipoprotein (a) - cholesterol levels"	15
+"Liver enzyme levels (alanine transaminase)"	15
+"Palmitoleic acid (16:1n-7) plasma levels"	15
+"Periodontitis (DPAL)"	15
+"Platelet aggregation"	15
+"Renal function-related traits (BUN)"	15
+"Response to serotonin reuptake inhibitors in major depressive disorder (plasma drug and metabolite levels)"	15
+"Response to taxane treatment (docetaxel)"	15
+"Sphingolipid levels"	15
+"Tanning"	15
+"Tourette's syndrome or obsessive-compulsive disorder"	15
+"Vitamin D levels"	15
+"Word reading"	15
+"Anger"	14
+"Cognitive test performance"	14
+"Cotinine glucuronidation"	14
+"Eosinophilic esophagitis (pediatric)"	14
+"Fasting insulin (interaction)"	14
+"Folate pathway vitamin levels"	14
+"Follicular lymphoma"	14
+"Gout"	14
+"Hyperactive-impulsive symptoms"	14
+"Hypertriglyceridemia"	14
+"Lentiform nucleus volume"	14
+"Liver enzyme levels (alkaline phosphatase)"	14
+"Multiple myeloma (hyperdiploidy)"	14
+"QT interval in Tripanosoma cruzi seropositivity"	14
+"Renal cell carcinoma"	14
+"Resting heart rate"	14
+"Serum protein levels (sST2)"	14
+"Vascular brain injury"	14
+"Waist-to-hip circumference ratio (interaction)"	14
+"Alzheimer's disease (age of onset)"	13
+"Amyotrophic lateral sclerosis (age of onset)"	13
+"Anthropometric traits"	13
+"Aortic root size"	13
+"Birth weight"	13
+"Blood pressure measurement (high sodium and potassium intervention)"	13
+"Colorectal cancer (diet interaction)"	13
+"Depression (quantitative trait)"	13
+"Dupuytren's disease"	13
+"Electrodermal activity"	13
+"Elevated serum carcinoembryonic antigen levels"	13
+"Esophageal cancer"	13
+"Glaucoma"	13
+"Immune reponse to smallpox (secreted IL-1beta)"	13
+"Malaria"	13
+"Male-pattern baldness"	13
+"Mean corpuscular hemoglobin concentration"	13
+"Metabolite levels (5-HIAA)"	13
+"Metabolite levels (HVA)"	13
+"MRI atrophy measures"	13
+"Non-alcoholic fatty liver disease histology (lobular)"	13
+"Paget's disease"	13
+"Preschool internalizing problems"	13
+"Presence of antiphospholipid antibodies"	13
+"Red blood cell fatty acid levels"	13
+"Response to anti-retroviral therapy (ddI/d4T) in HIV-1 infection (Grade 2 peripheral neuropathy)"	13
+"Response to chemotherapy in breast cancer hypertensive cases (cumulative dose) (bevacizumab)"	13
+"Response to taxane treatment (placlitaxel)"	13
+"Temperament (bipolar disorder)"	13
+"Tonometry"	13
+"Warfarin maintenance dose"	13
+"Activated partial thromboplastin time"	12
+"Adverse response to chemotherapy (neutropenia/leucopenia) (all antimicrotubule drugs)"	12
+"Adverse response to lamotrigine and phenytoin"	12
+"Allergic sensitization"	12
+"Barrett's esophagus"	12
+"Blood and toenail selenium levels"	12
+"Brain connectivity"	12
+"Coagulation factor levels"	12
+"Conduct disorder"	12
+"Economic and political preferences (feminism/equality)"	12
+"Electrocardiographic conduction measures"	12
+"Hippocampal sclerosis"	12
+"Homeostasis model assessment of beta-cell function (interaction)"	12
+"Immunoglobulin A"	12
+"Lung adenocarcinoma"	12
+"Lung function (forced expiratory flow between 25% and 75% of forced vital capacity)"	12
+"Lymphoma"	12
+"Mammographic density (dense area)"	12
+"Metabolite levels (HVA-5-HIAA Factor score)"	12
+"Multiple sclerosis (OCB status)"	12
+"Multiple sclerosis (severity)"	12
+"Number of pregnancies"	12
+"Palmitic acid (16:0) plasma levels"	12
+"Prostate-specific antigen levels"	12
+"Radiation response"	12
+"Response to fenofibrate (adiponectin levels)"	12
+"Response to treatment for acute lymphoblastic leukemia"	12
+"Restless legs syndrome"	12
+"Schizophrenia or bipolar disorder"	12
+"Serum total protein level"	12
+"Subcortical brain region volumes"	12
+"Weight loss (gastric bypass surgery)"	12
+"Attention deficit hyperactivity disorder (time to onset)"	11
+"Blood pressure measurement (high sodium intervention)"	11
+"Blood trace element (Zn levels)"	11
+"Bone mineral density (paediatric, lower limb)"	11
+"Bone mineral density (paediatric, upper limb)"	11
+"Carotid intima media thickness"	11
+"Central corneal thickness"	11
+"Chronic bronchitis and chronic obstructive pulmonary disease"	11
+"Cognitive decline (age-related)"	11
+"Conotruncal heart defects"	11
+"Eating disorders (purging via substances)"	11
+"Endometrial cancer"	11
+"Glycemic traits"	11
+"Hematological parameters"	11
+"Liver enzyme levels"	11
+"Metabolite levels (5-HIAA/ MHPG Ratio)"	11
+"Mortality in heart failure"	11
+"Nasopharyngeal carcinoma"	11
+"Number of children (6+ vs. 0 or 1)"	11
+"Prion diseases"	11
+"Progressive supranuclear palsy"	11
+"Psychosis and Alzheimer's disease"	11
+"Response to anti-retroviral therapy (ddI/d4T) in HIV-1 infection (Grade 1 peripheral neuropathy)"	11
+"Response to antipsychotic treatment in schizophrenia (working memory)"	11
+"Retinopathy in non-diabetics"	11
+"Stearic acid (18:0) plasma levels"	11
+"Superior frontal gyrus grey matter volume"	11
+"Systolic blood pressure (alcohol consumption interaction)"	11
+"Thyroid peroxidase antibody positivity"	11
+"Total bilirubin levels in HIV-1 infection"	11
+"Tumor biomarkers"	11
+"Type 1 diabetes nephropathy"	11
+"Very long-chain saturated fatty acid levels (fatty acid 22:0)"	11
+"vWF and FVIII levels"	11
+"Aging traits"	10
+"AIDS progression"	10
+"Blood pressure measurement (low sodium intervention)"	10
+"Blood trace element (Se levels)"	10
+"Body mass index (change over time)"	10
+"Caffeine consumption"	10
+"Cannabis dependence"	10
+"Coffee consumption"	10
+"Complement C3 and C4 levels"	10
+"Depressive symptoms (SSRI exposure interaction)"	10
+"Dietary macronutrient intake"	10
+"Digestive system disease (Barrett's esophagus and esophageal adenocarcinoma combined)"	10
+"Drug-induced Stevens-Johnson syndrome or toxic epidermal necrolysis (SJS/TEN)"	10
+"Economic and political preferences (time)"	10
+"Epilepsy"	10
+"Epilepsy (generalized)"	10
+"Esophageal squamous cell carcinoma"	10
+"Febrile seizures (MMR vaccine-related)"	10
+"Glomerular filtration rate"	10
+"Glycemic traits (pregnancy)"	10
+"Illicit drug use"	10
+"Immune reponse to smallpox (secreted IL-12p40)"	10
+"Immune response to measles-mumps-rubella vaccine"	10
+"Lifetime average cigarettes per day in chronic obstructive pulmonary disease"	10
+"Longevity (90 years and older)"	10
+"Neuroblastoma"	10
+"Paclitaxel-induced neuropathy"	10
+"Parkinson disease and lewy body pathology"	10
+"Periodontal disease-related phenotypes"	10
+"Plasma amyloid beta peptide concentrations (ABx-40)"	10
+"Plasma omega-6 polyunsaturated fatty acid levels (gamma-linolenic acid)"	10
+"Proinsulin levels"	10
+"Psychosis (atypical)"	10
+"Pulmonary function in asthmatics"	10
+"Reading and spelling"	10
+"Relative hand skill in reading disability"	10
+"Renal function-related traits (eGRFcrea)"	10
+"Response to antipsychotic treatment in schizophrenia (reasoning)"	10
+"Response to cytidine analogues (gemcitabine)"	10
+"Response to radiotherapy in cancer (late toxicity)"	10
+"Self-rated health"	10
+"Sexual dimorphism in anthropometric traits"	10
+"Stroke (ischemic)"	10
+"Systolic blood pressure in sickle cell anemia"	10
+"&beta;2-Glycoprotein I (&beta;2-GPI) plasma levels"	9
+"Acute urticaria and angioedema (non-steroidal anti-inflammatory drug-induced)"	9
+"Adverse response to chemotherapy (neutropenia/leucopenia) (carboplatin)"	9
+"Age-related macular degeneration (GA)"	9
+"Aging"	9
+"Alcohol and nictotine co-dependence"	9
+"Bipolar disorder and major depressive disorder (combined)"	9
+"Body mass index in non-asthmatics"	9
+"Breast cancer (survival)"	9
+"Breastfeeding duration"	9
+"C-reactive protein and white blood cell count"	9
+"Chronic obstructive pulmonary disease (moderate to severe)"	9
+"Coffee consumption (cups per day)"	9
+"Cytomegalovirus antibody response"	9
+"Hemoglobin"	9
+"Hepatitis"	9
+"Hepatocellular carcinoma"	9
+"IgE grass sensitization"	9
+"Infantile hypertrophic pyloric stenosis"	9
+"Insomnia (caffeine-induced)"	9
+"Iron status biomarkers (transferrin levels)"	9
+"Large artery stroke"	9
+"Lung function (forced expiratory volume in 1 second)"	9
+"Lung function (forced vital capacity)"	9
+"Major depressive disorder (broad)"	9
+"Mean arterial pressure (alcohol consumption interaction)"	9
+"Metabolite levels (HVA/5-HIAA ratio)"	9
+"Multiple myeloma"	9
+"Myasthenia gravis"	9
+"Myocardial infarction (early onset)"	9
+"Narcolepsy"	9
+"Oleic acid (18:1n-9) plasma levels"	9
+"Prostate cancer (early onset)"	9
+"Renal function-related traits (sCR)"	9
+"Response to antidepressants"	9
+"Response to antineoplastic agents"	9
+"Response to fenofibrate"	9
+"Response to Homoharringtonine (cytotoxicity)"	9
+"Serum uric acid levels"	9
+"White matter integrity"	9
+"Adiposity"	8
+"Adverse response to chemotherapy (neutropenia/leucopenia) (paclitaxel)"	8
+"Adverse response to chemotherapy in breast cancer (alopecia) (cyclophosphamide+doxorubicin+/-5FU)"	8
+"Age of smoking initiation"	8
+"Aging (time to event)"	8
+"Alcoholism (heaviness of drinking)"	8
+"Alopecia areata"	8
+"Anticoagulant levels"	8
+"Anxiety in major depressive disorder"	8
+"Biomedical quantitative traits"	8
+"Dehydroepiandrosterone sulphate levels"	8
+"Depression and alcohol dependence"	8
+"Diffuse large B cell lymphoma"	8
+"Echocardiographic traits"	8
+"Electroencephalographic traits in alcoholism"	8
+"Esophageal adenocarcinoma"	8
+"Estradiol levels"	8
+"Expressive vocabulary in infants"	8
+"HDL Cholesterol - Triglycerides (HDLC-TG)"	8
+"Hematocrit"	8
+"Hepcidin levels"	8
+"Hirschsprung disease"	8
+"Immune response to anthrax vaccine"	8
+"Insulin-like growth factors"	8
+"Interferon alpha levels in systemic lupus erythematosus"	8
+"Kidney function decline traits"	8
+"Liver enzyme levels (aspartate transaminase)"	8
+"Mammographic density (non-dense area)"	8
+"Multiple sclerosis (age of onset)"	8
+"N-glycan levels"	8
+"Neuroticism"	8
+"Nodular sclerosis Hodgkin lymphoma"	8
+"Number of children"	8
+"Optic nerve measurement (cup area)"	8
+"Ossification of the posterior longitudinal ligament of the spine"	8
+"Osteoarthritis"	8
+"Osteoporosis-related phenotypes"	8
+"Plasma amyloid beta peptide concentrations (ABx-42)"	8
+"Plasma omega-6 polyunsaturated fatty acid levels (arachidonic acid)"	8
+"Plasma omega-6 polyunsaturated fatty acid levels (dihomo-gamma-linolenic acid)"	8
+"Plasma omega-6 polyunsaturated fatty acid levels (linoleic acid)"	8
+"PR segment"	8
+"Protein C levels"	8
+"Psychosis in Alzheimer's disease"	8
+"Red blood cell count"	8
+"Renal sinus fat"	8
+"Response to mTOR inhibitor (everolimus)"	8
+"Response to statin therapy (LDL-C)"	8
+"Response to TNF antagonist treatment"	8
+"Response to TNF-alpha inhibitors in rheumatoid arthritis"	8
+"Response to Vitamin E supplementation"	8
+"Seasonality"	8
+"Smoking cessation in chronic obstructive pulmonary disease"	8
+"Smoking quantity"	8
+"Subclinical atherosclerosis traits (other)"	8
+"Thyroid volume"	8
+"Treatment response for severe sepsis"	8
+"Vitamin B levels in ischemic stroke"	8
+"Adverse response to chemotherapy (neutropenia/leucopenia) (cisplatin)"	7
+"Adverse response to chemotherapy (neutropenia/leucopenia) (docetaxel)"	7
+"Adverse response to chemotherapy (neutropenia/leucopenia) (paclitaxel + carboplatin)"	7
+"Adverse response to chemotherapy in breast cancer (alopecia) (anti-microtubule)"	7
+"Aging (facial)"	7
+"AIDS"	7
+"Allergic rhinitis in non-asthmatics"	7
+"Alzheimer's disease (survival time)"	7
+"Attention deficit hyperactivity disorder symptoms (interaction)"	7
+"Beta-2 microglubulin plasma levels"	7
+"Black vs. blond hair color"	7
+"Black vs. red hair color"	7
+"Blood pressure measurement (cold pressor test)"	7
+"Blood trace element (Cu levels)"	7
+"Carotid atherosclerosis in HIV infection"	7
+"Cerebrospinal AB1-42 levels"	7
+"Chemerin levels"	7
+"Chronic hepatitis C infection"	7
+"Circulating vasoactive peptide levels"	7
+"Crohn's disease-related phenotypes"	7
+"Current cigarettes per day in chronic obstructive pulmonary disease"	7
+"DNA methylation (parent-of-origin)"	7
+"Economic and political preferences (fairness)"	7
+"Emphysema-related traits"	7
+"Eosinophil counts"	7
+"Epilepsy (remission after treatment)"	7
+"Esophageal cancer (squamous cell)"	7
+"Exudative age-related macular degeneration"	7
+"Febrile seizures"	7
+"Food antigen IgG levels"	7
+"Forced vital capacity"	7
+"Gamma glutamyl transpeptidase"	7
+"Gastritis"	7
+"Hepatitis B"	7
+"Hormone measurements"	7
+"Iris characteristics"	7
+"Multiple cancers (lung cancer, gastric cancer, and squamous cell carcinoma)"	7
+"Optic nerve measurement (disc area)"	7
+"Ovarian cancer in BRCA1 mutation carriers"	7
+"Ovarian reserve"	7
+"Percent mammographic density"	7
+"Personality traits in bipolar disorder"	7
+"Pyoderma gangrenosum in inflammatory bowel disease"	7
+"Response to irinotecan and platinum-based chemotherapy in non-small-cell lung cancer"	7
+"Response to methylphenidate treatment in attention-deficit/hyperactivity disorder (blood pressure)"	7
+"Response to simvastatin treatment (PCSK9 protein level change)"	7
+"Sensory disturbances after bilateral sagittal split ramus osteotomy"	7
+"Serum prostate-specific antigen levels"	7
+"Sleep quality"	7
+"Soluble ICAM-1"	7
+"Testosterone levels"	7
+"Thyroid cancer"	7
+"Tourette syndrome"	7
+"Urinary bladder cancer"	7
+"Vitamin B12 levels"	7
+"Waist Circumference - Triglycerides (WC-TG)"	7
+"Wilms tumor"	7
+"Acoustic startle blink response"	6
+"Acute lymphoblastic leukemia (B-cell precursor)"	6
+"Adverse response to chemotherapy (neutropenia/leucopenia) (all anthracycline-based drugs)"	6
+"Adverse response to chemotherapy (neutropenia/leucopenia) (all antimetabolite drugs)"	6
+"Adverse response to chemotherapy (neutropenia/leucopenia) (all platinum-based drugs)"	6
+"Adverse response to chemotherapy (neutropenia/leucopenia) (all topoisomerase inhibitors)"	6
+"Age-related macular degeneration (CNV)"	6
+"Alcohol consumption (transferrin glycosylation)"	6
+"Alcoholism (alcohol dependence factor score)"	6
+"Alcoholism (alcohol use disorder factor score)"	6
+"Androgen levels"	6
+"Arthritis (juvenile idiopathic)"	6
+"Asthma (sex interaction)"	6
+"Autism spectrum disorder-related traits"	6
+"Birth length"	6
+"Body mass index in asthmatics"	6
+"Brain imaging in schizophrenia (interaction)"	6
+"Breast Cancer in BRCA1 mutation carriers"	6
+"Cannabis use (initiation)"	6
+"Cerebral amyloid angiopathy"	6
+"Chronic obstructive pulmonary disease (severe)"	6
+"Creutzfeldt-Jakob disease (variant)"	6
+"Cystic fibrosis severity"	6
+"Drug-induced liver injury (flucloxacillin)"	6
+"Entorhinal cortical thickness"	6
+"Erectile dysfunction in type 1 diabetes"	6
+"Femoral neck bone geometry and menarche (age at onset)"	6
+"Follicule stimulating hormone"	6
+"Glioma (high-grade)"	6
+"Hepatitis C induced liver fibrosis"	6
+"Idiopathic pulmonary fibrosis"	6
+"Immune reponse to smallpox (secreted IL-10)"	6
+"Immune reponse to smallpox (secreted TNF-alpha)"	6
+"Insulin-related traits"	6
+"Intelligence (childhood)"	6
+"Iron status biomarkers (transferrin saturation)"	6
+"Ischemic stroke"	6
+"Laryngeal squamous cell carcinoma"	6
+"Lipoprotein-associated phospholipase A2 activity change in response to statin therapy"	6
+"Menarche and menopause (age at onset)"	6
+"Myocardial infarction"	6
+"Nephropathy"	6
+"Nicotine use"	6
+"Non-alcoholic fatty liver disease histology (AST)"	6
+"Non-small cell lung cancer (recurrence rate)"	6
+"Non-small cell lung cancer (survival)"	6
+"Nonalcoholic fatty liver disease"	6
+"Nonsyndromic cleft lip with or without cleft palate"	6
+"Optic nerve measurement (rim area)"	6
+"Osteosarcoma"	6
+"Partial epilepsies"	6
+"Periodontitis"	6
+"Plasma omega-6 polyunsaturated fatty acid levels (adrenic acid)"	6
+"Response to iloperidone treatment (QT prolongation)"	6
+"Response to platinum-based chemotherapy in non-small-cell lung cancer"	6
+"Response to statins (LDL cholesterol change)"	6
+"Rheumatoid arthritis (ACPA-negative)"	6
+"Social autistic-like traits"	6
+"Stroke"	6
+"Testicular germ cell cancer"	6
+"Tetralogy of Fallot"	6
+"Triglycerides-Blood Pressure (TG-BP)"	6
+"Type 2 diabetes and other traits"	6
+"Type 2 diabetes nephropathy"	6
+"Urgency urinary incontinence"	6
+"Wegener's granulomatosis"	6
+"White matter integrity (interaction)"	6
+"Adverse response to chemotherapy (neutropenia/leucopenia) (epirubicin)"	5
+"Adverse response to chemotherapy (neutropenia/leucopenia) (gemcitabine)"	5
+"Adverse response to chemotherapy in breast cancer (alopecia) (paclitaxel)"	5
+"Anthropometric traits in newborns"	5
+"Anti-saccade response"	5
+"Asperger disorder"	5
+"Atrioventricular conduction"	5
+"Bladder cancer (smoking interaction)"	5
+"Blond vs. brown hair color"	5
+"Brain structure (temporal lobe volume)"	5
+"Breast cancer (estrogen-receptor negative, progesterone-receptor negative, and human epidermal growth factor-receptor negative)"	5
+"Breast cancer (prognosis)"	5
+"Bronchodilator response in asthma (inhaled corticosteroid treatment interaction)"	5
+"Cerebrospinal fluid levels of Alzheimer's disease-related proteins"	5
+"Cerebrospinal P-tau181p levels"	5
+"Cerebrospinal T-tau levels"	5
+"Cervical artery dissection"	5
+"Chronic mucus hypersecretion"	5
+"Circulating myeloperoxidase levels (serum)"	5
+"Circulating phylloquinone levels"	5
+"Contrast sensitivity"	5
+"Creatinine levels"	5
+"Cutaneous nevi"	5
+"Egg allergy"	5
+"Erythema nodosum in inflammatory bowel disease"	5
+"Erythrocyte sedimentation rate"	5
+"Fetal hemoglobin levels"	5
+"Food allergy"	5
+"Formal thought disorder in schizophrenia"	5
+"Freckles"	5
+"Functional impairment in major depressive disorder, bipolar disorder and schizophrenia"	5
+"Gallbladder cancer"	5
+"Gambling"	5
+"Glaucoma (primary angle closure)"	5
+"Hearing function"	5
+"Hepatitis B vaccine response"	5
+"Hepatitis C induced liver cirrhosis"	5
+"Hip circumference (psychosocial stress interaction)"	5
+"Hyperopia"	5
+"Hypersomnia (HLA-DQB1*06:02 negative)"	5
+"Immunoglobulin G index levels in multiple sclerosis"	5
+"Iron status biomarkers (ferritin levels)"	5
+"Iron status biomarkers (iron levels)"	5
+"Lp (a) levels"	5
+"Lung function (forced expiratory volume in 1 second to forced vital capacity ratio)"	5
+"Male fertility"	5
+"Male infertility"	5
+"Mammographic density"	5
+"Milk allergy"	5
+"Molar-incisor hypomineralization"	5
+"Morbidity-free survival"	5
+"Multiple sclerosis--Brain Glutamate Levels"	5
+"Neonatal lupus"	5
+"Non-albumin protein levels"	5
+"Non-obstructive azoospermia"	5
+"Non-word repetition"	5
+"Normalized brain volume"	5
+"Obsessive-compulsive disorder"	5
+"Oligoclonal band status in multiple sclerosis"	5
+"Orthostatic hypotension"	5
+"Osteoarthritis (hip)"	5
+"Pancreatitis"	5
+"Parkinson's disease (age of onset)"	5
+"Parkinson's disease (motor and cognition)"	5
+"Peripheral artery disease"	5
+"Phosphorus levels"	5
+"Plasma homocysteine levels (post-methionine load test)"	5
+"Plasma plasminogen activator levels"	5
+"Psoriatic arthritis"	5
+"Recombination measurement"	5
+"Resistin levels"	5
+"Response to acetaminophen (hepatotoxicity)"	5
+"Response to angiotensin II receptor blocker therapy (opposite direction w/ diuretic therapy)"	5
+"Response to anti-TNF treatment in rheumatoid arthritis"	5
+"Response to gemcitabine in pancreatic cancer"	5
+"Response to mTOR inhibitor (rapamycin)"	5
+"Retinal vascular caliber"	5
+"Schizophrenia, bipolar disorder and depression (combined)"	5
+"Schizophrenia, schizoaffective disorder or bipolar disorder"	5
+"Sexual dysfunction (SSRI/SNRI-related)"	5
+"Sj**gren's syndrome"	5
+"Sleep time"	5
+"Sleep-related phenotypes"	5
+"Smoking cessation"	5
+"Soluble levels of adhesion molecules"	5
+"Spontaneous preterm birth (preterm birth)"	5
+"Thyroid peroxidase antibody levels"	5
+"Two-hour glucose challenge"	5
+"Upper aerodigestive tract cancers"	5
+"Urinary metabolites"	5
+"Urinary uromodulin levels"	5
+"Uterine fibroids"	5
+"Vincristine-induced peripheral neuropathy in acute lymphoblastic leukemia"	5
+"Volumetric brain MRI"	5
+"White matter microstructure (global fractional anisotropy)"	5
+"Abdominal aortic aneurysm"	4
+"Acenocoumarol maintenance dosage"	4
+"ADAMTS13 activity"	4
+"Adverse response to chemotherapy (neutropenia/leucopenia) (5-fluorouracil)"	4
+"Adverse response to chemotherapy (neutropenia/leucopenia) (etoposide)"	4
+"Adverse response to chemotherapy in breast cancer (alopecia) (docetaxel)"	4
+"Amyloid A serum levels"	4
+"Blue vs. green eyes"	4
+"Brain lesion load"	4
+"Brain structure (hippocampal volume)"	4
+"Cardiac repolarization"	4
+"Cardiac structure and function"	4
+"Carotid plaque burden (smoking interaction)"	4
+"Chronic kidney disease and serum creatinine levels"	4
+"Crohn's disease and psoriasis"	4
+"Dengue shock syndrome"	4
+"Diabetes related insulin traits"	4
+"Diastolic blood pressure (alcohol consumption interaction)"	4
+"Esophageal cancer  (alcohol interaction)"	4
+"Esophageal cancer and gastric cancer"	4
+"Exercise treadmill test traits"	4
+"Exfoliation syndrome"	4
+"Facial pigmentation"	4
+"Factor VII"	4
+"Fasting insulin-related traits"	4
+"Febrile seizures (MMR vaccine-unrelated)"	4
+"Freckling"	4
+"Gamma gluatamyl transferase levels"	4
+"Gene methylation in lung tissue"	4
+"Heart rate variability traits"	4
+"Hepatic lipid content in extreme obesity"	4
+"Hepatitis B (viral clearance)"	4
+"HIV-associated dementia"	4
+"Hypertension (young onset)"	4
+"IgE levels in asthmatics"	4
+"Ileal carcinoids"	4
+"Inflammatory bowel disease (early onset)"	4
+"Irritable bowel syndrome"	4
+"Keloid"	4
+"Left inferior lateral ventricle volume (Cerebrospinal fluid biomarker status interaction)"	4
+"Longevity (85 years and older)"	4
+"Marginal zone lymphoma"	4
+"Matrix metalloproteinase levels"	4
+"Maximal oxygen uptake response"	4
+"Myopia"	4
+"Narcolepsy with cataplexy"	4
+"Nicotine dependence"	4
+"Non-alcoholic fatty liver disease"	4
+"Non-melanoma skin cancer"	4
+"Non-substance related behavioral disinhibition"	4
+"Opioid sensitivity"	4
+"Osteoarthritis biomarkers"	4
+"Osteoprotegerin levels"	4
+"Other erythrocyte phenotypes"	4
+"Pain"	4
+"Parent of origin effect on language impairment (paternal)"	4
+"PCA3 expression level"	4
+"Permanent tooth development"	4
+"Plasma plasminogen levels"	4
+"Plasminogen activator inhibitor type 1 levels (PAI-1)"	4
+"Pulse pressure (alcohol consumption interaction)"	4
+"Renal function and chronic kidney disease"	4
+"Renal function-related traits (urea)"	4
+"Renal transplant outcome"	4
+"Response to anti-TNF alpha therapy in inflammatory bowel disease"	4
+"Rhegmatogenous retinal detachment"	4
+"Serum alkaline phosphatase levels"	4
+"Serum selenium levels"	4
+"Serum tamsulosin hydrochloride concentration"	4
+"Sickle cell anemia (haemolysis)"	4
+"Skin sensitivity to sun"	4
+"Staphylococcus aureus infection"	4
+"Stroke (pediatric)"	4
+"Suicidal ideation"	4
+"Suicide in bipolar disorder"	4
+"Suicide risk"	4
+"Sunburns"	4
+"Thrombin generation potential phenotypes"	4
+"Thyroid function"	4
+"Thyroid stimulating hormone"	4
+"Type 2 diabetes (dietary heme iron intake interaction)"	4
+"Vascular endothelial growth factor levels"	4
+"Very long-chain saturated fatty acid levels (fatty acid 24:0)"	4
+"Vogt-Koyanagi-Harada syndrome"	4
+"Waist circumference and related phenotypes"	4
+"White matter hyperintensity volume in cerebral autosomal-dominant arteriopathy with subcortical infarcts and leukoencephalopathy"	4
+"Adverse response to chemotherapy (neutropenia/leucopenia) (camptothecin)"	3
+"Adverse response to chemotherapy (neutropenia/leucopenia) (cyclophosphamide)"	3
+"Adverse response to chemotherapy (neutropenia/leucopenia) (doxorubicin)"	3
+"Adverse response to chemotherapy in breast cancer (alopecia)"	3
+"Adverse response to chemotherapy in breast cancer (alopecia) (cyclophosphamide+epirubicin+/-5FU)"	3
+"Adverse response to radiation therapy"	3
+"Age-related cataracts"	3
+"Age-related cataracts (age at onset)"	3
+"Age-related macular degeneration (extreme sampling)"	3
+"Age-related macular degeneration (smoking status interaction)"	3
+"Aging (time to death)"	3
+"Alcohol consumption (maxi-drinks)"	3
+"Antipsychotic-induced QTc interval prolongation"	3
+"Anxiety and major depressive disorder"	3
+"Apolipoprotein Levels"	3
+"Asthma (bronchodilator response)"	3
+"Asthma (toluene diisocyanate-induced)"	3
+"Asthma or chronic obstructive pulmonary disease"	3
+"Autoimmune hepatitis type-1"	3
+"Beta thalassemia/hemoglobin E disease"	3
+"Biliary atresia"	3
+"Bitter taste perception"	3
+"Bleomycin sensitivity"	3
+"Blood pressure (age interaction)"	3
+"Body mass index (education interaction)"	3
+"Breast cancer (male)"	3
+"Brugada syndrome"	3
+"Butyrylcholinesterase levels"	3
+"Callous-unemotional behaviour"	3
+"Cardiac muscle measurement"	3
+"Circulating myeloperoxidase levels (plasma)"	3
+"Colorectal cancer (calcium intake interaction)"	3
+"Congenital left-sided heart lesions"	3
+"Cortical thickness"	3
+"Diabetes (gestational)"	3
+"Drinking behavior"	3
+"Endothelial growth factor levels"	3
+"Event-related brain oscillations"	3
+"Ewing sarcoma"	3
+"Exercise (leisure time)"	3
+"Eye color traits"	3
+"Fibrinogen levels (smoking status, alcohol consumption or body mass index interaction)"	3
+"Free thyroxine concentration"	3
+"Frontotemporal dementia"	3
+"Gaucher disease severity"	3
+"General cognitive ability"	3
+"Gray matter volume (schizophrenia interaction)"	3
+"Hashimoto thyroiditis versus Graves' disease"	3
+"Head circumference (infant)"	3
+"Hemoglobin A2 levels in sickle cell anemia"	3
+"Hoarding"	3
+"Hypertension risk in short sleep duration"	3
+"IgE levels in asthmatics (D.p. specific)"	3
+"IgM levels"	3
+"Insomnia"	3
+"Knee osteoarthritis"	3
+"Monocyte chemoattractant protein-1"	3
+"Monocyte early outgrowth colony forming units"	3
+"Musician's dystonia"	3
+"Narcolepsy (age of onset)"	3
+"Natriuretic peptide levels"	3
+"Nephrolithiasis"	3
+"Nevirapine-induced rash"	3
+"Optic disc parameters"	3
+"Optic nerve measurement (cup-to-disc ratio)"	3
+"Osteoporosis"	3
+"Overweight status"	3
+"P wave duration"	3
+"Phytosterol levels"	3
+"Plasma renin activity levels"	3
+"Plasma thyroid-stimulating hormone levels"	3
+"Pneumoconiosis in silica exposure"	3
+"Pulmonary emphysema"	3
+"Relative hand skill"	3
+"Response to alcohol consumption (flushing response)"	3
+"Response to antidepressant treatment (citalopram)"	3
+"Response to chemotherapy in breast cancer (hypertension) (bevacizumab)"	3
+"Response to cholinesterase inhibitors in Alzheimer's disease"	3
+"Response to diuretic therapy"	3
+"Response to platinum-based agents"	3
+"Sarcoidosis"	3
+"Schizophrenia (negative symptoms)"	3
+"Schizophrenia (treatment resistant)"	3
+"Scoliosis"	3
+"Serum vitamin D-binding protein levels"	3
+"Sexual dysfunction (female)"	3
+"Skin pigmentation"	3
+"Suicide attempts in bipolar disorder"	3
+"Suicide attempts in depression or bipolar disorder"	3
+"Testicular cancer"	3
+"Urinary albumin excretion"	3
+"Vitamin D insufficiency"	3
+"Vitamin E levels"	3
+"Adolescent idiopathic scoliosis"	2
+"Alcoholism (12-month weekly alcohol consumption)"	2
+"Allergic dermatitis (nickel)"	2
+"Angiotensin-converting enzyme activity"	2
+"Ankle-brachial index"	2
+"Arsenic metabolism"	2
+"Asthma (corticosteroid response)"	2
+"Atrial fibrillation/atrial flutter"	2
+"B-type natriuretic peptide"	2
+"Binge eating behaviour and bipolar disorder"	2
+"Bipolar disorder (age of onset and psychotic symptoms)"	2
+"Bipolar I disorder"	2
+"Birdshot chorioretinopathy"	2
+"Blood pressure (anthropometric measures interaction)"	2
+"Body mass (lean)"	2
+"Body mass index and cholesterol (psychopharmacological treatment)"	2
+"Brain cytoarchitecture"	2
+"Brain imaging"	2
+"Breast cancer (menopausal hormone therapy interaction)"	2
+"Burning and freckling"	2
+"Carotenoid and tocopherol levels"	2
+"Cataracts in type 2 diabetes"	2
+"Caudate nucleus volume"	2
+"CD4:CD8 lymphocyte ratio"	2
+"Cerebrospinal AB1-42 levels in Alzheimer's disease dementia"	2
+"Chronic myeloid leukemia"	2
+"Chronic periodontitis"	2
+"Cleft lip"	2
+"Cognitive decline"	2
+"Comprehensive strength and appendicular lean mass"	2
+"Congenital heart disease"	2
+"Congenital heart malformation"	2
+"Creatine kinase in statin users"	2
+"Creutzfeldt-Jakob disease"	2
+"Crohn's disease (need for surgery)"	2
+"Crohn's disease and celiac disease"	2
+"Digit length ratio"	2
+"Dilated cardiomyopathy"	2
+"Drug-induced liver injury (amoxicillin-clavulanate)"	2
+"Duodenal ulcer"	2
+"Epirubicin-induced leukopenia"	2
+"Epstein-Barr virus immune response (EBNA-1)"	2
+"Essential tremor"	2
+"Exfoliation glaucoma or exfoliation syndrome"	2
+"Fat body mass"	2
+"Femoral neck bone geometry"	2
+"Fetal hemoglobin levels in sickle cell anemia"	2
+"Forced expiratory volume in 1 second"	2
+"Fractional exhaled nitric oxide levels"	2
+"Fuchs's corneal dystrophy"	2
+"Functional MRI"	2
+"Gastric cancer"	2
+"Glaucoma (high intraocular pressure)"	2
+"Hand grip strength"	2
+"Handedness"	2
+"HbA2 levels"	2
+"Hearing impairment"	2
+"Height adjusted BMI"	2
+"Helicobacter pylori serologic status"	2
+"Hepatocellular carcinoma (hepatitis B virus related)"	2
+"Hereditary hemochromatosis-related traits (HFE mutation homozygotes)"	2
+"IgE levels in asthmatics (D.f. specific)"	2
+"IgG levels"	2
+"Interleukin-18 levels"	2
+"Intracranial volume"	2
+"Large B-cell lymphoma"	2
+"Left ventricular mass"	2
+"Life threatening arrhythmia"	2
+"Lobular breast cancer (menopausal hormone therapy interaction)"	2
+"Lung Cancer (DNA repair capacity)"	2
+"Lung cancer (smoking interaction)"	2
+"Lung cancer-asbestos exposure interaction"	2
+"Lymphocyte counts"	2
+"Mean forced vital capacity from 2 exams"	2
+"Medication adherence in chronic diseases"	2
+"Mesial temporal lobe epilepsy with hippocampal sclerosis"	2
+"Mixed cryoglobulinemia vasculitis in chronic hepatitis C infection"	2
+"Myopia (severe)"	2
+"Narcolepsy (onset before 2009 H1N1 influenza pandemic)"	2
+"Nephrotic syndrome (acquired)"	2
+"Neuropathic pain in type 2 diabetes"	2
+"Neutrophil count in HIV-infection"	2
+"Nicotine glucouronidation"	2
+"Obesity and osteoporosis"	2
+"Orofacial clefts (interaction)"	2
+"Paraoxonase activity"	2
+"Plasma cystastin c levels in acute coronary syndrome"	2
+"Primary sclerosing cholangitis"	2
+"Protein biomarker"	2
+"Prothrombin time"	2
+"Puberty onset"	2
+"Puberty onset (breast development)"	2
+"Pulmonary artery enlargement in chronic obstructive pulmonary disease"	2
+"Reading or mathematical ability"	2
+"Red vs. non-red hair color"	2
+"Red wine liking"	2
+"Response to dabigatran etexilate treatment"	2
+"Response to haloperidol in psychosis"	2
+"Response to inhaled glucocorticoid treatment in asthma (percentage change of FEV1)"	2
+"Response to interferon beta therapy"	2
+"Response to irinotecan in non-small-cell lung cancer"	2
+"Response to methotrexate in rheumatoid arthritis"	2
+"Response to protease inhibitor treatment in hepatitis c (peak serum total bilirubin levels)"	2
+"Resting oxygen saturation in chronic osbtructive pulmonary disease (pulse oxymetry)"	2
+"Retinal arteriolar caliber"	2
+"Retinol levels"	2
+"Sagittal craniosynostosis"	2
+"Schizophrenia (age at onset)"	2
+"Sclerosing cholangitis and ulcerative colitis (combined)"	2
+"Self-employment"	2
+"Sepsis from pneumonia (survival)"	2
+"Serum lipase activity"	2
+"Shingles"	2
+"Sleep depth"	2
+"Speech perception in dyslexia"	2
+"Spontaneous preterm birth (preterm delivery)"	2
+"Thyrotoxic hypokalemic periodic paralysis"	2
+"Tooth agenesis (mandibular third molar)"	2
+"Type 2 diabetes (young onset) and obesity"	2
+"Ulcerative colitis or Crohn's disease"	2
+"Underweight status"	2
+"Urinary albumin excretion rate in type 1 diabetes"	2
+"Vaccine-related adverse events"	2
+"White matter hyperintensity burden"	2
+"White wine liking"	2
+"5-HTT brain serotonin transporter levels"	1
+"Acute lymphoblastic leukemia (adolescents and young adults)"	1
+"Adolescent idiopathic scoliosis (severe)"	1
+"Adverse response to aromatase inhibitors"	1
+"Adverse response to carbamapezine"	1
+"Age-related macular degeneration (CNV vs. GA)"	1
+"Age-related macular degeneration (wet)"	1
+"Aggressive periodontitis (sex interaction)"	1
+"Airway hyperresponsiveness"	1
+"Allergic rhinitis in asthma"	1
+"Alloimmunization response to red blood cell transfusion in sickle cell anemia"	1
+"Amyotrophic lateral sclerosis or frontotemporal dementia"	1
+"Anterior chamber depth"	1
+"Anti-cyclic Citrullinated Peptide Antibody"	1
+"Antinuclear antibody levels"	1
+"Antipsychotic drug-induced weight gain"	1
+"Aortic stiffness"	1
+"Aortic-valve calcification"	1
+"Arterial stiffness"	1
+"Asparaginase hypersensitivity in acute lymphoblastic leukemia"	1
+"Aspartate aminotransferase"	1
+"Aspirin exacerbated respiratory disease in asthmatics"	1
+"Aspirin hydrolysis (plasma)"	1
+"Atopy"	1
+"Attention deficit hyperactivity disorder motor coordination"	1
+"B cell non-Hodgkin lymphoma"	1
+"Beta-trace protein levels"	1
+"Bilirubin levels in extreme obesity"	1
+"Binge eating behaviour in bipolar disorder"	1
+"Bipolar disorder (mania)"	1
+"Bitter taste response"	1
+"Blue vs. brown eyes"	1
+"Body mass in chronic obstructive pulmonary disease"	1
+"Bone mineral density (wrist)"	1
+"Borderline personality disorder features"	1
+"Brachial circumference"	1
+"Breast cancer in BRCA2 mutation carriers"	1
+"Bronchodilator response in asthma"	1
+"C4b binding protein levels"	1
+"Cardiovascular heart disease in diabetics"	1
+"Cerivastatin-induced rhabdomyolysis"	1
+"Change in intraocular pressure in response to steroid treatment (triamcinolone acetonide)"	1
+"Cholelithiasis-related traits in sickle cell anemia"	1
+"Cholesterol"	1
+"Cholesterol and Triglycerides"	1
+"Chronic bronchitis in chronic obstructive pulmonary disease"	1
+"Circulating cell-free DNA"	1
+"Cleft plate (environmental tobacco smoke interaction)"	1
+"Clubfoot"	1
+"Cold medicine related Stevens-Johnson syndrome/toxic epidermal necrolysis (SJS-TEN) with severe mucosal involvement"	1
+"Congenital left-sided heart lesions (maternal effect)"	1
+"Coronary arterial lesions in patients with Kawasaki disease"	1
+"Coronary heart disease event reduction in response to statin therapy (interaction)"	1
+"Coronary restenosis"	1
+"Coronary spasm"	1
+"Cortical structure (interaction)"	1
+"Crohn's disease (time to surgery)"	1
+"Crohn's disease and sarcoidosis (combined)"	1
+"Cystatin C"	1
+"Cystic fibrosis-related diabetes"	1
+"Dermatomyositis"	1
+"Developmental dysplasia of the hip"	1
+"Diabetes (incident)"	1
+"Diabetic nephropathy in type 1 diabetes"	1
+"Diabetic retinopathy in type 2 diabetes"	1
+"Drug-induced liver injury"	1
+"Drug-induced torsades de pointes"	1
+"E-selectin levels"	1
+"End-stage renal disease"	1
+"End-stage renal disease (non-diabetic)"	1
+"End-stage renal disease in Type 1 diabetics"	1
+"Endothelial function traits"	1
+"Enteric fever"	1
+"Episodic memory"	1
+"Esophageal squamous cell cancer (length of survival)"	1
+"Exhaled carbon monoxide levels"	1
+"Facial morphology"	1
+"Fasting plasma glucose (childhood)"	1
+"Gallstones"	1
+"Glaucoma (exfoliation)"	1
+"Glioblastoma"	1
+"Glomerulosclerosis"	1
+"Handedness in dyslexia"	1
+"Haptoglobin levels"	1
+"HDL Cholesterol in HIV-infection"	1
+"High serum lipase activity"	1
+"Hip bone size"	1
+"Hippocampal sclerosis of aging"	1
+"HIV-1 progression"	1
+"HIV-1 replication"	1
+"Homoarginine levels"	1
+"HPV seropositivity"	1
+"IFN-related cytopenia"	1
+"IgA levels"	1
+"Inflammatory biomarkers in Kawasaki disease"	1
+"Intracerebral hemorrhage"	1
+"Iris color"	1
+"Iron deficiency"	1
+"Iron levels"	1
+"Job-related exhaustion"	1
+"Kashin-Beck disease"	1
+"Kidney stones"	1
+"L-arginine levels"	1
+"LDL (oxidized)"	1
+"Lean body mass and age at menarche (combined)"	1
+"Leishmaniasis (visceral)"	1
+"Lipid levels in hepatitis C treatment"	1
+"Lumiracoxib-related liver injury"	1
+"Major CVD"	1
+"Major mood disorders"	1
+"Mathematical ability in children with dyslexia"	1
+"Memory performance"	1
+"Meningioma"	1
+"Meningococcal disease"	1
+"Methamphetamine dependence"	1
+"Methotrexate clearance (acute lymphoblastic leukemia)"	1
+"Morphine dose requirement in tonsillectomy and adenoidectomy surgery"	1
+"Moyamoya disease"	1
+"Multiple sclerosis or amyotrophic lateral sclerosis"	1
+"Myeloproliferative neoplasms"	1
+"Myocardial infarction in coronary artery disease"	1
+"Neuranatomic and neurocognitive phenotypes"	1
+"Neuroblastoma (high-risk)"	1
+"Odorant perception (&beta;-damascenone)"	1
+"Odorant perception (&beta;-ionone)"	1
+"Odorant perception (isobutyraldehyde)"	1
+"Osteoarthritis (hand, severe)"	1
+"Osteonecrosis of the jaw"	1
+"Otitis media (chronic/recurrent)"	1
+"Otosclerosis"	1
+"Parkinson's disease (familial)"	1
+"Peanut allergy"	1
+"Pericardial fat"	1
+"Platelet function and related traits"	1
+"Premature ovarian failure"	1
+"Progranulin levels"	1
+"Psychosis (methamphetamine induced)"	1
+"Puberty onset (genital enlargement)"	1
+"Pulmonary arterial hypertension (without BMPR2 mutations)"	1
+"Pulmonary artery enlargement and chronic obstructive pulmonary disease"	1
+"Pulse pressure in young-onset hypertension"	1
+"Recombination measurement (females)"	1
+"Recombination measurement (males)"	1
+"Recombination rate (females)"	1
+"Recombination rate (males)"	1
+"Red vs non-red hair color"	1
+"Response to clopidogrel therapy"	1
+"Response to Dalcetrapib treatment in acute coronary syndrome"	1
+"Response to diuretic therapy in hypertension"	1
+"Response to metformin"	1
+"Response to metformin in type 2 diabetes (glycemic)"	1
+"Response to protease inhibitor treatment in hepatitis c (bilirubin toxicity)"	1
+"Response to radiotherapy in prostate cancer (toxicity)"	1
+"Response to tamoxifen in breast cancer"	1
+"Response to temozolomide"	1
+"Response to thiopurine immunosuppressants in inflammatory bowel disease (pancreatitis) (azathioprine and mercaptopurine)"	1
+"Ribavirin-induced anemia"	1
+"Schizophrenia (cytomegalovirus infection interaction)"	1
+"Serum ceruloplasmin levels"	1
+"Serum ferritin levels"	1
+"Serum IgA levels"	1
+"Serum IgE levels"	1
+"Serum VEGFR2 concentration"	1
+"Small-cell lung cancer (survival)"	1
+"Soluble E-selectin levels"	1
+"Soluble leptin receptor levels"	1
+"Spine bone size"	1
+"Squamous cell carcinoma"	1
+"Stevens-Johnson syndrome and toxic epidermal necrolysis (SJS-TEN)"	1
+"Substance dependence"	1
+"Suicidal ideation in depression or bipolar disorder"	1
+"Tardive dyskinesia"	1
+"Temporomandibular joint disorders"	1
+"Thoracic aortic aneurysms and dissections"	1
+"Thyroid cancer (Papillary, radiation-related)"	1
+"Tooth agenesis (third molar)"	1
+"Urinary symptoms in response to radiotherapy in prostate cancer"	1
+"Vascular dementia"	1
+"Vaspin levels"	1
+"Vitiligo (non-segmental)"	1
+"Yang-deficiency constitution"	1
+"YKL-40 levels"	1
