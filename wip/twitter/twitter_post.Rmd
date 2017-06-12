@@ -1,0 +1,581 @@
+---
+title: "Data Science Demo"
+author: "Dr. Shirin Glander"
+date: "June 7, 2017"
+output: html_document
+---
+
+
+## Twitter analysis
+
+- **Twitter data from me on June 7th 2017**
+
+```{r eval=FALSE, echo=FALSE}
+# http://www.rdatamining.com/docs/twitter-analysis-with-r
+# http://tidytextmining.com/tidytext.html
+
+consumerKey = "INSERT KEY HERE"
+consumerSecret = "INSERT SECRET KEY HERE"
+accessToken = "INSERT TOKEN HERE"
+accessSecret = "INSERT SECRET TOKEN HERE"
+```
+
+```{r message=FALSE, echo=FALSE}
+library(gridExtra)
+library(grid)
+library(twitteR)
+library(tidyverse)
+library(tidyquant)
+library(tidytext)
+library(tm)
+library(reshape2)
+library(wordcloud)
+library(SnowballC)
+library(hunspell)
+library(igraph)
+library(ggraph)
+library(topicmodels)
+library(widyr)
+```
+
+```{r eval=FALSE, echo=FALSE}
+options(httr_oauth_cache=TRUE)
+
+setup_twitter_oauth(consumer_key = consumerKey, consumer_secret = consumerSecret, access_token = accessToken, access_secret = accessSecret)
+```
+
+```{r eval=FALSE, echo=FALSE}
+me <- homeTimeline(n=3200)
+```
+
+```{r eval=FALSE, echo=FALSE}
+my_name <- userTimeline("ShirinGlander", n = 3200, includeRts=TRUE)
+my_name_df <- twListToDF(my_name)
+save(my_name_df, file = "my_name.RData")
+```
+
+```{r eval=FALSE, echo=FALSE}
+my_mentions <- mentions(n=3200)
+my_mentions_df <- twListToDF(my_mentions)
+save(my_mentions_df, file = "my_mentions.RData")
+
+my_retweets <- retweetsOfMe(n=3200)
+my_retweets_df <- twListToDF(my_retweets)
+save(my_retweets_df, file = "my_retweets.RData")
+```
+
+```{r eval=FALSE, echo=FALSE}
+tweetstome <- searchTwitter("@ShirinGlander", n=3200)
+tweetstome_df <- twListToDF(tweetstome)
+save(tweetstome_df, file = "tweetstome.RData")
+```
+
+### Friends and Followers
+
+```{r eval=FALSE, echo=FALSE}
+user <- getUser("ShirinGlander")
+
+user$toDataFrame()
+
+friends <- user$getFriends() # who this user follows
+friends_df <- twListToDF(friends)
+save(friends_df, file = "my_friends.RData")
+
+followers <- user$getFollowers() # this user's followers
+followers_df <- twListToDF(followers)
+save(followers_df, file = "my_followers.RData")
+
+followers2 <- followers[[1]]$getFollowers() # a follower's followers
+followers2_df <- twListToDF(followers2)
+save(followers2_df, file = "my_followers2.RData")
+```
+
+```{r echo=FALSE}
+load("my_friends.RData")
+load("my_followers.RData")
+```
+
+- Friends (who me follows on Twitter): `r length(unique(friends_df$screenName))`
+
+- Followers (who follow me on Twitter): `r length(unique(followers_df$screenName))`
+
+- Friends who are also followers: `r length(which(unique(friends_df$screenName) %in% unique(followers_df$screenName)))`
+
+```{r echo=FALSE}
+fr_fol <- friends_df$screenName[which(unique(friends_df$screenName) %in% unique(followers_df$screenName))]
+fr_only <- friends_df$screenName[which(!unique(friends_df$screenName) %in% unique(followers_df$screenName))]
+
+friends_followers <- rbind(friends_df, followers_df) %>%
+  mutate(group = ifelse(screenName %in% fr_fol, "friend_follower", ifelse(screenName %in% fr_only, "friend", "follower"))) %>%
+  arrange(desc(followersCount)) %>%
+  distinct(screenName, .keep_all = TRUE)
+
+#summary(friends_followers)
+```
+
+```{r eval=FALSE, echo=FALSE}
+friendships <- friendships(screen_names = c("ShirinGlander", unique(friends_df$screenName)[1:99]))
+save(friendships, file = "friendships.RData")
+```
+
+<br>
+
+```{r fig.width=8, fig.height=4, echo=FALSE}
+friends_followers %>%
+  filter(group != "friend") %>%
+  count(lang) %>%
+  droplevels() %>%
+  ggplot(aes(x = reorder(lang, desc(n)), y = n)) +
+    geom_bar(stat = "identity", color = palette_light()[1], fill = palette_light()[1], alpha = 0.8) +
+    theme_tq() +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+    labs(x = "language ISO 639-1 code",
+         y = "number of followers",
+         title = "What languages do your followers speak?",
+         subtitle = "English is by far the most predominant language of your followers.",
+         caption = "Data: Twitter followers of @ShirinGlander (June 5th 2017)")
+```
+
+```{r fig.width=8, fig.height=4, echo=FALSE}
+friends_followers %>%
+  filter(group != "friend") %>%
+  count(lang) %>%
+  filter(n < 200) %>%
+  droplevels() %>%
+  ggplot(aes(x = reorder(lang, desc(n)), y = n)) +
+    geom_bar(stat = "identity", color = palette_light()[1], fill = palette_light()[1], alpha = 0.8) +
+    theme_tq() +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+    labs(x = "language ISO 639-1 code",
+         y = "number of followers",
+         title = "What languages other than English do your followers speak?",
+         subtitle = "Your second biggest group of followers is Spanish-speaking.",
+         caption = "Data: Twitter followers of @ShirinGlander (June 5th 2017)")
+```
+
+<br>
+
+- Who are your most "influential" followers (i.e. followers with the biggest network)?
+
+```{r warning=FALSE, echo=FALSE}
+friends_followers %>%
+  filter(group != "friend") %>%
+  ggplot(aes(x = log2(followersCount))) +
+    geom_density(color = palette_light()[1], fill = palette_light()[1], alpha = 0.8) +
+    theme_tq() +
+    labs(x = "log2 of number of followers",
+         y = "density",
+         title = "How far does your network of followers reach?",
+         subtitle = "The majority of your followers is followed by up to ~ 1000 people.",
+         caption = "Data: Twitter 2nd degree followers of @ShirinGlander (June 5th 2017)")
+```
+
+```{r echo=FALSE}
+friends_followers %>%
+  filter(group != "friend" & followersCount > 1000) %>%
+  mutate(date = as.Date(created, format = "%Y-%m-%d"),
+         today = as.Date("2017-06-05", format = "%Y-%m-%d"),
+         days = as.numeric(today - date),
+         statusesCount_pDay = statusesCount / days) %>%
+  ggplot(aes(x = statusesCount_pDay)) +
+    geom_density(color = palette_light()[1], fill = palette_light()[1], alpha = 0.8) +
+    theme_tq() +
+    labs(x = "number of tweets per day",
+         y = "density",
+         title = "How active are your most influential followers?",
+         subtitle = "The majority of your followers with > 1000 followers tweets up to 20x per day.",
+         caption = paste("Data: Tweets by", nrow(filter(friends_followers, group != "friend" & followersCount > 1000)), "followers with > 1 mio followers of @ShirinGlander (June 5th 2017)"))
+```
+
+```{r echo=FALSE, eval=FALSE}
+friends_followers %>%
+  filter(group != "friend" & log2(followersCount) > 5) %>%
+  select(screenName, followersCount, statusesCount, description, location, lang) %>%
+  arrange(desc(followersCount), desc(statusesCount))
+```
+
+```{r eval=FALSE, echo=FALSE}
+get_sentiments("afinn")
+get_sentiments("bing")
+get_sentiments("nrc")
+```
+
+```{r echo=FALSE}
+followers_df <- followers_df %>%
+  mutate(id = seq_along(1:n()))
+```
+
+```{r eval=FALSE, echo=FALSE}
+data(stop_words)
+
+tidy_descr <- followers_df %>%
+  unnest_tokens(word, description) %>%
+  mutate(word_stem = wordStem(word)) %>%
+  anti_join(stop_words, by = "word") %>%
+  filter(!grepl("\\.|http", word))
+
+save(tidy_descr, file = "my_tidy_descr.RData")
+```
+
+```{r, echo=FALSE}
+load("my_tidy_descr.RData")
+```
+
+<br>
+
+```{r, echo=FALSE, fig.width=8, fig.height=5}
+tidy_descr %>%
+  count(word_stem, sort = TRUE) %>%
+  filter(n > 20) %>%
+  ggplot(aes(x = reorder(word_stem, n), y = n)) +
+    geom_col(color = palette_light()[1], fill = palette_light()[1], alpha = 0.8) +
+    coord_flip() +
+    theme_tq() +
+    labs(x = "",
+         y = "count of word stem in all followers' descriptions",
+         title = "What are the most commonly used words in your followers' descriptions?",
+         subtitle = "Frequent words in your followers' descriptions indicate interests of your target customers.",
+         caption = paste("Data: Twitter follower descriptions (btw.", summary(count(tidy_descr, screenName, sort = TRUE)$n)[1], "and", summary(count(tidy_descr, screenName, sort = TRUE)$n)[6], "words) of @ShirinGlander (June 5th 2017)"))
+```
+
+<br>
+
+- Word cloud of most frequent words words in your followers' descriptions
+
+```{r fig.width=6, fig.height=6, echo=FALSE}
+tidy_descr %>%
+  count(word_stem) %>%
+  mutate(word_stem = removeNumbers(word_stem)) %>%
+  with(wordcloud(word_stem, n, max.words = 100, colors = palette_light()))
+```
+
+```{r echo=FALSE}
+tidy_descr_ngrams <- followers_df %>%
+  unnest_tokens(bigram, description, token = "ngrams", n = 2) %>%
+  filter(!grepl("\\.|http", bigram)) %>%
+  separate(bigram, c("word1", "word2"), sep = " ") %>%
+  filter(!word1 %in% stop_words$word) %>%
+  filter(!word2 %in% stop_words$word)
+
+bigram_counts <- tidy_descr_ngrams %>%
+  count(word1, word2, sort = TRUE)
+save(bigram_counts, file = "bigram_counts.RData")
+```
+
+```{r echo=FALSE, eval=FALSE}
+bigram_counts %>%
+  filter(n > 10) %>%
+  ggplot(aes(x = reorder(word1, n), y = reorder(word2, n), fill = n)) +
+    geom_tile(alpha = 0.8, color = "white") +
+    scale_fill_gradientn(colours = c(palette_light()[[1]], palette_light()[[2]])) +
+    coord_flip() +
+    theme_tq() +
+    theme(legend.position = "right") +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+```
+
+```{r fig.width=10, fig.height=6, echo=FALSE}
+bigram_graph <- bigram_counts %>%
+  filter(n > 5) %>%
+  graph_from_data_frame()
+
+set.seed(1)
+
+a <- grid::arrow(type = "closed", length = unit(.15, "inches"))
+
+ggraph(bigram_graph, layout = "fr") +
+  geom_edge_link(aes(edge_alpha = n), show.legend = FALSE,
+                 arrow = a, end_cap = circle(.07, 'inches')) +
+  geom_node_point(color =  palette_light()[1], size = 5, alpha = 0.8) +
+  geom_node_text(aes(label = name), vjust = 1, hjust = 1) +
+  theme_void() +
+  labs(title = "Most commonly used word pairs in followers' descriptions",
+         subtitle = "Frequent word pairs in your followers' descriptions indicate interests of your target customers.",
+         caption = paste("Data: Twitter follower descriptions (btw.", summary(count(tidy_descr, screenName, sort = TRUE)$n)[1], "and", summary(count(tidy_descr, screenName, sort = TRUE)$n)[6], "words) of @ShirinGlander (June 5th 2017)"))
+```
+
+```{r echo=FALSE}
+bigrams_separated <- followers_df %>%
+  unnest_tokens(bigram, description, token = "ngrams", n = 2) %>%
+  filter(!grepl("\\.|http", bigram)) %>%
+  separate(bigram, c("word1", "word2"), sep = " ") %>%
+  filter(word1 == "not") %>%
+  filter(!word2 %in% stop_words$word)
+
+#count(bigrams_separated, word1, word2, sort = TRUE)
+
+not_words <- bigrams_separated %>%
+  filter(word1 == "not") %>%
+  inner_join(get_sentiments("afinn"), by = c(word2 = "word")) %>%
+  count(word2, score, sort = TRUE) %>%
+  ungroup()
+```
+
+```{r echo=FALSE, eval=FALSE}
+not_words %>%
+  mutate(contribution = n * score) %>%
+  arrange(desc(abs(contribution))) %>%
+  head(20) %>%
+  mutate(word2 = reorder(word2, contribution)) %>%
+  ggplot(aes(word2, n * score, fill = n * score > 0)) +
+    geom_col(show.legend = FALSE) +
+    scale_fill_manual(values = palette_light()) +
+    xlab("Words preceded by \"not\"") +
+    ylab("Sentiment score * number of occurrences") +
+    coord_flip() +
+    theme_tq()
+```
+
+```{r echo=FALSE}
+tidy_descr_sentiment <- tidy_descr %>%
+  left_join(select(bigrams_separated, word1, word2), by = c("word" = "word2")) %>%
+  inner_join(get_sentiments("nrc"), by = "word") %>%
+  inner_join(get_sentiments("bing"), by = "word") %>%
+  rename(nrc = sentiment.x, bing = sentiment.y) %>%
+  mutate(nrc = ifelse(!is.na(word1), NA, nrc),
+         bing = ifelse(!is.na(word1) & bing == "positive", "negative", 
+                       ifelse(!is.na(word1) & bing == "negative", "positive", bing)))
+
+tidy_descr_sentiment %>%
+  filter(nrc != "positive") %>%
+  filter(nrc != "negative") %>%
+  gather(x, y, nrc, bing) %>%
+  count(x, y, sort = TRUE) %>%
+  filter(n > 10) %>%
+  ggplot(aes(x = reorder(y, n), y = n)) +
+    facet_wrap(~ x, scales = "free") +
+    geom_col(color = palette_light()[1], fill = palette_light()[1], alpha = 0.8) +
+    coord_flip() +
+    theme_tq() +
+    labs(x = "",
+         y = "count of sentiment in followers' descriptions",
+         title = "What's the predominant sentiment in your followers' descriptions?",
+         subtitle = "Most common sentiments in your followers' descriptions characterize your target customers.",
+         caption = "Data: Twitter follower descriptions (corrected for negated meaning) of @ShirinGlander (June 5th 2017)")
+```
+
+```{r echo=FALSE}
+tidy_descr_sentiment %>%
+  count(screenName, word, bing) %>%
+  group_by(screenName, bing) %>%
+  summarise(sum = sum(n)) %>%
+  spread(bing, sum, fill = 0) %>%
+  mutate(sentiment = positive - negative) %>%
+  ggplot(aes(x = sentiment)) +
+    geom_density(color = palette_light()[1], fill = palette_light()[1], alpha = 0.8) +
+    theme_tq() +
+    labs(title = "Are followers' descriptions mostly positive or negative?",
+         subtitle = "The majority of your followers have predominantly positive descriptions.",
+         caption = "Data: Twitter follower descriptions (corrected for negated meaning) of @ShirinGlander (June 5th 2017)")
+```
+
+<br>
+
+- What are the most common positive and negative words in followers' descriptions?
+
+```{r echo=FALSE, fig.width=5, fig.height=5}
+tidy_descr_sentiment %>%
+  count(word, bing, sort = TRUE) %>%
+  acast(word ~ bing, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = palette_light()[1:2],
+                   max.words = 100)
+```
+
+```{r echo=FALSE, fig.width=12, fig.height=5}
+dtm_words_count <- tidy_descr %>%
+  mutate(word_stem = removeNumbers(word_stem)) %>%
+  count(screenName, word_stem, sort = TRUE) %>%
+  ungroup() %>%
+  filter(word_stem != "") %>%
+  cast_dtm(screenName, word_stem, n)
+
+# set a seed so that the output of the model is predictable
+dtm_lda <- LDA(dtm_words_count, k = 5, control = list(seed = 1234))
+
+topics_beta <- tidy(dtm_lda, matrix = "beta")
+save(topics_beta, file = "topics_beta.RData")
+```
+
+```{r echo=FALSE}
+load("topics_beta.RData")
+```
+
+```{r echo=FALSE, fig.width=12, fig.height=5}
+p1 <- topics_beta %>%
+  group_by(topic) %>%
+  top_n(10, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta) %>%
+  mutate(term = reorder(term, beta)) %>%
+  ggplot(aes(term, beta, color = factor(topic), fill = factor(topic))) +
+    geom_col(show.legend = FALSE, alpha = 0.8) +
+    scale_color_manual(values = palette_light()) +
+    scale_fill_manual(values = palette_light()) +
+    facet_wrap(~ topic, ncol = 5) +
+    coord_flip() +
+    theme_tq() +
+    labs(x = "",
+         y = "beta (~ occurrence in topics 1-5)",
+         title = "Topic modeling: are there groups of followers with specific interests?",
+         subtitle = "The top 10 most characteristic words describe topic categories.")
+```
+
+```{r echo=FALSE, eval=FALSE}
+topics_gamma <- tidy(dtm_lda, matrix = "gamma") %>%
+  arrange(desc(gamma))
+save(topics_gamma, file = "topics_gamma.RData")
+```
+
+```{r echo=FALSE}
+load("topics_gamma.RData")
+```
+
+```{r echo=FALSE, fig.width=12, fig.height=5, eval=FALSE}
+users_top <- filter(topics_gamma, gamma > 0.9)
+
+topics_gamma %>%
+  filter(document %in% users_top$document) %>%
+  mutate(title = reorder(document, gamma * topic)) %>%
+  ggplot(aes(factor(topic), gamma)) +
+  geom_bar(stat = "identity", color = palette_light()[1], fill = palette_light()[1], alpha = 0.8) +
+  facet_wrap(~ document, scales = "free") +
+  coord_flip() +
+  theme_tq()
+```
+
+```{r echo=FALSE, eval=FALSE}
+assignments <- augment(dtm_lda, data = dtm_words_count) %>%
+  arrange(document)
+```
+
+```{r echo=FALSE, fig.width=14, fig.height=7}
+user_topic <- topics_gamma %>%
+  group_by(document) %>%
+  top_n(1, gamma)
+
+p2 <- user_topic %>%
+  #filter(gamma > 0.25) %>%
+  group_by(topic) %>%
+  top_n(10, gamma) %>%
+  ggplot(aes(x = reorder(document, -gamma), y = gamma, color = factor(topic))) +
+    facet_wrap(~ topic, scales = "free", ncol = 5) +
+    geom_point(show.legend = FALSE, size = 4, alpha = 0.8) +
+    scale_color_manual(values = palette_light()) +
+    scale_fill_manual(values = palette_light()) +
+    theme_tq() +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+    labs(x = "",
+         y = "gamma\n(~ affiliation with topics 1-5)",
+         subtitle = "Followers' affiliation with topics could be used for targeted advertisement.",
+         caption = "Data: Twitter follower descriptions of @ShirinGlander (June 5th 2017)")
+```
+
+```{r echo=FALSE, fig.width=14, fig.height=9}
+grid.arrange(p1, p2, ncol = 1, heights = c(0.6, 0.4))
+```
+
+
+```{r eval=FALSE, echo=FALSE}
+library(widyr)
+
+# count words co-occuring within location
+word_pairs <- tidy_descr %>%
+  left_join(user_topic, by = c("screenName" = "document")) %>%
+  mutate(word_stem = removeNumbers(word_stem)) %>%
+  filter(word_stem != "") %>%
+  pairwise_count(word, topic, sort = TRUE)
+save(word_pairs, file = "word_pairs.RData")
+```
+
+```{r echo=FALSE, eval=FALSE}
+load("word_pairs.RData")
+```
+
+```{r echo=FALSE, eval=FALSE}
+word_cors <- tidy_descr %>%
+  left_join(topics_gamma, by = c("screenName" = "document")) %>%
+  group_by(word_stem) %>%
+  filter(n() >= 10) %>%
+  pairwise_cor(word_stem, topic, sort = TRUE, use = "na.or.complete")
+
+set.seed(2016)
+
+word_cors %>%
+  filter(correlation > .15) %>%
+  graph_from_data_frame() %>%
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(edge_alpha = correlation), show.legend = FALSE) +
+  geom_node_point(color = palette_light()[1], size = 5, alpha = 0.8) +
+  geom_node_text(aes(label = name), repel = TRUE) +
+  theme_void()
+```
+
+
+
+```{r eval=FALSE, echo=FALSE}
+words_count <- tidy_descr %>%
+  count(screenName, word_stem, sort = TRUE) %>%
+  ungroup()
+
+total_words <- tidy_descr %>% 
+  count(screenName, sort = TRUE) %>%
+  ungroup()
+
+words <- left_join(words_count, total_words, by = "screenName")
+
+words %>%
+  mutate(prop = n.x/n.y) %>%
+  ggplot(aes(x = prop)) +
+    geom_density()
+
+words %>%
+  mutate(prop = n.x/n.y) %>%
+  filter(screenName %in% total_words$screenName[1:10]) %>%
+  ggplot(aes(x = prop, fill = screenName)) +
+   geom_histogram(show.legend = FALSE, bins = 50) +
+   facet_wrap(~screenName, ncol = 2, scales = "free_y")
+
+words_idf <- words %>%
+  bind_tf_idf(word_stem, screenName, n.x)
+
+words_idf %>%
+  arrange(tf_idf)
+```
+
+```{r eval=FALSE, echo=FALSE}
+negation_words <- c("not", "no", "never", "without")
+
+negated_words <- bigrams_separated %>%
+  filter(word1 %in% negation_words) %>%
+  inner_join(get_sentiments("afinn"), by = c(word2 = "word")) %>%
+  count(word1, word2, score, sort = TRUE) %>%
+  ungroup()
+
+negated_words %>%
+  mutate(contribution = n * score) %>%
+  arrange(desc(abs(contribution))) %>%
+  mutate(word2 = reorder(word2, contribution)) %>%
+  ggplot(aes(word2, n * score, fill = n * score > 0)) +
+    geom_col(show.legend = FALSE) +
+    xlab("Words preceded by \"not\"") +
+    ylab("Sentiment score * number of occurrences") +
+    coord_flip() +
+    facet_wrap(~ word1)
+```
+
+```{r eval=FALSE, echo=FALSE}
+tidy_descr_ngrams %>%
+  unite(bigram, word1, word2, sep = " ") %>%
+  count(screenName, bigram) %>%
+  bind_tf_idf(bigram, screenName, n) %>%
+  arrange(tf_idf)
+```
+
+```{r eval=FALSE, echo=FALSE}
+library(stringi)
+
+sentences <- followers_df %>%
+  mutate(text = stri_enc_toutf8(description, validate=TRUE)) %>%
+  unnest_tokens(sentence, text, token = "sentences")
+save(sentences, file = "sentences.RData")
+```
