@@ -1,0 +1,1114 @@
+---
+title: "Feature Selection in Machine Learning (Breast Cancer Datasets)"
+author: "Shirin Glander"
+date: "`r Sys.Date()`"
+output:
+  prettydoc::html_pretty:
+    theme: tactile
+    highlight: github
+---
+
+Machine learning uses so called features (i.e. variables or attributes) to generate predictive models. Using a suitable combination of features is essential for obtaining high precision and accuracy. Because too many (unspecific) features pose the problem of overfitting the model, we generally want to restrict the features in our models to those, that are most relevant for the response variable we want to predict. Using as few features as possible will also reduce the complexity of our models, which means it needs less time and computer power to run and is easier to understand.
+
+There are several ways to identify how much each feature contributes to the model and to restrict the number of selected features. Here, I am going to examine the effect of feature selection via
+
+- Correlation, 
+- Recursive Feature Elimination (RFE) and
+- Genetic Algorithm (GA)
+
+on Random Forest models.
+
+Additionally, I want to know how different data properties affect the influence of these feature selection methods on the outcome. For that I am using three breast cancer datasets, one of which has few features; the other two are larger but differ in how well the outcome clusters in PCA.
+
+Based on my comparisons of the correlation method, RFE and GA, I would conclude that for Random Forest models
+
+- removing highly correlated features isn't a generally suitable method, 
+- GA produced the best models in this example but is impractical for everyday use-cases with many features because it takes a lot of time to run with sufficient generations and individuals and
+- data that doesn't allow a good classification to begin with (because the features are not very distinct between classes) don't necessarily benefit from feature selection.
+
+My conclusions are of course not to be generalized to any ol' data you are working with: There are many more feature selection methods and I am only looking at a limited number of datasets and only at their influence on Random Forest models. But even this small example shows how different features and parameters can influence your predictions. With machine learning, there is no "one size fits all"! It is always worthwhile to take a good hard look at your data, get acquainted with its quirks and properties before you even think about models and algorithms. And once you've got a feel for your data, investing the time and effort to compare different feature selection methods (or engineered features), model parameters and - finally - different machine learning algorithms can make a big difference!
+
+---
+
+<br>
+
+## Breast Cancer Wisconsin (Diagnostic) Dataset
+
+The data I am going to use to explore feature selection methods is the Breast Cancer Wisconsin (Diagnostic) Dataset:
+
+> W.N. Street, W.H. Wolberg and O.L. Mangasarian. Nuclear feature extraction for breast tumor diagnosis. IS&T/SPIE 1993 International Symposium on Electronic Imaging: Science and Technology, volume 1905, pages 861-870, San Jose, CA, 1993. 
+
+> O.L. Mangasarian, W.N. Street and W.H. Wolberg. Breast cancer diagnosis and prognosis via linear programming. Operations Research, 43(4), pages 570-577, July-August 1995. 
+
+> W.H. Wolberg, W.N. Street, and O.L. Mangasarian. Machine learning techniques to diagnose breast cancer from fine-needle aspirates. Cancer Letters 77 (1994) 163-171. 
+
+> W.H. Wolberg, W.N. Street, and O.L. Mangasarian. Image analysis and machine learning applied to breast cancer diagnosis and prognosis. Analytical and Quantitative Cytology and Histology, Vol. 17 No. 2, pages 77-87, April 1995. 
+
+> W.H. Wolberg, W.N. Street, D.M. Heisey, and O.L. Mangasarian. Computerized breast cancer diagnosis and prognosis from fine needle aspirates. Archives of Surgery 1995;130:511-516.
+
+> W.H. Wolberg, W.N. Street, D.M. Heisey, and O.L. Mangasarian. Computer-derived nuclear features distinguish malignant from benign breast cytology. Human Pathology, 26:792--796, 1995.
+
+The data was downloaded from the [UC Irvine Machine Learning Repository](http://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+%28Diagnostic%29). The features in these datasets characterise cell nucleus properties and were generated from image analysis of [fine needle aspirates (FNA)](https://en.wikipedia.org/wiki/Fine-needle_aspiration) of breast masses. 
+
+Included are three datasets. The first dataset is small with only 9 features, the other two datasets have 30 and 33 features and vary in how strongly the two predictor classes cluster in PCA. I want to explore the effect of different feature selection methods on datasets with these different properties.
+
+But first, I want to get to know the data I am working with:
+
+
+### Breast cancer dataset 1
+
+The first dataset looks at the predictor classes:
+
+- malignant or
+- benign breast mass.
+
+The phenotypes for characterisation are:
+
+- Sample ID (code number)
+- Clump thickness
+- Uniformity of cell size
+- Uniformity of cell shape
+- Marginal adhesion
+- Single epithelial cell size
+- Number of bare nuclei
+- Bland chromatin
+- Number of normal nuclei
+- Mitosis
+- Classes, i.e. diagnosis
+
+Missing values are imputed with the *mice* package.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+bc_data <- read.table("breast-cancer-wisconsin.data.txt", header = FALSE, sep = ",")
+colnames(bc_data) <- c("sample_code_number", "clump_thickness", "uniformity_of_cell_size", "uniformity_of_cell_shape", "marginal_adhesion", "single_epithelial_cell_size", 
+                       "bare_nuclei", "bland_chromatin", "normal_nucleoli", "mitosis", "classes")
+bc_data$classes <- ifelse(bc_data$classes == "2", "benign",
+                          ifelse(bc_data$classes == "4", "malignant", NA))
+
+bc_data[bc_data == "?"] <- NA
+
+# how many NAs are in the data
+length(which(is.na(bc_data)))
+
+# impute missing data
+library(mice)
+
+bc_data[,2:10] <- apply(bc_data[, 2:10], 2, function(x) as.numeric(as.character(x)))
+dataset_impute <- mice(bc_data[, 2:10],  print = FALSE)
+bc_data <- cbind(bc_data[, 11, drop = FALSE], mice::complete(dataset_impute, 1))
+
+bc_data$classes <- as.factor(bc_data$classes)
+
+# how many benign and malignant cases are there?
+summary(bc_data$classes)
+
+str(bc_data)
+```
+
+
+### Breast cancer dataset 2
+
+The second dataset looks again at the predictor classes:
+
+- M: malignant or
+- B: benign breast mass.
+
+The first two columns give:
+
+- Sample ID 
+- Classes, i.e. diagnosis
+
+For each cell nucleus, the following ten characteristics were measured:
+
+- Radius (mean of all distances from the center to points on the perimeter)
+- Texture (standard deviation of gray-scale values)
+- Perimeter
+- Area
+- Smoothness (local variation in radius lengths)
+- Compactness (perimeter^2 / area - 1.0)
+- Concavity (severity of concave portions of the contour)
+- Concave points (number of concave portions of the contour)
+- Symmetry 
+- Fractal dimension ("coastline approximation" - 1)
+
+For each characteristic three measures are given:
+
+- Mean
+- Standard error
+- Largest/ "worst"
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+bc_data_2 <- read.table("wdbc.data.txt", header = FALSE, sep = ",")
+
+phenotypes <- rep(c("radius", "texture", "perimeter", "area", "smoothness", "compactness", "concavity", "concave_points", "symmetry", "fractal_dimension"), 3)
+types <- rep(c("mean", "se", "largest_worst"), each = 10)
+
+colnames(bc_data_2) <- c("ID", "diagnosis", paste(phenotypes, types, sep = "_"))
+
+# how many NAs are in the data
+length(which(is.na(bc_data_2)))
+
+# how many benign and malignant cases are there?
+summary(bc_data_2$diagnosis)
+
+str(bc_data_2)
+```
+
+
+### Breast cancer dataset 3
+
+The third dataset looks at the predictor classes:
+
+- R: recurring or
+- N: nonrecurring breast cancer.
+
+The first two columns give:
+
+- Sample ID 
+- Classes, i.e. outcome
+
+For each cell nucleus, the same ten characteristics and measures were given as in dataset 2, plus:
+
+- Time (recurrence time if field 2 = R, disease-free time if field 2	= N)
+- Tumor size - diameter of the excised tumor in centimeters
+- Lymph node status - number of positive axillary lymph nodes observed at time of surgery
+
+Missing values are imputed with the *mice* package.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+bc_data_3 <- read.table("wpbc.data.txt", header = FALSE, sep = ",")
+colnames(bc_data_3) <- c("ID", "outcome", "time", paste(phenotypes, types, sep = "_"), "tumor_size", "lymph_node_status")
+
+bc_data_3[bc_data_3 == "?"] <- NA
+
+# how many NAs are in the data
+length(which(is.na(bc_data_3)))
+
+# impute missing data
+library(mice)
+
+bc_data_3[,3:35] <- apply(bc_data_3[,3:35], 2, function(x) as.numeric(as.character(x)))
+dataset_impute <- mice(bc_data_3[,3:35],  print = FALSE)
+bc_data_3 <- cbind(bc_data_3[, 2, drop = FALSE], mice::complete(dataset_impute, 1))
+
+# how many recurring and non-recurring cases are there?
+summary(bc_data_3$outcome)
+
+str(bc_data_3)
+```
+
+## Principal Component Analysis (PCA)
+
+To get an idea about the dimensionality and variance of the datasets, I am first looking at PCA plots for samples and features. The first two principal components (PCs) show the two components that explain the majority of variation in the data.
+
+After defining my custom ggplot2 theme, I am creating a function that performs the PCA (using the *pcaGoPromoter* package), calculates ellipses of the data points (with the *ellipse* package) and produces the plot with *ggplot2*. Some of the features in datasets 2 and 3 are not very distinct and overlap in the PCA plots, therefore I am also plotting hierarchical clustering dendrograms.
+
+```{r eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=4}
+# plotting theme
+
+library(ggplot2)
+
+my_theme <- function(base_size = 12, base_family = "sans"){
+  theme_minimal(base_size = base_size, base_family = base_family) +
+  theme(
+    axis.text = element_text(size = 12),
+    axis.text.x = element_text(angle = 0, vjust = 0.5, hjust = 0.5),
+    axis.title = element_text(size = 14),
+    panel.grid.major = element_line(color = "grey"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "aliceblue"),
+    strip.background = element_rect(fill = "navy", color = "navy", size = 1),
+    strip.text = element_text(face = "bold", size = 12, color = "white"),
+    legend.position = "right",
+    legend.justification = "top", 
+    legend.background = element_blank(),
+    panel.border = element_rect(color = "grey", fill = NA, size = 0.5)
+  )
+}
+
+theme_set(my_theme())
+```
+
+```{r eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=4}
+# function for PCA plotting
+library(pcaGoPromoter)
+library(ellipse)
+
+pca_func <- function(data, groups, title, print_ellipse = TRUE) {
+  
+  # perform pca and extract scores
+  pcaOutput <- pca(data, printDropped = FALSE, scale = TRUE, center = TRUE)
+  pcaOutput2 <- as.data.frame(pcaOutput$scores)
+  
+  # define groups for plotting
+  pcaOutput2$groups <- groups
+  
+  # when plotting samples calculate ellipses for plotting (when plotting features, there are no replicates)
+  if (print_ellipse) {
+    
+    centroids <- aggregate(cbind(PC1, PC2) ~ groups, pcaOutput2, mean)
+    conf.rgn  <- do.call(rbind, lapply(unique(pcaOutput2$groups), function(t)
+      data.frame(groups = as.character(t),
+                 ellipse(cov(pcaOutput2[pcaOutput2$groups == t, 1:2]),
+                       centre = as.matrix(centroids[centroids$groups == t, 2:3]),
+                       level = 0.95),
+                 stringsAsFactors = FALSE)))
+    
+    plot <- ggplot(data = pcaOutput2, aes(x = PC1, y = PC2, group = groups, color = groups)) + 
+      geom_polygon(data = conf.rgn, aes(fill = groups), alpha = 0.2) +
+      geom_point(size = 2, alpha = 0.6) + 
+      scale_color_brewer(palette = "Set1") +
+      labs(title = title,
+           color = "",
+           fill = "",
+           x = paste0("PC1: ", round(pcaOutput$pov[1], digits = 2), "% variance"),
+           y = paste0("PC2: ", round(pcaOutput$pov[2], digits = 2), "% variance"))
+    
+  } else {
+    
+    # if there are fewer than 10 groups (e.g. the predictor classes) I want to have colors from RColorBrewer
+    if (length(unique(pcaOutput2$groups)) <= 10) {
+      
+      plot <- ggplot(data = pcaOutput2, aes(x = PC1, y = PC2, group = groups, color = groups)) + 
+        geom_point(size = 2, alpha = 0.6) + 
+        scale_color_brewer(palette = "Set1") +
+        labs(title = title,
+             color = "",
+             fill = "",
+             x = paste0("PC1: ", round(pcaOutput$pov[1], digits = 2), "% variance"),
+             y = paste0("PC2: ", round(pcaOutput$pov[2], digits = 2), "% variance"))
+      
+    } else {
+      
+      # otherwise use the default rainbow colors
+      plot <- ggplot(data = pcaOutput2, aes(x = PC1, y = PC2, group = groups, color = groups)) + 
+        geom_point(size = 2, alpha = 0.6) + 
+        labs(title = title,
+             color = "",
+             fill = "",
+             x = paste0("PC1: ", round(pcaOutput$pov[1], digits = 2), "% variance"),
+             y = paste0("PC2: ", round(pcaOutput$pov[2], digits = 2), "% variance"))
+      
+    }
+  }
+  
+  return(plot)
+  
+}
+
+library(gridExtra)
+library(grid)
+```
+
+
+- Dataset 1
+
+```{r message=FALSE, warning=FALSE, fig.width=12, fig.height=4}
+p1 <- pca_func(data = t(bc_data[, 2:10]), groups = as.character(bc_data$classes), title = "Breast cancer dataset 1: Samples")
+p2 <- pca_func(data = bc_data[, 2:10], groups = as.character(colnames(bc_data[, 2:10])), title = "Breast cancer dataset 1: Features", print_ellipse = FALSE)
+grid.arrange(p1, p2, ncol = 2)
+```
+
+```{r message=FALSE, warning=FALSE, fig.width=8, fig.height=5}
+h_1 <- hclust(dist(t(bc_data[, 2:10]), method = "euclidean"), method = "complete")
+plot(h_1)
+```
+
+```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=8}
+library(tidyr)
+bc_data_gather <- bc_data %>%
+  gather(measure, value, clump_thickness:mitosis)
+
+ggplot(data = bc_data_gather, aes(x = value, fill = classes, color = classes)) +
+  geom_density(alpha = 0.3, size = 1) +
+  geom_rug() +
+  scale_fill_brewer(palette = "Set1") +
+  scale_color_brewer(palette = "Set1") +
+  facet_wrap( ~ measure, scales = "free_y", ncol = 3)
+```
+ 
+ 
+- Dataset 2
+
+```{r message=FALSE, warning=FALSE, fig.width=14, fig.height=4}
+p1 <- pca_func(data = t(bc_data_2[, 3:32]), groups = as.character(bc_data_2$diagnosis), title = "Breast cancer dataset 2: Samples")
+p2 <- pca_func(data = bc_data_2[, 3:32], groups = as.character(colnames(bc_data_2[, 3:32])), title = "Breast cancer dataset 2: Features", print_ellipse = FALSE)
+grid.arrange(p1, p2, ncol = 2, widths = c(0.4, 0.6))
+```
+
+```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=5}
+h_2 <- hclust(dist(t(bc_data_2[, 3:32]), method = "euclidean"), method = "complete")
+plot(h_2)
+```
+
+```{r message=FALSE, warning=FALSE, fig.width=12, fig.height=18}
+bc_data_2_gather <- bc_data_2[, -1] %>%
+  gather(measure, value, radius_mean:fractal_dimension_largest_worst)
+
+ggplot(data = bc_data_2_gather, aes(x = value, fill = diagnosis, color = diagnosis)) +
+  geom_density(alpha = 0.3, size = 1) +
+  geom_rug() +
+  scale_fill_brewer(palette = "Set1") +
+  scale_color_brewer(palette = "Set1") +
+  facet_wrap( ~ measure, scales = "free_y", ncol = 3)
+```
+
+
+- Dataset 3
+
+```{r message=FALSE, warning=FALSE, fig.width=14, fig.height=5}
+p1 <- pca_func(data = t(bc_data_3[, 2:34]), groups = as.character(bc_data_3$outcome), title = "Breast cancer dataset 3: Samples")
+p2 <- pca_func(data = bc_data_3[, 2:34], groups = as.character(colnames(bc_data_3[, 2:34])), title = "Breast cancer dataset 3: Features", print_ellipse = FALSE)
+grid.arrange(p1, p2, ncol = 2, widths = c(0.4, 0.6))
+```
+
+```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=5}
+h_3 <- hclust(dist(t(bc_data_3[,2:34]), method = "euclidean"), method = "complete")
+plot(h_3)
+```
+
+Datasets 1 and 2 show a nice separation of benign and malignant masses, models based on these features will likely be able to predict the classes quite well for most samples. The classes in dataset 3 don't cluster into distinct groups, I assume that prediction will not be as accurate for these features.
+
+The features of datasets 2 and 3 don't cluster very distinctly, many features seem to show similar patterns across samples. Selecting an approriate subset of features will probably have different effects on the three different datasets.
+
+```{r message=FALSE, warning=FALSE, fig.width=12, fig.height=18}
+bc_data_3_gather <- bc_data_3 %>%
+  gather(measure, value, time:lymph_node_status)
+
+ggplot(data = bc_data_3_gather, aes(x = value, fill = outcome, color = outcome)) +
+  geom_density(alpha = 0.3, size = 1) +
+  geom_rug() +
+  scale_fill_brewer(palette = "Set1") +
+  scale_color_brewer(palette = "Set1") +
+  facet_wrap( ~ measure, scales = "free_y", ncol = 3)
+```
+
+
+## Feature importance
+
+To get an idea about the feature's respective importances, I'm running Random Forest models with 10 x 10 cross validation using the *caret* package. If I wanted to use feature importance to select features for modeling, I would need to perform it on the training data instead of on the complete dataset. But here, I only want to use it to get acquainted with my data. I am again defining a function that estimates the feature importance and produces a plot.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 5, fig.height = 3, fig.align = "center"}
+library(caret)
+library(doParallel) # parallel processing
+registerDoParallel()
+
+# prepare training scheme
+control <- trainControl(method = "repeatedcv", number = 10, repeats = 10)
+
+feature_imp <- function(model, title) {
+  
+  # estimate variable importance
+  importance <- varImp(model, scale = TRUE)
+  
+  # prepare dataframes for plotting
+  importance_df_1 <- importance$importance
+  importance_df_1$group <- rownames(importance_df_1)
+  
+  importance_df_1 <- importance_df_1[order(importance_df_1$Overall, decreasing = T), ]
+  importance_df_1 <- importance_df_1[1:5, ]
+  
+  importance_df_1$group <- factor(importance_df_1$group, levels = importance_df_1$group[order(importance_df_1$Overall)])
+  
+  importance_df_2 <- importance_df_1
+  importance_df_2$Overall <- 0
+  
+  importance_df <- rbind(importance_df_1, importance_df_2)
+  
+  plot <- ggplot() +
+    geom_point(data = importance_df_1, aes(x = Overall, y = group, color = group), size = 2) +
+    geom_path(data = importance_df, aes(x = Overall, y = group, color = group, group = group), size = 1) +
+    theme(legend.position = "none") +
+    labs(
+      x = "Importance",
+      y = "",
+      title = title,
+      subtitle = "Scaled feature importance",
+      caption = "\nDetermined with Random Forest and
+      repeated cross validation (10 repeats, 10 times)"
+    )
+  
+  return(plot)
+  
+}
+```
+
+```{r echo = TRUE, eval=FALSE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 5, fig.height = 3, fig.align = "center"}
+# train the model
+set.seed(27)
+imp_1 <- train(classes ~ ., data = bc_data, method = "rf", preProcess = c("scale", "center"), trControl = control)
+```
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 5, fig.height = 3, fig.align = "center"}
+load("imp_1.RData")
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 5, fig.height = 3, fig.align = "center"}
+p1 <- feature_imp(imp_1, title = "Breast cancer dataset 1")
+```
+
+```{r echo = TRUE, eval=FALSE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 5, fig.height = 3, fig.align = "center"}
+set.seed(27)
+imp_2 <- train(diagnosis ~ ., data = bc_data_2[, -1], method = "rf", preProcess = c("scale", "center"), trControl = control)
+```
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 5, fig.height = 3, fig.align = "center"}
+load("imp_2.RData")
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 5, fig.height = 3, fig.align = "center"}
+p2 <- feature_imp(imp_2, title = "Breast cancer dataset 2")
+```
+
+```{r echo = TRUE, eval=FALSE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 5, fig.height = 3, fig.align = "center"}
+set.seed(27)
+imp_3 <- train(outcome ~ ., data = bc_data_3, method = "rf", preProcess = c("scale", "center"), trControl = control)
+```
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 5, fig.height = 3, fig.align = "center"}
+load("imp_3.RData")
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 5, fig.height = 3, fig.align = "center"}
+p3 <- feature_imp(imp_3, title = "Breast cancer dataset 3")
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 15, fig.height = 8, fig.align = "center"}
+grid.arrange(p1, p2, p3, ncol = 3, widths = c(0.3, 0.35, 0.35))
+```
+
+<br>
+
+# Feature Selection
+
+Now that I have a general idea about the data, I will run three feature selection methods on all three datasets and compare how they effect the prediction accuracy of a Random Forest model.
+
+### Creating train and test data
+
+Before doing anything else with the data, we need to subset the datasets into train and test data. Performing feature selection on the whole dataset would lead to prediction bias, we therefore need to run the whole modeling process on the training data alone!
+
+- Dataset 1
+
+```{r echo = TRUE, cache = FALSE, message=FALSE}
+set.seed(27)
+bc_data_index <- createDataPartition(bc_data$classes, p = 0.7, list = FALSE)
+bc_data_train <- bc_data[bc_data_index, ]
+bc_data_test  <- bc_data[-bc_data_index, ]
+```
+
+- Dataset 2
+
+```{r echo = TRUE, cache = FALSE, message=FALSE}
+set.seed(27)
+bc_data_2_index <- createDataPartition(bc_data_2$diagnosis, p = 0.7, list = FALSE)
+bc_data_2_train <- bc_data_2[bc_data_2_index, ]
+bc_data_2_test  <- bc_data_2[-bc_data_2_index, ]
+```
+
+- Dataset 3
+
+```{r echo = TRUE, cache = FALSE, message=FALSE}
+set.seed(27)
+bc_data_3_index <- createDataPartition(bc_data_3$outcome, p = 0.7, list = FALSE)
+bc_data_3_train <- bc_data_3[bc_data_3_index, ]
+bc_data_3_test  <- bc_data_3[-bc_data_3_index, ]
+```
+
+
+## Correlation
+
+Often we have features that are highly correlated and thus provide redundant information. By eliminating highly correlated features we can avoid a predictive bias for the information contained in these features. This also shows us, that when we want to make statements about the biological/ medical importance of specific features, we need to keep in mind that just because they are suitable to predicting an outcome they are not necessarily causal - they could simply be correlated with causal factors.
+
+Correlations between all features are calculated and visualised with the *corrplot* package. I am then removing all features with a correlation higher than 0.7, keeping the feature with the lower mean.
+
+
+- Dataset 1
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 6, fig.align = "center"}
+library(corrplot)
+
+# calculate correlation matrix
+corMatMy <- cor(bc_data_train[, -1])
+corrplot(corMatMy, order = "hclust")
+
+#Apply correlation filter at 0.70,
+highlyCor <- colnames(bc_data_train[, -1])[findCorrelation(corMatMy, cutoff = 0.7, verbose = TRUE)]
+
+# which variables are flagged for removal?
+highlyCor
+
+#then we remove these variables
+bc_data_cor <- bc_data_train[, which(!colnames(bc_data_train) %in% highlyCor)]
+```
+
+Correlation between features in dataset 1 is generally high and 4 out of 10 feature were flagged for removal.
+
+
+- Dataset 2
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+corMatMy <- cor(bc_data_2_train[, 3:32])
+corrplot(corMatMy, order = "hclust")
+
+highlyCor <- colnames(bc_data_2_train[, 3:32])[findCorrelation(corMatMy, cutoff = 0.7, verbose = TRUE)]
+highlyCor
+
+bc_data_2_cor <- bc_data_2_train[, which(!colnames(bc_data_2_train) %in% highlyCor)]
+```
+
+Here, we have more variation between the 30 features: some are highly correlated, while others seem to be very distinct. 20 are flagged for removal (see output above).
+
+
+- Dataset 3
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+corMatMy <- cor(bc_data_3_train[, -1])
+corrplot(corMatMy, order = "hclust")
+
+highlyCor <- colnames(bc_data_3_train[, -1])[findCorrelation(corMatMy, cutoff = 0.7, verbose = TRUE)]
+highlyCor
+
+bc_data_3_cor <- bc_data_3_train[, which(!colnames(bc_data_3_train) %in% highlyCor)]
+```
+
+The features in dataset 3 look similar: some are highly correlated, others are very different. 18 are flagged for removal (see output above).
+
+
+## Recursive Feature Elimination (RFE)
+
+Another way to choose features is with Recursive Feature Elimination.
+RFE uses a Random Forest algorithm to test combinations of features and rate each with an accuracy score. The combination with the highest score is usually preferential.
+
+
+- Dataset 1
+
+```{r echo = TRUE, cache = TRUE, message=FALSE}
+# ensure the results are repeatable
+set.seed(7)
+# define the control using a random forest selection function with cross validation
+control <- rfeControl(functions = rfFuncs, method = "cv", number = 10)
+
+# run the RFE algorithm
+results_1 <- rfe(x = bc_data_train[, -1], y = bc_data_train$classes, sizes = c(1:9), rfeControl = control)
+
+# chosen features
+predictors(results_1)
+
+# subset the chosen features
+bc_data_rfe <- bc_data_train[, c(1, which(colnames(bc_data_train) %in% predictors(results_1)))]
+```
+
+
+- Dataset 2
+
+```{r echo = TRUE, cache = TRUE, message=FALSE}
+set.seed(7)
+results_2 <- rfe(x = bc_data_2_train[, -c(1, 2)], y = as.factor(bc_data_2_train$diagnosis), sizes = c(1:30), rfeControl = control)
+
+predictors(results_2)
+
+bc_data_2_rfe <- bc_data_2_train[, c(2, which(colnames(bc_data_2_train) %in% predictors(results_2)))]
+```
+
+
+- Dataset 3
+
+```{r echo = TRUE, cache = TRUE, message=FALSE}
+set.seed(7)
+results_3 <- rfe(x = bc_data_3_train[,-1], y = as.factor(bc_data_3_train$outcome), sizes = c(1:33), rfeControl = control)
+
+predictors(results_2)
+
+bc_data_3_rfe <- bc_data_3_train[, c(1, which(colnames(bc_data_3_train) %in% predictors(results_3)))]
+```
+
+
+## Genetic Algorithm (GA)
+
+The Genetic Algorithm (GA) has been developed based on evolutionary principles of natural selection: It aims to optimize a population of individuals with a given set of genotypes by modeling selection over time. In each generation (i.e. iteration), each individual's fitness is calculated based on their genotypes. Then, the fittest individuals are chosen to produce the next generation. This subsequent generation of individuals will have genotypes resulting from (re-) combinations of the parental alleles. These new genotypes will again determine each individual's fitness. This selection process is iterated for a specified number of generations and (ideally) leads to fixation of the fittest alleles in the gene pool.
+
+This concept of optimization can be applied to non-evolutionary models as well, like feature selection processes in machine learning.
+
+For demonstration purposes I am using only 10 generations consisting of 5 individuals. More iterations with larger populations would of course be preferable, but this takes quite long to run!
+
+```{r echo = TRUE, cache = FALSE, message=FALSE}
+library(dplyr)
+
+ga_ctrl <- gafsControl(functions = rfGA, # Assess fitness with RF
+                       method = "cv",    # 10 fold cross validation
+                       genParallel = TRUE, # Use parallel programming
+                       allowParallel = TRUE)
+```
+
+
+- Dataset 1
+
+```{r echo = TRUE, eval=FALSE, cache = FALSE, message=FALSE}
+lev <- c("malignant", "benign")     # Set the levels
+
+set.seed(27)
+model_1 <- gafs(x = bc_data_train[, -1], y = bc_data_train$classes,
+                   iters = 10, # generations of algorithm
+                   popSize = 5, # population size for each generation
+                   levels = lev,
+                   gafsControl = ga_ctrl)
+```
+
+```{r echo = FALSE, cache = FALSE, message=FALSE}
+load("model_1.RData")
+```
+
+```{r echo = TRUE, cache = FALSE, message=FALSE}
+plot(model_1) # Plot mean fitness (AUC) by generation
+model_1$ga$final
+
+bc_data_ga <- bc_data_train[, c(1, which(colnames(bc_data_train) %in% model_1$ga$final))]
+```
+
+
+- Dataset 2
+
+```{r echo = TRUE, eval=FALSE, eval=FALSE, cache = FALSE, message=FALSE}
+lev <- c("M", "B")
+
+set.seed(27)
+model_2 <- gafs(x = bc_data_2_train[, -c(1, 2)], y = bc_data_2_train$diagnosis,
+                   iters = 10, # generations of algorithm
+                   popSize = 5, # population size for each generation
+                   levels = lev,
+                   gafsControl = ga_ctrl)
+```
+
+```{r echo = FALSE, cache = FALSE, message=FALSE}
+load("model_2.RData")
+```
+
+```{r echo = TRUE, cache = FALSE, message=FALSE}
+plot(model_2)
+model_2$ga$final
+
+bc_data_2_ga <- bc_data_2_train[, c(2, which(colnames(bc_data_2_train) %in% model_2$ga$final))]
+```
+
+
+- Dataset 3
+
+```{r echo = TRUE, eval=FALSE, cache = FALSE, message=FALSE}
+lev <- c("R", "N")
+
+set.seed(27)
+model_3 <- gafs(x = bc_data_3_train[, -1], y = bc_data_3_train$outcome,
+                   iters = 10, # generations of algorithm
+                   popSize = 5, # population size for each generation
+                   levels = lev,
+                   gafsControl = ga_ctrl)
+```
+
+```{r echo = FALSE, cache = FALSE, message=FALSE}
+load("model_3.RData")
+```
+
+```{r echo = TRUE, cache = FALSE, message=FALSE}
+plot(model_3)
+model_3$ga$final
+
+bc_data_3_ga <- bc_data_3_train[, c(1, which(colnames(bc_data_3_train) %in% model_3$ga$final))]
+```
+
+
+# Model comparison
+
+Now I can compare Random Forest models with the different feature subsets. (I chose Random Forests because I find it works reasonbly well on a large variety of data and because it's the algorithm I've used most often and thus know most about...)
+
+For a more detailed description of building machine learning models see [here](https://shiring.github.io/machine_learning/2016/11/27/flu_outcome_ML_post) and [here](https://shiring.github.io/machine_learning/2016/12/02/flu_outcome_ML_2_post).
+
+
+## All features
+
+- Dataset 1
+
+```{r echo = TRUE, eval=FALSE, cache = FALSE, message=FALSE}
+set.seed(27)
+model_bc_data_all <- train(classes ~ .,
+                           data = bc_data_train,
+                           method = "rf",
+                           preProcess = c("scale", "center"),
+                           trControl = trainControl(method = "repeatedcv", number = 5, repeats = 10, verboseIter = FALSE))
+```
+
+```{r echo = FALSE, cache = FALSE, message=FALSE}
+load("model_bc_data_all.RData")
+```
+
+```{r echo = TRUE, cache = FALSE, message=FALSE}
+cm_all_1 <- confusionMatrix(predict(model_bc_data_all, bc_data_test[, -1]), bc_data_test$classes)
+cm_all_1
+```
+
+
+- Dataset 2
+
+```{r echo = TRUE, eval=FALSE, cache = FALSE, message=FALSE}
+set.seed(27)
+model_bc_data_2_all <- train(diagnosis ~ .,
+                           data = bc_data_2_train[, -1],
+                           method = "rf",
+                           preProcess = c("scale", "center"),
+                           trControl = trainControl(method = "repeatedcv", number = 5, repeats = 10, verboseIter = FALSE))
+```
+
+```{r echo = FALSE, cache = FALSE, message=FALSE}
+load("model_bc_data_2_all.RData")
+```
+
+```{r echo = TRUE, cache = FALSE, message=FALSE}
+cm_all_2 <- confusionMatrix(predict(model_bc_data_2_all, bc_data_2_test[, -c(1, 2)]), bc_data_2_test$diagnosis)
+cm_all_2
+```
+
+
+- Dataset 3
+
+```{r echo = TRUE, eval=FALSE, cache = FALSE, message=FALSE}
+set.seed(27)
+model_bc_data_3_all <- train(outcome ~ .,
+                           data = bc_data_3_train,
+                           method = "rf",
+                           preProcess = c("scale", "center"),
+                           trControl = trainControl(method = "repeatedcv", number = 5, repeats = 10, verboseIter = FALSE))
+```
+
+```{r echo = FALSE, cache = FALSE, message=FALSE}
+load("model_bc_data_3_all.RData")
+```
+
+```{r echo = TRUE, cache = FALSE, message=FALSE}
+cm_all_3 <- confusionMatrix(predict(model_bc_data_3_all, bc_data_3_test[, -1]), bc_data_3_test$outcome)
+cm_all_3
+```
+
+
+## Selected features
+
+### Dataset 1
+
+```{r echo = TRUE, cache = FALSE, message=FALSE,fig.width = 5, fig.height = 5, fig.align = "center"}
+library(gplots)
+
+venn_list <- list(cor = colnames(bc_data_cor)[-1],
+                  rfe = colnames(bc_data_rfe)[-1],
+                  ga = colnames(bc_data_ga)[-1])
+
+venn <- venn(venn_list)
+
+venn
+```
+
+4 out of 10 features were chosen by all three methods; the biggest overlap is seen between GA and RFE with 7 features. RFE and GA both retained 8 features for modeling, compared to only 5 based on the correlation method.
+
+
+- Correlation
+
+```{r echo = TRUE, eval=FALSE, cache = FALSE, message=FALSE}
+set.seed(27)
+model_bc_data_cor <- train(classes ~ .,
+                 data = bc_data_cor,
+                 method = "rf",
+                 preProcess = c("scale", "center"),
+                 trControl = trainControl(method = "repeatedcv", number = 5, repeats = 10, verboseIter = FALSE))
+```
+
+```{r echo = FALSE, cache = FALSE, message=FALSE}
+load("model_bc_data_cor.RData")
+```
+
+```{r echo = TRUE, cache = FALSE, message=FALSE}
+cm_cor_1 <- confusionMatrix(predict(model_bc_data_cor, bc_data_test[, -1]), bc_data_test$classes)
+cm_cor_1
+```
+
+
+- RFE
+
+```{r echo = TRUE, eval=FALSE, cache = FALSE, message=FALSE}
+set.seed(27)
+model_bc_data_rfe <- train(classes ~ .,
+                           data = bc_data_rfe,
+                           method = "rf",
+                           preProcess = c("scale", "center"),
+                           trControl = trainControl(method = "repeatedcv", number = 5, repeats = 10, verboseIter = FALSE))
+```
+
+```{r echo = FALSE, cache = FALSE, message=FALSE}
+load("model_bc_data_rfe.RData")
+```
+
+```{r echo = TRUE, cache = FALSE, message=FALSE}
+cm_rfe_1 <- confusionMatrix(predict(model_bc_data_rfe, bc_data_test[, -1]), bc_data_test$classes)
+cm_rfe_1
+```
+
+
+- GA
+
+```{r echo = TRUE, eval=FALSE, cache = FALSE, message=FALSE}
+set.seed(27)
+model_bc_data_ga <- train(classes ~ .,
+                           data = bc_data_ga,
+                           method = "rf",
+                           preProcess = c("scale", "center"),
+                           trControl = trainControl(method = "repeatedcv", number = 5, repeats = 10, verboseIter = FALSE))
+```
+
+```{r echo = FALSE, cache = FALSE, message=FALSE}
+load("model_bc_data_ga.RData")
+```
+
+```{r echo = TRUE, cache = FALSE, message=FALSE}
+cm_ga_1 <- confusionMatrix(predict(model_bc_data_ga, bc_data_test[, -1]), bc_data_test$classes)
+cm_ga_1
+```
+
+
+### Dataset 2
+
+```{r echo = TRUE, cache = FALSE, message=FALSE,fig.width = 5, fig.height = 5, fig.align = "center"}
+venn_list <- list(cor = colnames(bc_data_2_cor)[-c(1, 2)],
+                  rfe = colnames(bc_data_2_rfe)[-c(1, 2)],
+                  ga = colnames(bc_data_2_ga)[-c(1, 2)])
+
+venn <- venn(venn_list)
+
+venn
+```
+
+For dataset 2 we see a much bigger variation in chosen features between the three selection methods: only 1 feature was chosen by all and the biggest overlap is again seen between RFE and GA, followed by correlation and GA. But this time we also see quite a few features that are uniquely retained by any of the three feature selection methods.
+
+
+- Correlation
+
+```{r echo = TRUE, eval=FALSE, cache = FALSE, message=FALSE}
+set.seed(27)
+model_bc_data_2_cor <- train(diagnosis ~ .,
+                           data = bc_data_2_cor[, -1],
+                           method = "rf",
+                           preProcess = c("scale", "center"),
+                           trControl = trainControl(method = "repeatedcv", number = 5, repeats = 10, verboseIter = FALSE))
+```
+
+```{r echo = FALSE, cache = FALSE, message=FALSE}
+load("model_bc_data_2_cor.RData")
+```
+
+```{r echo = TRUE, cache = FALSE, message=FALSE}
+cm_cor_2 <- confusionMatrix(predict(model_bc_data_2_cor, bc_data_2_test[, -c(1, 2)]), bc_data_2_test$diagnosis)
+cm_cor_2
+```
+
+
+- RFE
+
+```{r echo = TRUE, eval=FALSE, cache = FALSE, message=FALSE}
+set.seed(27)
+model_bc_data_2_rfe <- train(diagnosis ~ .,
+                           data = bc_data_2_rfe,
+                           method = "rf",
+                           preProcess = c("scale", "center"),
+                           trControl = trainControl(method = "repeatedcv", number = 5, repeats = 10, verboseIter = FALSE))
+```
+
+```{r echo = FALSE, cache = FALSE, message=FALSE}
+load("model_bc_data_2_rfe.RData")
+```
+
+```{r echo = TRUE, cache = FALSE, message=FALSE}
+cm_rfe_2 <- confusionMatrix(predict(model_bc_data_2_rfe, bc_data_2_test[, -c(1, 2)]), bc_data_2_test$diagnosis)
+cm_rfe_2
+```
+
+
+- GA
+
+```{r echo = TRUE, eval=FALSE, cache = FALSE, message=FALSE}
+set.seed(27)
+model_bc_data_2_ga <- train(diagnosis ~ .,
+                          data = bc_data_2_ga,
+                          method = "rf",
+                          preProcess = c("scale", "center"),
+                          trControl = trainControl(method = "repeatedcv", number = 5, repeats = 10, verboseIter = FALSE))
+```
+
+```{r echo = FALSE, cache = FALSE, message=FALSE}
+load("model_bc_data_2_ga.RData")
+```
+
+```{r echo = TRUE, cache = FALSE, message=FALSE}
+cm_ga_2 <- confusionMatrix(predict(model_bc_data_2_ga, bc_data_2_test[, -c(1, 2)]), bc_data_2_test$diagnosis)
+cm_ga_2
+```
+
+
+### Dataset 3
+
+```{r echo = TRUE, cache = FALSE, message=FALSE,fig.width = 5, fig.height = 5, fig.align = "center"}
+venn_list <- list(cor = colnames(bc_data_3_cor)[-1],
+                  rfe = colnames(bc_data_3_rfe)[-1],
+                  ga = colnames(bc_data_3_ga)[-1])
+
+venn <- venn(venn_list)
+
+venn
+```
+
+With the third dataset there is still some variation among the selected features but not as extreme as with dataset 2. This time, we find the biggest overlap between correlation and GA.
+
+
+- Correlation
+
+```{r echo = TRUE, eval=FALSE, cache = FALSE, message=FALSE}
+set.seed(27)
+model_bc_data_3_cor <- train(outcome ~ .,
+                           data = bc_data_3_cor,
+                           method = "rf",
+                           preProcess = c("scale", "center"),
+                           trControl = trainControl(method = "repeatedcv", number = 5, repeats = 10, verboseIter = FALSE))
+```
+
+```{r echo = FALSE, cache = FALSE, message=FALSE}
+load("model_bc_data_3_cor.RData")
+```
+
+```{r echo = TRUE, cache = FALSE, message=FALSE}
+cm_cor_3 <- confusionMatrix(predict(model_bc_data_3_cor, bc_data_3_test[, -1]), bc_data_3_test$outcome)
+cm_cor_3
+```
+
+
+- RFE
+
+```{r echo = TRUE, eval=FALSE, cache = FALSE, message=FALSE}
+set.seed(27)
+model_bc_data_3_rfe <- train(outcome ~ .,
+                           data = bc_data_3_rfe,
+                           method = "rf",
+                           preProcess = c("scale", "center"),
+                           trControl = trainControl(method = "repeatedcv", number = 5, repeats = 10, verboseIter = FALSE))
+```
+
+```{r echo = FALSE, cache = FALSE, message=FALSE}
+load("model_bc_data_3_rfe.RData")
+```
+
+```{r echo = TRUE, cache = FALSE, message=FALSE}
+cm_rfe_3 <- confusionMatrix(predict(model_bc_data_3_rfe, bc_data_3_test[, -1]), bc_data_3_test$outcome)
+cm_rfe_3
+```
+
+
+- GA
+
+```{r echo = TRUE, eval=FALSE, cache = FALSE, message=FALSE}
+set.seed(27)
+model_bc_data_3_ga <- train(outcome ~ .,
+                          data = bc_data_3_ga,
+                          method = "rf",
+                          preProcess = c("scale", "center"),
+                          trControl = trainControl(method = "repeatedcv", number = 5, repeats = 10, verboseIter = FALSE))
+```
+
+```{r echo = FALSE, cache = FALSE, message=FALSE}
+load("model_bc_data_3_ga.RData")
+```
+
+```{r echo = TRUE, cache = FALSE, message=FALSE}
+cm_ga_3 <- confusionMatrix(predict(model_bc_data_3_ga, bc_data_3_test[, -1]), bc_data_3_test$outcome)
+cm_ga_3
+```
+
+## Overall model parameters
+
+To compare the feature selection methods' influence on the models built with the three different datasets, I am going to plot model accuracy, Kappa, precision and sensitivity and specificity.
+
+```{r echo = TRUE, cache = FALSE, message=FALSE}
+overall <- data.frame(dataset = rep(c("1", "2", "3"), each = 4),
+                      model = rep(c("all", "cor", "rfe", "ga"), 3),
+                      rbind(cm_all_1$overall,
+                      cm_cor_1$overall,
+                      cm_rfe_1$overall,
+                      cm_ga_1$overall,
+                      cm_all_2$overall,
+                      cm_cor_2$overall,
+                      cm_rfe_2$overall,
+                      cm_ga_2$overall,
+                      cm_all_3$overall,
+                      cm_cor_3$overall,
+                      cm_rfe_3$overall,
+                      cm_ga_3$overall))
+
+library(tidyr)
+overall_gather <- overall[, 1:4] %>%
+  gather(measure, value, Accuracy:Kappa)
+```
+
+```{r echo = TRUE, cache = FALSE, message=FALSE}
+byClass <- data.frame(dataset = rep(c("1", "2", "3"), each = 4),
+                      model = rep(c("all", "cor", "rfe", "ga"), 3),
+                      rbind(cm_all_1$byClass,
+                      cm_cor_1$byClass,
+                      cm_rfe_1$byClass,
+                      cm_ga_1$byClass,
+                      cm_all_2$byClass,
+                      cm_cor_2$byClass,
+                      cm_rfe_2$byClass,
+                      cm_ga_2$byClass,
+                      cm_all_3$byClass,
+                      cm_cor_3$byClass,
+                      cm_rfe_3$byClass,
+                      cm_ga_3$byClass))
+
+byClass_gather <- byClass[, c(1:4, 7)] %>%
+  gather(measure, value, Sensitivity:Precision)
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=7, fig.align="center", cache=FALSE}
+overall_byClass_gather <- rbind(overall_gather, byClass_gather)
+overall_byClass_gather <- within(overall_byClass_gather, model <- factor(model, levels = c("all", "cor", "rfe", "ga")))
+
+ggplot(overall_byClass_gather, aes(x = model, y = value, color = measure, shape = measure, group = measure)) +
+  geom_point(size = 4, alpha = 0.8) +
+  geom_path(alpha = 0.7) +
+  scale_colour_brewer(palette = "Set1") +
+  facet_grid(dataset ~ ., scales = "free_y") +
+  labs(
+    x = "Feature Selection method",
+    y = "Value",
+    color = "",
+    shape = "",
+    title = "Comparison of feature selection methods",
+    subtitle = "in three breast cancer datasets",
+    caption = "\nBreast Cancer Wisconsin (Diagnostic) Data Sets: 1, 2 & 3
+    Street et al., 1993;
+    all: no feature selection
+    cor: features with correlation > 0.7 removed
+    rfe: Recursive Feature Elimination
+    ga: Genetic Algorithm"
+  )
+```
+
+
+## Conclusions
+
+As expected from PCA of sample classes, which showed that the two classes recur/ non-recur did not cluster well, Random Forest models of dataset 3 had much lower prediction accuracy than models of datasets 1 and 2.
+
+The correlation method operates regardless of feature importance. E.g. in dataset 1, the features with the highest importance were also flagged as highly correlated. Correlation models performed worst in all three datasets. RFE and GA tend to include features with high importance, but feature importance alone is not a good indicator for whether several features will work well in combination when predicting an outcome.
+
+Dataset 1 was small with only 9 features; here, removing highly correlated features was the least successful selection method. RFE and GA both improved the predictions compared to no feature selection, while GA performed best.
+Dataset 2 with its 30 original features produced the best models with the GA. And in dataset 3, which had lower overall accuracy, different feature selection methods did not have a strong influence.
+
+------------------
+
+<br>
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=4, fig.align="center", cache=FALSE}
+sessionInfo()
+```
