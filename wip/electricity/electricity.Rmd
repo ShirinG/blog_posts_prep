@@ -1,0 +1,179 @@
+---
+title: "Electricity"
+author: "Shirin Glander"
+date: "`r Sys.Date()`"
+output:
+  prettydoc::html_pretty:
+    theme: tactile
+    highlight: github
+---
+
+U.S. Energy Information Administration
+November 2016 Monthly Energy Review
+
+Release Date: November 22, 2016
+Next Update: December 22, 2016
+
+https://catalog.data.gov/dataset/monthly-energy-consumption-by-sector
+
+Table 2.1 Energy Consumption by Sector
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+electricity <- read.table("electricity.txt", header = TRUE, sep = "\t")
+
+library(splitstackshape)
+electricity <- cSplit(electricity, splitCols = "Month", sep = " ")
+
+head(electricity)
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 50, fig.height = 50, fig.align = "center"}
+library(lubridate) # for working with dates
+library(ggplot2)  # for creating graphs
+library(scales)   # to access breaks/formatting functions
+library(gridExtra) # for arranging plots
+
+electricity_subset <- electricity[, c(11:13)]
+
+library(stringi)
+electricity_subset$Month_2 <- stri_sub(electricity_subset$Month_2, 1, 3)
+electricity_subset$Date <- paste("01", electricity_subset$Month_2, electricity_subset$Month_1, sep = "-")
+electricity_subset$Date2 <- as.Date(electricity_subset$Date, format = "%d-%b-%Y")
+
+ggplot(electricity_subset, aes(Date, Primary.Energy.Consumption.Total)) +
+  geom_path() +
+  stat_smooth(colour="green") +
+  facet_wrap(~ Month_1, ncol = 4, scales = "free") #+
+  #(scale_x_date(breaks=date_breaks("12 months"), labels=date_format("%Y-%m-%d")))
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+ggplot(electricity_subset, aes(Month_2, Primary.Energy.Consumption.Total)) +
+  geom_boxplot()
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+electricity_subset_ts <- ts(electricity$Primary.Energy.Consumption.Total, frequency = 12, start =  c(1973, 1))
+library(ggfortify)
+autoplot(electricity_subset_ts)
+```
+
+https://www.r-bloggers.com/why-time-series-forecasts-prediction-intervals-arent-as-good-as-wed-hope/
+
+https://www.r-bloggers.com/cross-validation-for-time-series/
+
+https://cran.r-project.org/web/views/TimeSeries.html
+
+http://a-little-book-of-r-for-time-series.readthedocs.io/en/latest/src/timeseries.html
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 12, fig.height = 10, fig.align = "center"}
+electricity_subset_ts_dc <- decompose(electricity_subset_ts)
+autoplot(electricity_subset_ts_dc)
+```
+
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+library(forecast)
+d.arima <- auto.arima(electricity_subset_ts)
+d.forecast <- forecast(d.arima, level = c(95), h = 50)
+autoplot(d.forecast, ts.colour = 'firebrick1', predict.colour = 'red',
+         predict.linetype = 'dashed', conf.int = FALSE)
+```
+
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+library(changepoint)
+autoplot(cpt.meanvar(electricity_subset_ts))
+autoplot(stl(electricity_subset_ts, s.window = 'periodic'), ts.colour = 'blue')
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+library(forecast)
+ggtsdiag(auto.arima(electricity_subset_ts))
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+forecasts <- HoltWinters(electricity_subset_ts, beta = FALSE, gamma = FALSE)
+autoplot(forecasts)
+```
+
+https://cran.r-project.org/web/packages/zoo/vignettes/zoo.pdf
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+library(zoo)
+set.seed(1071)
+
+electricity$Month_3 <- stri_sub(electricity$Month_2, 1, 3)
+z2.index <- paste(electricity$Month_1, electricity$Month_3, "01", sep = "-")
+z2.index <- as.Date(z2.index, format = "%Y-%b-%d")
+
+electricity_subset_zoo <- zoo(electricity$Primary.Energy.Consumption.Total, z2.index)
+plot(electricity_subset_zoo)
+
+plot(diff(electricity_subset_zoo))
+plot(diff(log(electricity_subset_zoo)))
+
+plot(rollapply(electricity_subset_zoo, 5, sd))
+```
+
+https://cran.r-project.org/web/packages/xts/vignettes/xts.pdf
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+library(xts)
+matrix_xts <- as.xts(electricity_subset_zoo, dateFormat = 'Date')
+
+plot(matrix_xts[,1],major.ticks='months',minor.ticks=FALSE,main=NULL,col=3)
+periodicity(matrix_xts)
+
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+library(ggseas)
+# make demo data with the convenience "time series to data.frame" function tsdf()
+ap_df <- tsdf(electricity_subset_ts)
+
+# SEATS with defaults
+ggplot(ap_df, aes(x = x, y = y)) +
+   geom_line(colour = "grey80") +
+   stat_seas()
+
+# X11 with no outlier treatment
+ggplot(ap_df, aes(x = x, y = y)) +
+   geom_line(colour = "grey80") +
+   stat_seas(x13_params = list(x11 = "", outlier = NULL))
+
+# periodic if fixed seasonality; doesn't work well:
+ggplot(ap_df, aes(x = x, y = y)) +
+   geom_line(colour = "grey80") +
+   stat_stl(s.window = "periodic")
+
+# seasonality varies a bit over time, works better:
+ggplot(ap_df, aes(x = x, y = y)) +
+   geom_line(colour = "grey80") +
+   stat_stl(s.window = 7)
+
+# default additive decomposition (doesn't work well in this case!):
+ggplot(ap_df, aes(x = x, y = y)) +
+   geom_line(colour = "grey80") +
+   stat_decomp()
+
+# multiplicative decomposition, more appropriate:
+ggplot(ap_df, aes(x = x, y = y)) +
+   geom_line(colour = "grey80") +
+   stat_decomp(type = "multiplicative")
+
+ggsdc(ap_df, aes(x = x, y = y), method = "decompose") +
+   geom_line()
+
+ggsdc(ap_df, aes(x = x, y = y), method = "stl", s.window = 7) +
+   geom_line()
+```
+
+https://www.r-bloggers.com/basic-forecasting/?utm_source=feedburner&utm_medium=email&utm_campaign=Feed%3A+RBloggers+%28R+bloggers%29
+
+http://blog.revolutionanalytics.com/2016/06/updates-to-the-forecast-package-for-r.html
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+fc <- forecast(electricity_subset_ts)
+autoplot(fc)
+```

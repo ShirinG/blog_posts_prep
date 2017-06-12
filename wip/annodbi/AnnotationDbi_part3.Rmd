@@ -1,0 +1,397 @@
+---
+title: "Exploring the human genome (Part 3) - Chromosomes"
+author: "Dr. Shirin Glander"
+date: '`r Sys.Date()`'
+output:
+  prettydoc::html_pretty:
+    theme: tactile
+    highlight: github
+---
+
+In this part I want to explore the chromosomes of the human genome. We have 23 chromose pairs, 22 autosomal pairs which contain essentially the same genes (albeit in slightly different versions, called alleles) and the gonosomes (or sex chromosomes) X and Y, plus the mitochondrial (MT) chromosome. X and Y contain different genes and in this capacity encode sex-related traits. The MT is the remaining genetic information from what initially started as a symbiosis. The majority of the mitochondrial genes were lost over time or have been incorporated into the main nuclear DNA, but a handful of genes remains to this day. MT genes are interesting because they are solely inherited via the female line as they come with the mitochondria in the fertilized egg.
+
+I am again using the [AnnotationDbi](https://bioconductor.org/packages/release/bioc/html/AnnotationDbi.html) and [EnsDb.Hsapiens.v79](https://bioconductor.org/packages/release/data/annotation/html/EnsDb.Hsapiens.v79.html) packages. This time I want to extract the following information for each gene:
+
+- on which chromosome it lives
+- the length of the chromosome it lives on (in base pairs, bp)
+- whether it is on the plus or minus strand
+- and the coordinates of start and end position.
+
+Based on start and end position of each gene I can calculate its length in base pairs (bp).
+
+Click here for [Part 1](https://shiring.github.io/genome/2016/10/23/AnnotationDbi) and [Part 2](https://shiring.github.io/genome/2016/11/01/AnnotationDbi_part2).
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+library(AnnotationDbi)
+library(EnsDb.Hsapiens.v79)
+edb_Hs <- EnsDb.Hsapiens.v79
+
+# get all gene IDs (Ensembl gene ID)
+keys_Hs <- keys(edb_Hs, keytype = "GENEID")
+
+chromosomes_Hs <- AnnotationDbi::select(edb_Hs, keys = keys_Hs, columns = c("SEQLENGTH", "SEQNAME", "SEQSTRAND", "GENESEQSTART", "GENESEQEND"), keytype = "GENEID")
+
+# convert chromosome and strand to factors
+chromosomes_Hs$SEQNAME <- as.factor(chromosomes_Hs$SEQNAME)
+chromosomes_Hs$SEQSTRAND <- as.factor(chromosomes_Hs$SEQSTRAND)
+
+# calculate gene length
+chromosomes_Hs$GENELENGTH <- chromosomes_Hs$GENESEQEND - chromosomes_Hs$GENESEQSTART
+
+head(chromosomes_Hs)
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+library(EnsDb.Mmusculus.v79)
+edb_Mm <- EnsDb.Mmusculus.v79
+
+# get all gene IDs (Ensembl gene ID)
+keys_Mm <- keys(edb_Mm, keytype = "GENEID")
+
+chromosomes_Mm <- AnnotationDbi::select(edb_Mm, keys = keys_Mm, columns = c("SEQLENGTH", "SEQNAME", "SEQSTRAND", "GENESEQSTART", "GENESEQEND"), keytype = "GENEID")
+
+# convert chromosome and strand to factors
+chromosomes_Mm$SEQNAME <- as.factor(chromosomes_Mm$SEQNAME)
+chromosomes_Mm$SEQSTRAND <- as.factor(chromosomes_Mm$SEQSTRAND)
+
+# calculate gene length
+chromosomes_Mm$GENELENGTH <- chromosomes_Mm$GENESEQEND - chromosomes_Mm$GENESEQSTART
+
+head(chromosomes_Mm)
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+library(EnsDb.Rnorvegicus.v79)
+edb_Rn <- EnsDb.Rnorvegicus.v79
+
+# get all gene IDs (Ensembl gene ID)
+keys_Rn <- keys(edb_Rn, keytype = "GENEID")
+
+chromosomes_Rn <- AnnotationDbi::select(edb_Rn, keys = keys_Rn, columns = c("SEQLENGTH", "SEQNAME", "SEQSTRAND", "GENESEQSTART", "GENESEQEND"), keytype = "GENEID")
+
+# convert chromosome and strand to factors
+chromosomes_Rn$SEQNAME <- as.factor(chromosomes_Rn$SEQNAME)
+chromosomes_Rn$SEQSTRAND <- as.factor(chromosomes_Rn$SEQSTRAND)
+
+# calculate gene length
+chromosomes_Rn$GENELENGTH <- chromosomes_Rn$GENESEQEND - chromosomes_Rn$GENESEQSTART
+
+head(chromosomes_Rn)
+```
+
+<br>
+
+## How many bases of each chromosome are taken up by genes?
+
+In order to calculate the sum of gene lengths for each chromosome I am using the *aggregate()* function. We can already see that there are many more unique chromosome identifiers than the 25 regular chromosomes we had expected:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+gene_bases_Hs <- aggregate(chromosomes_Hs$GENELENGTH, by = list(Chromosome = chromosomes_Hs$SEQNAME), FUN = sum)
+length(unique(gene_bases_Hs$Chromosome))
+```
+
+This is because some of the genes have not yet been successfully mapped to a chromosome. Genes with seqnames that start with "KI" or "GL" for example, currently live on scaffolds where the chromosomal location is not yet known.
+
+- **check what the other seqnames mean**
+
+Here I only want to have a look at the 25 chromosomes and lump the unmapped scaffolds into one group of unknown chromosomes.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+gene_bases_Mm <- aggregate(chromosomes_Mm$GENELENGTH, by = list(Chromosome = chromosomes_Mm$SEQNAME), FUN = sum)
+length(unique(gene_bases_Mm$Chromosome))
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+gene_bases_Rn <- aggregate(chromosomes_Rn$GENELENGTH, by = list(Chromosome = chromosomes_Rn$SEQNAME), FUN = sum)
+length(unique(gene_bases_Rn$Chromosome))
+```
+
+<br>
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+chrom_Hs <- as.character(gene_bases_Hs[grep("^[0-9]+$|^X$|^Y$|^MT$", gene_bases_Hs$Chromosome), "Chromosome"])
+
+gene_bases_other_Hs <- gene_bases_Hs[-which(gene_bases_Hs$Chromosome %in% chrom_Hs), ]
+scaffolds_Hs <- data.frame(Chromosome = "S", x = sum(gene_bases_other_Hs[grep("^KI[0-9]+|^GL[0-9]+", gene_bases_other_Hs$Chromosome), "x"]))
+
+library(dplyr)
+gene_bases_Hs <- gene_bases_Hs[which(gene_bases_Hs$Chromosome %in% chrom_Hs), ] %>%
+  rbind(scaffolds_Hs)
+
+length(unique(gene_bases_Hs$Chromosome))
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+chrom_Mm <- as.character(gene_bases_Mm[grep("^[0-9]+$|^X$|^Y$|^MT$", gene_bases_Mm$Chromosome), "Chromosome"])
+
+gene_bases_other_Mm <- gene_bases_Mm[-which(gene_bases_Mm$Chromosome %in% chrom_Mm), ]
+scaffolds_Mm <- data.frame(Chromosome = "S", x = sum(gene_bases_other_Mm[grep("^JH[0-9]+|^GL[0-9]+", gene_bases_other_Mm$Chromosome), "x"]))
+
+library(dplyr)
+gene_bases_Mm <- gene_bases_Mm[which(gene_bases_Mm$Chromosome %in% chrom_Mm), ] %>%
+  rbind(scaffolds_Mm)
+
+length(unique(gene_bases_Mm$Chromosome))
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+chrom_Rn <- as.character(gene_bases_Rn[grep("^[0-9]+$|^X$|^Y$|^MT$", gene_bases_Rn$Chromosome), "Chromosome"])
+
+gene_bases_other_Rn <- gene_bases_Rn[-which(gene_bases_Rn$Chromosome %in% chrom_Rn), ]
+scaffolds_Rn <- data.frame(Chromosome = "S", x = sum(gene_bases_other_Rn[grep("^JH[0-9]+|^AABR[0-9]+", gene_bases_other_Rn$Chromosome), "x"]))
+
+library(dplyr)
+gene_bases_Rn <- gene_bases_Rn[which(gene_bases_Rn$Chromosome %in% chrom_Rn), ] %>%
+  rbind(scaffolds_Rn)
+
+length(unique(gene_bases_Rn$Chromosome))
+```
+
+<br>
+
+## How many genes are on each chromosome?
+
+To count the number of genes per chromosome I am using the *table()* function.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+chromosomes_num_table_Hs <- as.data.frame(table(chromosomes_Hs$SEQNAME))
+
+chromosomes_num_table_other_Hs <- chromosomes_num_table_Hs[-which(chromosomes_num_table_Hs$Var1 %in% chrom_Hs), ]
+scaffolds_Hs <- data.frame(Var1 = "S", Freq = sum(chromosomes_num_table_other_Hs[grep("^KI[0-9]+|^GL[0-9]+", chromosomes_num_table_other_Hs$Var1), "Freq"]))
+
+chromosomes_num_table_Hs <- chromosomes_num_table_Hs[which(chromosomes_num_table_Hs$Var1 %in% chrom_Hs), ] %>%
+  rbind(scaffolds_Hs)
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+chromosomes_num_table_Mm <- as.data.frame(table(chromosomes_Mm$SEQNAME))
+
+chromosomes_num_table_other_Mm <- chromosomes_num_table_Mm[-which(chromosomes_num_table_Mm$Var1 %in% chrom_Mm), ]
+scaffolds_Mm <- data.frame(Var1 = "S", Freq = sum(chromosomes_num_table_other_Mm[grep("^JH[0-9]+|^GL[0-9]+", chromosomes_num_table_other_Mm$Var1), "Freq"]))
+
+chromosomes_num_table_Mm <- chromosomes_num_table_Mm[which(chromosomes_num_table_Mm$Var1 %in% chrom_Mm), ] %>%
+  rbind(scaffolds_Mm)
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+chromosomes_num_table_Rn <- as.data.frame(table(chromosomes_Rn$SEQNAME))
+
+chromosomes_num_table_other_Rn <- chromosomes_num_table_Rn[-which(chromosomes_num_table_Rn$Var1 %in% chrom_Rn), ]
+scaffolds_Rn <- data.frame(Var1 = "S", Freq = sum(chromosomes_num_table_other_Rn[grep("^JH[0-9]+|^AABR[0-9]+", chromosomes_num_table_other_Rn$Var1), "Freq"]))
+
+chromosomes_num_table_Rn <- chromosomes_num_table_Rn[which(chromosomes_num_table_Rn$Var1 %in% chrom_Rn), ] %>%
+  rbind(scaffolds_Rn)
+```
+
+<br>
+
+## How long are the chromosomes?
+
+The information about chromosome length in base pairs (bp) is given in the column "SEQLENGTH":
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+chrom_length_Hs <- chromosomes_Hs[!duplicated(chromosomes_Hs$SEQNAME), c(3,2)] #SEQNAME & SEQLENGTH
+
+chrom_length_other_Hs <- chrom_length_Hs[-which(chrom_length_Hs$SEQNAME %in% chrom_Hs), ]
+scaffolds_Hs <- data.frame(SEQNAME = "S", SEQLENGTH = sum(chrom_length_other_Hs[grep("^KI[0-9]+|^GL[0-9]+", chrom_length_other_Hs$SEQNAME), "SEQLENGTH"]))
+
+chrom_length_Hs <- chrom_length_Hs[which(chrom_length_Hs$SEQNAME %in% chrom_Hs), ] %>%
+  rbind(scaffolds_Hs)
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+chrom_length_Mm <- chromosomes_Mm[!duplicated(chromosomes_Mm$SEQNAME), c(3,2)] #SEQNAME & SEQLENGTH
+
+chrom_length_other_Mm <- chrom_length_Mm[-which(chrom_length_Mm$SEQNAME %in% chrom_Mm), ]
+scaffolds_Mm <- data.frame(SEQNAME = "S", SEQLENGTH = sum(chrom_length_other_Mm[grep("^JH[0-9]+|^GL[0-9]+", chrom_length_other_Mm$SEQNAME), "SEQLENGTH"]))
+
+chrom_length_Mm <- chrom_length_Mm[which(chrom_length_Mm$SEQNAME %in% chrom_Mm), ] %>%
+  rbind(scaffolds_Mm)
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+chrom_length_Rn <- chromosomes_Rn[!duplicated(chromosomes_Rn$SEQNAME), c(3,2)] #SEQNAME & SEQLENGTH
+
+chrom_length_other_Rn <- chrom_length_Rn[-which(chrom_length_Rn$SEQNAME %in% chrom_Rn), ]
+scaffolds_Rn <- data.frame(SEQNAME = "S", SEQLENGTH = sum(chrom_length_other_Rn[grep("^JH[0-9]+|^AABR[0-9]+", chrom_length_other_Rn$SEQNAME), "SEQLENGTH"]))
+
+chrom_length_Rn <- chrom_length_Rn[which(chrom_length_Rn$SEQNAME %in% chrom_Rn), ] %>%
+  rbind(scaffolds_Rn)
+```
+
+<br>
+
+Now, I can combine the information about
+
+- how long each chromosome is,
+- how much of it is made up of genes and
+- how many genes there are it
+
+into a single dataframe.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+chromosomes_table_Hs <- left_join(chrom_length_Hs, chromosomes_num_table_Hs, by = c("SEQNAME" = "Var1")) %>%
+  left_join(gene_bases_Hs, by = c("SEQNAME" = "Chromosome"))
+
+colnames(chromosomes_table_Hs) <- c("Chromosome", "Chr_length", "No_genes", "Gene_lengths_sum")
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+chromosomes_table_Mm <- left_join(chrom_length_Mm, chromosomes_num_table_Mm, by = c("SEQNAME" = "Var1")) %>%
+  left_join(gene_bases_Mm, by = c("SEQNAME" = "Chromosome"))
+
+colnames(chromosomes_table_Mm) <- c("Chromosome", "Chr_length", "No_genes", "Gene_lengtMm_sum")
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+chromosomes_table_Rn <- left_join(chrom_length_Rn, chromosomes_num_table_Rn, by = c("SEQNAME" = "Var1")) %>%
+  left_join(gene_bases_Rn, by = c("SEQNAME" = "Chromosome"))
+
+colnames(chromosomes_table_Rn) <- c("Chromosome", "Chr_length", "No_genes", "Gene_lengtRn_sum")
+```
+
+Based on this information I am calculating
+
+- the number of genes per chromosome corrected for gene length and
+- the percentage of each chromosome that is taken up by gene sequences.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+chromosomes_table_Hs$No_genes_by_Chr_length <- chromosomes_table_Hs$No_genes/chromosomes_table_Hs$Chr_length
+chromosomes_table_Hs$Percent_of_Chr_covered_by_genes <- round(chromosomes_table_Hs$Gene_lengths_sum/chromosomes_table_Hs$Chr_length*100, digits = 2)
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+chromosomes_table_Mm$No_genes_by_Chr_length <- chromosomes_table_Mm$No_genes/chromosomes_table_Mm$Chr_length
+chromosomes_table_Mm$Percent_of_Chr_covered_by_genes <- round(chromosomes_table_Mm$Gene_lengtMm_sum/chromosomes_table_Mm$Chr_length*100, digits = 2)
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+chromosomes_table_Rn$No_genes_by_Chr_length <- chromosomes_table_Rn$No_genes/chromosomes_table_Rn$Chr_length
+chromosomes_table_Rn$Percent_of_Chr_covered_by_genes <- round(chromosomes_table_Rn$Gene_lengtRn_sum/chromosomes_table_Rn$Chr_length*100, digits = 2)
+```
+
+<br>
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+library(reshape2)
+chromosomes_table_m_Hs <- melt(chromosomes_table_Hs[, c(1,2,3,6)])
+
+f_Hs = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y", "MT", "S")
+chromosomes_table_m_Hs <- within(chromosomes_table_m_Hs, Chromosome <- factor(Chromosome, levels = f_Hs))
+
+labels <- c(No_genes = "Number of Genes", 
+            Chr_length = "Chromosome Length (in bp)", 
+            Percent_of_Chr_covered_by_genes = "Percent of Chromosome\nCovered by Genes")
+
+library(ggplot2)
+p <- ggplot(data = chromosomes_table_m_Hs, aes(x = Chromosome, y = value)) + 
+  geom_bar(stat = "identity", fill = "maroon", alpha = 0.8) + 
+  theme(
+    axis.text = element_text(size = 14),
+    axis.title = element_text(size = 14),
+    panel.grid.major = element_line(colour = "grey"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    strip.background = element_rect(fill = "cornsilk", color = "maroon", size = 2),
+    strip.text = element_text(face = "bold", size = 10, colour = "maroon")
+  ) +
+  labs(
+    title = "Gene-Coverage of Chromosomes - Human",
+    x = "Chromosome", 
+    y = "Value") +
+  facet_grid(variable ~ ., scales = "free", labeller = labeller(variable = labels))
+
+ann_text_Hs <- data.frame(x = chromosomes_table_m_Hs$Chromosome,
+                       y = c(rep(55000000, 26), rep(600, 26), rep(26, 26)),
+                       lab = as.character(chromosomes_table_m_Hs$value),
+                       variable = chromosomes_table_m_Hs$variable)
+
+p + geom_text(data = ann_text_Hs, aes(x, y, label = lab, group = variable), size = 4, angle = 90)
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+chromosomes_table_m_Mm <- melt(chromosomes_table_Mm[, c(1,2,3,6)])
+
+f_Mm = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "X", "Y", "MT", "S")
+chromosomes_table_m_Mm <- within(chromosomes_table_m_Mm, Chromosome <- factor(Chromosome, levels = f_Mm))
+
+labels <- c(No_genes = "Number of Genes", 
+            Chr_length = "Chromosome Length (in bp)", 
+            Percent_of_Chr_covered_by_genes = "Percent of Chromosome\nCovered by Genes")
+
+p <- ggplot(data = chromosomes_table_m_Mm, aes(x = Chromosome, y = value)) + 
+  geom_bar(stat = "identity", fill = "maroon", alpha = 0.8) + 
+  theme(
+    axis.text = element_text(size = 14),
+    axis.title = element_text(size = 14),
+    panel.grid.major = element_line(colour = "grey"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    strip.background = element_rect(fill = "cornsilk", color = "maroon", size = 2),
+    strip.text = element_text(face = "bold", size = 10, colour = "maroon")
+  ) +
+  labs(
+    title = "Gene-Coverage of Chromosomes - Mouse",
+    x = "Chromosome", 
+    y = "Value") +
+  facet_grid(variable ~ ., scales = "free", labeller = labeller(variable = labels))
+
+#ann_text_Mm <- data.frame(x = chromosomes_table_m_Mm$Chromosome,
+#                          y = c(rep(55000000, 23), rep(600, 23), rep(26, 23)),
+#                          lab = as.character(chromosomes_table_m_Mm$value),
+#                          variable = chromosomes_table_Mm$variable)
+
+p #+ geom_text(data = ann_text_Mm, aes(x, y, label = lab, group = variable), size = 4, angle = 90)
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+chromosomes_table_m_Rn <- melt(chromosomes_table_Rn[, c(1,2,3,6)])
+
+f_Rn = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "X", "MT", "S")
+chromosomes_table_m_Rn <- within(chromosomes_table_m_Rn, Chromosome <- factor(Chromosome, levels = f_Rn))
+
+labels <- c(No_genes = "Number of Genes", 
+            Chr_length = "Chromosome Length (in bp)", 
+            Percent_of_Chr_covered_by_genes = "Percent of Chromosome\nCovered by Genes")
+
+p <- ggplot(data = chromosomes_table_m_Rn, aes(x = Chromosome, y = value)) + 
+  geom_bar(stat = "identity", fill = "maroon", alpha = 0.8) + 
+  theme(
+    axis.text = element_text(size = 14),
+    axis.title = element_text(size = 14),
+    panel.grid.major = element_line(colour = "grey"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    strip.background = element_rect(fill = "cornsilk", color = "maroon", size = 2),
+    strip.text = element_text(face = "bold", size = 10, colour = "maroon")
+  ) +
+  labs(
+    title = "Gene-Coverage of Chromosomes - Rat",
+    x = "Chromosome", 
+    y = "Value") +
+  facet_grid(variable ~ ., scales = "free", labeller = labeller(variable = labels))
+
+#ann_text_Rn <- data.frame(x = chromosomes_table_m_Rn$Chromosome,
+#                          y = c(rep(55000000, 23), rep(600, 23), rep(26, 23)),
+#                          lab = as.character(chromosomes_table_m_Rn$value),
+#                          variable = chromosomes_table_Rn$variable)
+
+p #+ geom_text(data = ann_text_Rn, aes(x, y, label = lab, group = variable), size = 4, angle = 90)
+```
+
+
+<br>
+
+- text annotation plots
+- does rat really not have a y chromosome?
+- boxplot of percentage of chromosome covered by genes for each species (without scaffold)
+- compare saffolds between species
+
+------------------
+
+<br>
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=4, fig.align="center", cache=FALSE}
+sessionInfo()
+```
+
