@@ -1,0 +1,525 @@
+---
+title: "AnnotationDbi playground"
+author: "Shirin Glander"
+date: "`r Sys.Date()`"
+output:
+  prettydoc::html_pretty:
+    theme: tactile
+    highlight: github
+---
+
+```{r libraries, echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, include=FALSE}
+library(AnnotationDbi)
+library(org.Hs.eg.db)
+
+library(TxDb.Hsapiens.UCSC.hg38.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
+
+library(EnsDb.Hsapiens.v79)
+edb <- EnsDb.Hsapiens.v79
+
+library(ggplot2)
+
+#columns(org.Hs.eg.db)
+#keytypes(org.Hs.eg.db)
+```
+
+# How many genes are there in AnnotationDbi?
+
+```{r gene_number, echo=FALSE, cache=TRUE}
+ENTREZID <- keys(org.Hs.eg.db,keytype="ENTREZID")
+
+SYMBOL <- keys(org.Hs.eg.db,keytype="SYMBOL")
+
+ENSEMBL <- keys(org.Hs.eg.db,keytype="ENSEMBL")
+```
+
+- Number of Entrez IDs: `r length(ENTREZID)`
+- Number of Symbols: `r length(SYMBOL)`
+- Number of Ensembl IDs: `r length(ENSEMBL)`
+
+---
+
+<br>
+
+# How many transcripts do the genes have?
+
+## Using AnnotationDbi database
+
+```{r gene_transcripts, echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE}
+ENTREZID_trans <- select(org.Hs.eg.db, keys=ENTREZID, columns="ENSEMBLTRANS", keytype="ENTREZID")
+
+# Number of genes without transcripts
+ENTREZID_notrans <- ENTREZID_trans[which(is.na(ENTREZID_trans$ENSEMBLTRANS)), 1]
+
+```
+
+- Number of Entrez IDs with at least one transcript (ENSEMBL): `r length(ENTREZID_notrans)`
+
+```{r gene_transcripts_plots, echo=FALSE, cache=TRUE, fig.width=8, fig.height=8, fig.align="center"}
+# Genes with at least one transcript
+ENTREZID_trans_2 <- ENTREZID_trans[-which(ENTREZID_trans$ENTREZID %in% ENTREZID_notrans), ]
+
+# Genes with no transcript
+ENTREZID_notrans_2 <- ENTREZID_trans[which(ENTREZID_trans$ENTREZID %in% ENTREZID_notrans), ]
+ENTREZID_notrans_2$ENSEMBLTRANS <- 0
+colnames(ENTREZID_notrans_2) <- c("Var1", "Freq")
+
+# Summarize number of transcripts per gene
+transcript_num_table <- as.data.frame(table(ENTREZID_trans_2$ENTREZID))
+transcript_num_table <- rbind(ENTREZID_notrans_2, transcript_num_table)
+
+# Plot the histogram of number of transcripts per gene
+#ggplot(data=transcript_num_table, aes(Freq)) + 
+#  geom_histogram(breaks=seq(min(transcript_num_table$Freq), max(transcript_num_table$Freq), by = 2),
+#                 fill="red", 
+#                 alpha = .5) +
+#  labs(title="Histogram of number of transcripts per gene") +
+#  labs(x="Number of transcripts per gene", y="Count")
+
+# show separately for genes with many transcripts
+transcript_num_table$Freq <- as.numeric(transcript_num_table$Freq)
+transcript_num_table$group <- ifelse(transcript_num_table$Freq == 0, "none", ifelse(transcript_num_table$Freq > 25, "high", "low"))
+
+f=c("none", "low", "high")
+transcript_num_table <- within(transcript_num_table, group <- factor(group, levels=f))
+
+
+p <- ggplot(data=transcript_num_table, aes(Freq)) +
+  geom_histogram(breaks=seq(min(transcript_num_table$Freq), max(transcript_num_table$Freq), by = 1),
+                 fill="maroon", 
+                 alpha = 1) +
+  theme(
+    axis.text = element_text(size = 14),
+    axis.title = element_text(size = 14),
+    panel.grid.major = element_line(colour = "grey"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    strip.background = element_rect(fill = "cornsilk", color = "maroon", size = 2),
+    strip.text = element_text(face = "bold", size = 15, colour = "maroon")
+  ) +
+  labs(title="Histogram of number of transcripts per gene") +
+  labs(x="Number of transcripts per gene", y="Count") +
+  facet_grid(group ~ ., scales="free")
+
+
+ann_text <- data.frame(x = c(50, 55, 85),
+                       y = c(43000, 2150, 8.9),
+                       group = c("none", "low", "high"),
+                       labs = c(paste("No. of genes with no transcript in ENSEMBL:", length(which(transcript_num_table$group == "none"))), 
+                                paste("No. of genes with 1-25 transcripts in ENSEMBL:", length(which(transcript_num_table$group == "low"))), 
+                                paste("No. of genes with > 25 transcripts in ENSEMBL:", length(which(transcript_num_table$group == "high")))))
+
+p + geom_text(data = ann_text, aes(x, y, label = labs, group=NULL), size = 4)
+
+```
+
+---
+
+## Using TxDb.Hsapiens.UCSC.hg38.knownGene database
+
+```{r gene_transcripts_2, echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE, fig.width=8, fig.height=8, fig.align="center"}
+#columns(txdb)
+keys <- keys(txdb, keytype="GENEID")
+cols <- c("TXID")
+
+transcripts <- select(txdb, keys=keys, columns=cols, keytype="GENEID")
+
+transcript_num_table <- as.data.frame(table(transcripts$GENEID))
+
+# show separately for genes with many transcripts
+transcript_num_table$Freq <- as.numeric(transcript_num_table$Freq)
+transcript_num_table$group <- ifelse(transcript_num_table$Freq > 25, "high", "low")
+
+f=c("low", "high")
+transcript_num_table <- within(transcript_num_table, group <- factor(group, levels=f))
+
+
+p <- ggplot(data=transcript_num_table, aes(Freq)) +
+  geom_histogram(breaks=seq(min(transcript_num_table$Freq), max(transcript_num_table$Freq), by = 1),
+                 fill="maroon", 
+                 alpha = 1) +
+  theme(
+    axis.text = element_text(size = 14),
+    axis.title = element_text(size = 14),
+    panel.grid.major = element_line(colour = "grey"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    strip.background = element_rect(fill = "cornsilk", color = "maroon", size = 2),
+    strip.text = element_text(face = "bold", size = 15, colour = "maroon")
+  ) +
+  labs(title="Histogram of number of transcripts per gene") +
+  labs(x="Number of transcripts per gene", y="Count") +
+  facet_grid(group ~ ., scales="free")
+
+
+ann_text <- data.frame(x = c(100, 130),
+                       y = c(11000, 11),
+                       group = c("low", "high"),
+                       labs = c(paste("No. of genes with 1-25 transcripts in UCSC.hg38:", length(which(transcript_num_table$group == "low"))), 
+                                paste("No. of genes with > 25 transcripts in UCSC.hg38:", length(which(transcript_num_table$group == "high")))))
+
+p + geom_text(data = ann_text, aes(x, y, label = labs, group=NULL), size = 4)
+
+```
+
+---
+
+## Using EnsDb.Hsapiens.v79 database
+
+```{r gene_transcripts_3, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+#columns(edb)
+#keytypes(edb)
+#
+keys <- keys(edb, keytype="GENEID")
+## Get the data
+transcripts <-  select(edb, keys=keys, columns=c("ENTREZID", "GENENAME", "TXID", "TXBIOTYPE"), keytype="GENEID")
+
+transcript_num_table <- as.data.frame(table(transcripts$GENEID))
+
+# show separately for genes with many transcripts
+transcript_num_table$Freq <- as.numeric(transcript_num_table$Freq)
+transcript_num_table$group <- ifelse(transcript_num_table$Freq > 25, "high", "low")
+
+f=c("low", "high")
+transcript_num_table <- within(transcript_num_table, group <- factor(group, levels=f))
+
+
+p <- ggplot(data=transcript_num_table, aes(Freq)) +
+  geom_histogram(breaks=seq(min(transcript_num_table$Freq), max(transcript_num_table$Freq), by = 1),
+                 fill="maroon", 
+                 alpha = 1) +
+  theme(
+    axis.text = element_text(size = 14),
+    axis.title = element_text(size = 14),
+    panel.grid.major = element_line(colour = "grey"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    strip.background = element_rect(fill = "cornsilk", color = "maroon", size = 2),
+    strip.text = element_text(face = "bold", size = 15, colour = "maroon")
+  ) +
+  labs(title="Histogram of number of transcripts per gene") +
+  labs(x="Number of transcripts per gene", y="Count") +
+  facet_grid(group ~ ., scales="free")
+
+
+ann_text <- data.frame(x = c(70, 100),
+                       y = c(35000, 35),
+                       group = c("low", "high"),
+                       labs = c(paste("No. of genes with 1-25 transcripts in EnsDb:", length(which(transcript_num_table$group == "low"))), 
+                                paste("No. of genes with > 25 transcripts in EnsDb:", length(which(transcript_num_table$group == "high")))))
+
+p + geom_text(data = ann_text, aes(x, y, label = labs, group=NULL), size = 4)
+
+```
+
+---
+
+<br>
+
+# Distribution of gene biotypes
+
+## Using EnsDb.Hsapiens.v79 database
+
+```{r genebiotypes, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=8, fig.align="center", cache=TRUE}
+#columns(edb)
+
+genebiotypes <- listGenebiotypes(edb)
+
+genebiotypes_table <- data.frame()
+for (i in 1:length(genebiotypes)){
+  txs <- select(edb, keys=GenebiotypeFilter(paste(genebiotypes[i])), columns=c("ENTREZID", "GENENAME", "GENEID"))
+  genebiotypes_table[i,1] <- paste(genebiotypes[i])
+  genebiotypes_table[i,2] <- nrow(txs)
+}
+
+genebiotypes_table$percent <- round(genebiotypes_table$V2/sum(genebiotypes_table$V2)*100, digits = 4)
+genebiotypes_table <- genebiotypes_table[order(genebiotypes_table$percent,decreasing = TRUE), ]
+genebiotypes_table$levels <- factor(genebiotypes_table$V1, levels=paste0(genebiotypes_table$V1))
+
+bp <- ggplot(genebiotypes_table, aes(x="", y=percent, fill=levels)) + geom_bar(width = 1, stat = "identity") + theme_minimal()
+pie <- bp + coord_polar("y", start=0) +
+  ggtitle("Percentage of gene biotypes in human genome") +
+  theme(
+  axis.title.x = element_blank(),
+  axis.title.y = element_blank(),
+  panel.border = element_blank(),
+  panel.grid=element_blank(),
+  axis.ticks = element_blank(),
+  plot.title=element_text(size=14, face="bold"),
+  legend.title=element_blank(),
+  legend.position="bottom",
+  legend.text = element_text(size=8)
+  )
+pie
+
+```
+ 
+---
+
+<br>
+
+## What types of genes are the ones with a large number of transcripts?
+
+### Using EnsDb.Hsapiens.v79 database
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=8, fig.align="center", cache=TRUE}
+
+transcript_num_table_high <- transcript_num_table[which(transcript_num_table$Freq >= 50),]
+
+transcripts_high <- transcripts[which(transcripts$GENEID %in% transcript_num_table_high$Var1),]
+transcripts_high <-  select(edb, keys=transcripts_high$GENEID, columns=c("ENTREZID", "GENENAME", "TXID", "TXBIOTYPE", "GENEBIOTYPE"), keytype="GENEID")
+
+transcripts_high_num_table <- as.data.frame(table(transcripts_high$TXBIOTYPE))
+
+transcripts_high_num_table$percent <- round(transcripts_high_num_table$Freq/sum(transcripts_high_num_table$Freq)*100, digits = 4)
+transcripts_high_num_table <- transcripts_high_num_table[order(transcripts_high_num_table$percent,decreasing = TRUE), ]
+transcripts_high_num_table$levels <- factor(transcripts_high_num_table$Var1, levels=paste0(transcripts_high_num_table$Var1))
+
+bp <- ggplot(transcripts_high_num_table, aes(x="", y=percent, fill=levels)) + geom_bar(width = 1, stat = "identity") + theme_minimal()
+pie <- bp + coord_polar("y", start=0) +
+  ggtitle("Percentage of gene biotypes of genes with 50 or more transcripts") +
+  theme(
+  axis.title.x = element_blank(),
+  axis.title.y = element_blank(),
+  panel.border = element_blank(),
+  panel.grid=element_blank(),
+  axis.ticks = element_blank(),
+  plot.title=element_text(size=14, face="bold"),
+  legend.title=element_blank(),
+  legend.position="bottom",
+  legend.text = element_text(size=8)
+  )
+pie
+```
+
+Number of genes with 50 or more transcripts: `r nrow(transcript_num_table_high)`
+
+#### Enrichment Analysis of genes with 50 or more transcripts
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=8, fig.align="center", cache=TRUE}
+
+library(splitstackshape)
+
+transcripts_high_entrez <- cSplit(transcripts_high, splitCols = "ENTREZID", sep = ";", direction = "long")
+transcripts_high_entrez <- unique(as.character(transcripts_high_entrez$ENTREZID))
+
+library(clusterProfiler)
+library(DOSE)
+
+OrgDb <- org.Hs.eg.db::org.Hs.eg.db
+
+# Group GO
+ggo <- clusterProfiler::groupGO(gene     = transcripts_high_entrez,
+                                OrgDb    = OrgDb,
+                                ont      = "BP",
+                                level    = 3,
+                                readable = TRUE)
+barplot(ggo, drop=TRUE, showCategory=30, title = "GO grouping of genes with 50 or more transcripts")
+
+ggo_t <-summary(ggo)
+ggo_t <- ggo_t[order(as.numeric(ggo_t$Count), decreasing = TRUE),]
+ggo_t <- ggo_t[which(ggo_t$Count > 5),]
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=6, fig.height=4, fig.align="center", cache=TRUE}
+## KEGG over-representation test
+kk <- clusterProfiler::enrichKEGG(gene         = transcripts_high_entrez,
+                 organism     = 'hsa',
+                 pvalueCutoff = 0.05)
+#head(summary(kk))
+#barplot(kk, showCategory=8)
+clusterProfiler::dotplot(kk)
+cnetplot(kk, categorySize="geneNum")
+```
+
+---
+ 
+<br>
+
+# How many exons do genes have?
+
+## Using EnsDb.Hsapiens.v79 database
+
+```{r gene_exons, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+#columns(edb)
+
+keys <- keys(edb, keytype="GENEID")
+## Get the data
+exons <-  select(edb, keys=keys, columns=c("EXONID", "EXONIDX", "EXONSEQSTART", "EXONSEQEND"), keytype="GENEID")
+
+exons_num_table <- as.data.frame(table(exons$GENEID))
+
+# show separately for genes with many exonss
+exons_num_table$Freq <- as.numeric(exons_num_table$Freq)
+exons_num_table$group <- ifelse(exons_num_table$Freq > 100, "high", "low")
+
+f=c("low", "high")
+exons_num_table <- within(exons_num_table, group <- factor(group, levels=f))
+
+
+p <- ggplot(data=exons_num_table, aes(Freq)) +
+  geom_histogram(breaks=seq(min(exons_num_table$Freq), max(exons_num_table$Freq), by = 1),
+                 fill="maroon", 
+                 alpha = 1) +
+  theme(
+    axis.text = element_text(size = 14),
+    axis.title = element_text(size = 14),
+    panel.grid.major = element_line(colour = "grey"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    strip.background = element_rect(fill = "cornsilk", color = "maroon", size = 2),
+    strip.text = element_text(face = "bold", size = 15, colour = "maroon")
+  ) +
+  labs(title="Histogram of number of exons per gene") +
+  labs(x="Number of exons per gene", y="Count") +
+  facet_grid(group ~ ., scales="free")
+
+ann_text <- data.frame(x = c(400, 500),
+                       y = c(28000, 32),
+                       group = c("low", "high"),
+                       labs = c(paste("No. of genes with 1-100 exons in EnsDb:", length(which(exons_num_table$group == "low"))), 
+                                paste("No. of genes with > 100 exons in EnsDb:", length(which(exons_num_table$group == "high")))))
+
+p + geom_text(data = ann_text, aes(x, y, label = labs, group=NULL), size = 4)
+
+```
+
+## Do genes with more exons also have more transcripts?
+
+```{r gene_exons_transcripts, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+
+exons_transcripts_num_table <- merge(exons_num_table, transcript_num_table, by = "Var1")
+colnames(exons_transcripts_num_table) <- c("GeneID", "Freq_exons", "group_exons", "Freq_transcripts", "group_transcripts")
+
+exons_transcripts_num_table$groups <- paste(exons_transcripts_num_table$group_exons, exons_transcripts_num_table$group_transcripts, sep = "_")
+
+p <- ggplot(exons_transcripts_num_table, aes(x=Freq_exons, y=Freq_transcripts)) +
+    geom_point(shape=19,      # Use solid circles
+               alpha=1/4) +    # Use hollow circles
+    geom_smooth() +           # Add a loess smoothed fit curve with confidence region
+    geom_smooth(method=lm, col = "maroon") +    #  (by default includes 95% confidence region)
+    theme(
+        axis.text = element_text(size = 14),
+        axis.title = element_text(size = 14),
+        panel.grid.major = element_line(colour = "grey"),
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = "white"),
+        strip.background = element_rect(fill = "cornsilk", color = "maroon", size = 2),
+        strip.text = element_text(face = "bold", size = 15, colour = "maroon")
+      ) +
+      labs(title="Number of exons vs number of transcripts per gene") +
+      labs(x="Number of exons per gene", y="Number of transcripts per gene")
+
+# Get the values
+loess_vals <- loess(Freq_transcripts~Freq_exons, exons_transcripts_num_table)
+#str(loess_vals)
+
+#lm_vals <- lm(Freq_transcripts~Freq_exons, exons_transcripts_num_table)
+#summary(lm_vals)
+
+lm_cor.test <- cor.test(exons_transcripts_num_table$Freq_exons, exons_transcripts_num_table$Freq_transcripts)
+
+ann_text <- data.frame(x = c(1000, 1050),
+                       y = c(115, 70),
+                       labs = c(paste("Linear correlation:", round(lm_cor.test$estimate, digits = 2)), 
+                                paste("Loess correlation\nResidual Standard Error:", round(loess_vals$s, digits = 2))))
+
+p + geom_text(data = ann_text, aes(x, y, label = labs, group=NULL), size = 4)
+
+```
+
+```{r gene_exons_transcripts2, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+exons_transcripts_num_table$groups <- ifelse(exons_transcripts_num_table$groups == "high_high", "exons > 100 & transcripts > 25",
+            ifelse(exons_transcripts_num_table$groups == "high_low", "exons > 100 & transcripts <= 25 ", 
+            ifelse(exons_transcripts_num_table$groups == "low_high", "exons <= 100 & transcripts > 25", 
+            "exons <= 100 & transcripts <= 25")))
+
+ggplot(exons_transcripts_num_table, aes(x=Freq_exons, y=Freq_transcripts, color=groups)) +
+    geom_point(shape=19,      # Use solid circles
+               alpha=1/4) +    # 1/4 opacity
+    scale_colour_hue(l=50) + # Use a slightly darker palette than normal
+    geom_smooth(method=lm,   # Add regression lines
+                se=TRUE, fullrange=TRUE) +   # Don't add shaded confidence region
+    #facet_grid(groups ~ ., scales="free") +
+    facet_wrap(~ groups, scales = "free") +
+    theme(
+        axis.text = element_text(size = 14),
+        axis.title = element_text(size = 14),
+        panel.grid.major = element_line(colour = "grey"),
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = "white"),
+        strip.background = element_rect(fill = "cornsilk", color = "maroon", size = 2),
+        strip.text = element_text(face = "bold", size = 10, colour = "maroon"),
+        legend.position="none"
+      ) +
+      labs(title="Number of exons vs number of transcripts per gene") +
+      labs(x="Number of exons per gene", y="Number of transcripts per gene")
+
+```
+
+# How many genes are on each chromosome?
+
+```{r chromosomes, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=TRUE}
+
+chromosomes <- select(edb, keys=keys, columns=c("SEQLENGTH", "SEQNAME", "SEQSTRAND", "GENESEQSTART", "GENESEQEND"), keytype="GENEID")
+chromosomes$SEQNAME <- as.factor(chromosomes$SEQNAME)
+chromosomes$SEQSTRAND <- as.factor(chromosomes$SEQSTRAND)
+chromosomes$GENELENGTH <- chromosomes$GENESEQEND - chromosomes$GENESEQSTART
+
+gene_bases <- aggregate(chromosomes$GENELENGTH, by=list(Chromosome=chromosomes$SEQNAME), FUN=sum)
+gene_bases <- gene_bases[-grep("CHR", gene_bases$Chromosome), ]
+gene_bases <- gene_bases[-grep("LRG", gene_bases$Chromosome), ]
+gene_bases <- gene_bases[-grep("KI", gene_bases$Chromosome), ]
+gene_bases <- gene_bases[-grep("GL", gene_bases$Chromosome), ]
+
+chromosomes_num_table <- as.data.frame(table(chromosomes$SEQNAME))
+chromosomes_num_table <- chromosomes_num_table[-grep("CHR", chromosomes_num_table$Var1), ]
+chromosomes_num_table <- chromosomes_num_table[-grep("LRG", chromosomes_num_table$Var1), ]
+chromosomes_num_table <- chromosomes_num_table[-grep("KI", chromosomes_num_table$Var1), ]
+chromosomes_num_table <- chromosomes_num_table[-grep("GL", chromosomes_num_table$Var1), ]
+
+chromosomes_2 <- chromosomes[!duplicated(chromosomes$SEQNAME), c(3,2)] #SEQNAME & SEQLENGTH
+chromosomes_2 <- chromosomes_2[-grep("CHR", chromosomes_2$SEQNAME), ]
+chromosomes_2 <- chromosomes_2[-grep("LRG", chromosomes_2$SEQNAME), ]
+chromosomes_2 <- chromosomes_2[-grep("KI", chromosomes_2$SEQNAME), ]
+chromosomes_2 <- chromosomes_2[-grep("GL", chromosomes_2$SEQNAME), ]
+
+chromosomes_3 <- merge(chromosomes_num_table, chromosomes_2, by.x = "Var1", by.y = "SEQNAME")
+chromosomes_3 <- merge(chromosomes_3, gene_bases, by.x = "Var1", by.y = "Chromosome")
+colnames(chromosomes_3) <- c("Chromosome", "No_Genes", "Chr_Length", "Gene_Lengths_Sum")
+chromosomes_3$No_Genes_by_Chr_Length <- chromosomes_3$Chr_Length/chromosomes_3$No_Genes
+chromosomes_3$Percent_of_Chr_covered_by_Genes <- round(chromosomes_3$Gene_Lengths_Sum/chromosomes_3$Chr_Length*100, digits = 4)
+
+f=c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y", "MT")
+chromosomes_3 <- within(chromosomes_3, Chromosome <- factor(Chromosome, levels=f))
+
+chromosomes_3_m <- melt(chromosomes_3[, c(1,2,3,6)])
+
+labels <- c(No_Genes = "Number of Genes", 
+            Chr_Length = "Chromosome Length (in bp)", 
+            Percent_of_Chr_covered_by_Genes = "Percent of Chromosome\nCovered by Genes")
+
+p <- ggplot(data=chromosomes_3_m, aes(x=Chromosome, y=value)) + geom_bar(stat="identity", fill="maroon", alpha = 1) + 
+  theme(
+    axis.text = element_text(size = 14),
+    axis.title = element_text(size = 14),
+    panel.grid.major = element_line(colour = "grey"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    strip.background = element_rect(fill = "cornsilk", color = "maroon", size = 2),
+    strip.text = element_text(face = "bold", size = 10, colour = "maroon")
+  ) +
+  labs(title="Gene-Coverage of Chromosomes") +
+  labs(x="Chromosome", y="Value") +
+  facet_grid(variable ~ ., scales="free", labeller=labeller(variable = labels))
+
+ann_text <- data.frame(x = chromosomes_3_m$Chromosome,
+                       y = c(rep(1000, 25), rep(70000000, 25), rep(26, 25)),
+                       lab = as.character(chromosomes_3_m$value),
+                       variable = chromosomes_3_m$variable)
+
+p + geom_text(data = ann_text, aes(x, y, label = lab, group = variable), size = 4, angle = 90)
+```
+
+

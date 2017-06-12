@@ -1,0 +1,615 @@
+---
+title: "Gene homology Part 3 - Visualizing Gene Ontology"
+author: "Shirin Glander"
+date: "`r Sys.Date()`"
+output: 
+  md_document:
+    variant: markdown_github
+---
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+library(biomaRt)
+ensembl = useMart("ensembl")
+datasets <- listDatasets(ensembl)
+
+datasets$orgDb <- NA
+
+datasets[grep("hsapiens", datasets$dataset), "orgDb"] <- "org.Hs.eg.db"
+datasets[grep("dmel", datasets$dataset), "orgDb"] <- "org.Dm.eg.db"
+datasets[grep("mmus", datasets$dataset), "orgDb"] <- "org.Mm.eg.db"
+datasets[grep("celegans", datasets$dataset), "orgDb"] <- "org.Ce.eg.db"
+datasets[grep("cfam", datasets$dataset), "orgDb"] <- "org.Cf.eg.db"
+datasets[grep("drerio", datasets$dataset), "orgDb"] <- "org.Dr.eg.db"
+datasets[grep("ggallus", datasets$dataset), "orgDb"] <- "org.Gg.eg.db"
+datasets[grep("ptrog", datasets$dataset), "orgDb"] <- "org.Pt.eg.db"
+datasets[grep("rnor", datasets$dataset), "orgDb"] <- "org.Rn.eg.db"
+datasets[grep("scer", datasets$dataset), "orgDb"] <- "org.Sc.sgd.db"
+datasets[grep("sscrofa", datasets$dataset), "orgDb"] <- "org.Ss.eg.db"
+
+datasets <- datasets[!is.na(datasets$orgDb), ]
+
+lapply(datasets$orgDb, require, character.only = TRUE)
+
+datasets[, 2] <- gsub("(.*)( genes (.*))", "\\1", datasets[, 2])
+datasets$description[grep("Saccharomyces", datasets$description)] <- "Yeast"
+datasets$description[grep("elegans", datasets$description)] <- "C. elegans"
+```
+
+## Which genes have homologs in many species and which have few?
+
+In [Part 1](https://shiring.github.io/genome/2016/12/11/homologous_genes_post) and [Part 2](https://shiring.github.io/genome/2016/12/14/homologous_genes_part2_post) I have already explored gene homology between humans and other species. But there I have only considered how many genes where shared between the species.
+
+In this post I want to have a closer look at what these genes with homologs in many species do, i.e. what their biological function is.
+
+<br>
+
+I am starting with the same table as from [this post](https://shiring.github.io/genome/2016/12/14/homologous_genes_part2_post), called *homologs_table_combined*.
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+homologs_table_combined <- read.table("U:/Github_blog/blog_posts_prep/annotationdbi/homologs_table_combined_full_network.txt", header = TRUE, sep = "\t")
+#homologs_table_combined <- read.table("~/Documents/Github/blog_posts_prep/annotationdbi/homologs_table_combined_full_network.txt", header = TRUE, sep = "\t")
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 30, fig.height = 30, fig.align = "center"}
+head(homologs_table_combined)
+```
+
+Each row in this table denotes a gene with its Entrez ID and corresponding Entrez IDs for homologs in each of the other 10 species I explored. If a gene doesn't have homolog the table says "NA". However, some genes have duplicate entries for a species if there are multiple homologs in different species.
+
+By counting the number of NAs per row, we can identify genes with homologs in all species (sum of NAs = 0) and genes which are specific (sum of NAs = 10).
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 30, fig.height = 30, fig.align = "center"}
+homologs_na <- rowSums(is.na(homologs_table_combined))
+```
+
+Before I delve deeper into the biology behind these genes, I want to examine the distribution of the NA-counts. To do so, I am plotting a histogram.
+
+For this, I'm first preparing my custom ggplot2 theme:
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 6, fig.align = "center"}
+library(ggplot2)
+my_theme <- function(base_size = 12, base_family = "sans"){
+  theme_minimal(base_size = base_size, base_family = base_family) +
+  theme(
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14),
+    panel.grid.major = element_line(color = "grey"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "aliceblue"),
+    strip.background = element_rect(fill = "royalblue", color = "grey", size = 1),
+    strip.text = element_text(face = "bold", size = 12, color = "white"),
+    legend.position = "bottom",
+    legend.justification = "top", 
+    legend.box = "horizontal",
+    legend.box.background = element_rect(colour = "grey50"),
+    legend.background = element_blank(),
+    panel.border = element_rect(color = "grey", fill = NA, size = 0.5)
+  )
+}
+
+theme_set(my_theme())
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+ggplot() + 
+  aes(homologs_na) + 
+  geom_histogram(binwidth = 1, color = "royalblue", fill = "royalblue", alpha = 0.8) +
+  labs(
+    x = "Number of NAs per row of gene homology table",
+    y = "Count",
+    title = "How many homologs do genes have?",
+    subtitle = "Showing all bins from 0 to 10",
+    caption = "\nEach row of the gene homology table list a gene and all its homologs in 10 other species.
+    If a gene doesn't have a homolog, its value in the table is NA. Thus, rows with many NAs refer to a
+    gene that is specific to one species, while rows with no NAs show genes with homologs in all species -
+    such genes are said to be highly conserved."
+  )
+```
+
+Clearly, most genes are specific to a species, they have NAs in all but one column. The rest of the histogram is a bit hard to differentiate with the peak at 10, so let's look at the same data again with these genes:
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+ggplot() + 
+  aes(subset(homologs_na, homologs_na  < 10)) + 
+  geom_histogram(binwidth = 1, color = "royalblue", fill = "royalblue", alpha = 0.8) +
+  labs(
+    x = "Number of NAs per row of gene homology table",
+    y = "Count",
+    title = "How many homologs do genes have?",
+    subtitle = "Showing bins from 0 to 9",
+    caption = "\nEach row of the gene homology table list a gene and all its homologs in 10 other species.
+    If a gene doesn't have a homolog, its value in the table is NA. Thus, rows with many NAs refer to a
+    gene that is specific to one species, while rows with no NAs show genes with homologs in all species -
+    such genes are said to be highly conserved."
+  )
+```
+
+Now we can see that most genes have homologs in 9 species (2 NAs). But there are still quite a few genes with homologs in all species. These I want to look at first.
+
+<br>
+
+### Which genes are highly conserved and have homologs in many species?
+
+There are 3461 rows in the original table with no NAs.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+genes_homologs_all <- homologs_table_combined[which(rowSums(is.na(homologs_table_combined)) == 0), ]
+nrow(genes_homologs_all)
+```
+
+Looking at all of these genes by hand wouldn't be feasible. So, to find out what biological functions these genes have, I am using gene ontology (GO-term) enrichment analysis as implemented in [clusterProfiler](https://bioconductor.org/packages/release/bioc/html/clusterProfiler.html).
+
+- Biological processes: Collections of molecular events and functions contributing to a biological process
+- Cellular component: (sub-) cellular structures and locations, macromolecular complexes
+- Molecular functions: Molecular functions like catalytic or binding activity
+
+```{r echo=TRUE, message=FALSE, warning=TRUE, fig.width=15, fig.height=6, fig.align="center", cache=TRUE}
+library(clusterProfiler)
+library(DOSE)
+
+for (i in 1:nrow(datasets)) {
+  species <- datasets$dataset[i]
+  genes <- as.character(unique(genes_homologs_all[, species]))
+  universe <- as.character(unique(na.omit(homologs_table_combined[, species])))
+  
+  cat("\nSpecies", datasets$description[i], "has", length(universe), "unique Entrez IDs, of which", length(genes), "have homologs in all species.\n")
+  
+  try(go_enrich_BP <- enrichGO(gene = genes, 
+                        keytype = "ENTREZID",
+                        OrgDb = get(datasets$orgDb[i]),
+                        ont = "BP",
+                        qvalueCutoff = 0.05,
+                        universe = universe,
+                        readable = TRUE))
+  
+  try(go_enrich_MF <- enrichGO(gene = genes, 
+                        keytype = "ENTREZID",
+                        OrgDb = get(datasets$orgDb[i]),
+                        ont = "MF",
+                        qvalueCutoff = 0.05,
+                        universe = universe,
+                        readable = TRUE))
+  
+  try(go_enrich_CC <- enrichGO(gene = genes, 
+                        keytype = "ENTREZID",
+                        OrgDb = get(datasets$orgDb[i]),
+                        ont = "CC",
+                        qvalueCutoff = 0.05,
+                        universe = universe,
+                        readable = TRUE))
+  
+  try(assign(paste("go_enrich_BP", species, sep = "_"), go_enrich_BP))
+  try(assign(paste("go_enrich_MF", species, sep = "_"), go_enrich_MF))
+  try(assign(paste("go_enrich_CC", species, sep = "_"), go_enrich_CC))
+}
+```
+
+I'm not sure why yeast throws an error but since all the other species worked I will ignore yeast genes for now...
+
+```{r message=FALSE, warning=FALSE, fig.width=20, fig.height=20, fig.align="center", cache=FALSE}
+# removing yeast
+datasets_2 <- datasets[-grep("scerevisiae_gene_ensembl", datasets$dataset), ]
+
+library(dplyr)
+
+cutoff = 10
+
+for (i in 1:nrow(datasets_2)) {
+  species <- datasets_2$dataset[i]
+  
+  go_enrich_BP_df <- as.data.frame(get(paste("go_enrich_BP", species, sep = "_"))) %>%
+    mutate(GR = as.numeric(Count) / as.numeric(gsub(".*/", "", GeneRatio)),
+           Category = "BP")
+  
+  plot_BP <- go_enrich_BP_df[1:cutoff, ]
+  plot_BP$Description <- factor(plot_BP$Description, levels = plot_BP$Description[order(plot_BP$GR)])
+    
+  go_enrich_MF_df <- as.data.frame(get(paste("go_enrich_MF", species, sep = "_"))) %>%
+    mutate(GR = as.numeric(Count) / as.numeric(gsub(".*/", "", GeneRatio)),
+           Category = "MF")
+  
+  plot_MF <- go_enrich_MF_df[1:cutoff, ]
+  plot_MF$Description <- factor(plot_MF$Description, levels = plot_MF$Description[order(plot_MF$GR)])
+
+  go_enrich_CC_df <- as.data.frame(get(paste("go_enrich_CC", species, sep = "_"))) %>%
+    mutate(GR = as.numeric(Count) / as.numeric(gsub(".*/", "", GeneRatio)),
+           Category = "CC")
+  
+  plot_CC <- go_enrich_CC_df[1:cutoff, ]
+  plot_CC$Description <- factor(plot_CC$Description, levels = plot_CC$Description[order(plot_CC$GR)])
+  
+  plot <- rbind(plot_BP, plot_MF, plot_CC)
+  plot$Species <- paste(datasets_2$description[i])
+
+  if (i == 1) {
+    plot_df <- plot
+  } else {
+    plot_df <- rbind(plot_df, plot)
+  }
+}
+
+length(unique(plot_df$ID))
+```
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=20, fig.height=22, fig.align="center", cache=FALSE}
+ggplot(plot_df, aes(x = GR, y = Description, size = Count, color = p.adjust)) +
+    geom_point() +
+    labs(
+      title = paste("Top", cutoff, "enriched GO terms"),
+      x = "Gene Ratio",
+      y = ""
+    ) +
+    facet_grid(Category ~ Species, scales = "free_y")
+```
+
+```{r message=FALSE, warning=FALSE, fig.width=20, fig.height=22, fig.align="center", cache=FALSE}
+ggplot(plot_df, aes(x = Species, y = Description, fill = GR)) + 
+  geom_tile(width = 1, height = 1) +
+  scale_fill_gradient2(low = "white", mid = "blue", high = "red", space = "Lab", name = "Gene Ratio") +
+  facet_grid(Category ~ ., scales = "free_y") +
+  scale_x_discrete(position = "top") +
+  labs(
+      title = paste("Top", cutoff, "enriched GO terms"),
+      x = "",
+      y = ""
+    )
+```
+
+<br>
+
+##### Word clouds
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=15, fig.height=6, fig.align="center", cache=FALSE}
+library(tm)
+library(SnowballC)
+library(wordcloud)
+library(RColorBrewer)
+
+wordcloud_function <- function(data = data,
+                               removewords = c("process", "activity", "positive", "negative", "response", "regulation"),
+                               min.freq = 4,
+                               max.words=Inf,
+                               random.order=TRUE){
+  input <- Corpus(VectorSource(data))
+  
+  input <- tm_map(input, content_transformer(tolower))
+  input <- tm_map(input, content_transformer(removePunctuation))
+  input <- tm_map(input, removeNumbers)
+  input <- tm_map(input, stripWhitespace)
+  
+  toSpace <- content_transformer(function(x , pattern ) gsub(pattern, " ", x))
+  input <- tm_map(input, toSpace, "/")
+  input <- tm_map(input, toSpace, "@")
+  input <- tm_map(input, toSpace, "\\|")
+  
+  input <- tm_map(input, function(x) removeWords(x, stopwords("english")))
+  
+  # specify your stopwords as a character vector
+  input <- tm_map(input, removeWords, removewords)
+  
+  tdm <- TermDocumentMatrix(input)
+  m <- as.matrix(tdm)
+  v <- sort(rowSums(m),decreasing = TRUE)
+  d <- data.frame(word = names(v),freq = v)
+  
+  set.seed(1234)
+  wordcloud(words = d$word, freq = d$freq, min.freq = min.freq, scale = c(8,.2),
+            max.words = max.words, random.order = random.order, rot.per = 0.15,
+            colors = brewer.pal(8, "Dark2"))
+}
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=25, fig.height=10, fig.align="center", cache=FALSE}
+layout(matrix(c(1:80), nrow = 4, byrow = FALSE), heights = c(0.1, 1))
+
+for (i in 1:nrow(datasets_2)) {
+  species <- datasets_2$dataset[i]
+  df_BP <- as.data.frame(get(paste("go_enrich_BP", species, sep = "_")))
+  df_MF <- as.data.frame(get(paste("go_enrich_MF", species, sep = "_")))
+  df_CC <- as.data.frame(get(paste("go_enrich_CC", species, sep = "_")))
+  
+  par(mar = rep(0, 4))
+  plot.new()
+  text(x = 0.5, y = 0.5, paste0(datasets_2$description[i]), cex = 2)
+  wordcloud_function(data = df_BP$Description)
+  wordcloud_function(data = df_MF$Description)
+  wordcloud_function(data = df_CC$Description)
+}
+```
+
+<br>
+
+#### Which GO terms are enriched in all species?
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=15, fig.height=6, fig.align="center", cache=FALSE}
+# create empty list to populate with a loop
+go_list_BP <- lapply(datasets_2$dataset, function(x) NULL)
+names(go_list_BP) <- paste(datasets_2$dataset)
+
+for (species in datasets_2$dataset) {
+  df_BP <- as.data.frame(get(paste("go_enrich_BP", species, sep = "_")))
+  go_list_BP[[species]] <- df_BP$ID
+}
+
+# Now I know which GO IDs are common but I want to know the description as well.
+# Because they are in all go_enrich tables, I'm chosen one to subset
+
+library(rlist)
+common_gos_BP <- as.data.frame(go_enrich_BP_cfamiliaris_gene_ensembl) %>%
+  filter(ID %in% list.common(go_list_BP)) %>%
+  select(ID, Description) %>%
+  arrange(Description)
+
+
+go_list_MF <- lapply(datasets_2$dataset, function(x) NULL)
+names(go_list_MF) <- paste(datasets_2$dataset)
+
+for (species in datasets_2$dataset) {
+  df_MF <- as.data.frame(get(paste("go_enrich_MF", species, sep = "_")))
+  go_list_MF[[species]] <- df_MF$ID
+}
+
+library(rlist)
+common_gos_MF <- as.data.frame(go_enrich_MF_cfamiliaris_gene_ensembl) %>%
+  filter(ID %in% list.common(go_list_MF)) %>%
+  select(ID, Description) %>%
+  arrange(Description)
+
+
+go_list_CC <- lapply(datasets_2$dataset, function(x) NULL)
+names(go_list_CC) <- paste(datasets_2$dataset)
+
+for (species in datasets_2$dataset) {
+  df_CC <- as.data.frame(get(paste("go_enrich_CC", species, sep = "_")))
+  go_list_CC[[species]] <- df_CC$ID
+}
+
+library(rlist)
+common_gos_CC <- as.data.frame(go_enrich_CC_cfamiliaris_gene_ensembl) %>%
+  filter(ID %in% list.common(go_list_CC)) %>%
+  select(ID, Description) %>%
+  arrange(Description)
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=20, fig.height=8, fig.align="center", cache=FALSE}
+for (i in 1:nrow(datasets_2)) {
+  species <- datasets_2$dataset[i]
+  
+  go_enrich_BP_df <- as.data.frame(get(paste("go_enrich_BP", species, sep = "_"))) %>%
+    filter(ID %in% list.common(go_list_BP)) %>%
+    mutate(GR = as.numeric(Count) / as.numeric(gsub(".*/", "", GeneRatio)),
+           Category = "BP")
+  
+  go_enrich_BP_df$Description <- factor(go_enrich_BP_df$Description, levels = go_enrich_BP_df$Description[order(go_enrich_BP_df$GR)])
+    
+  go_enrich_MF_df <- as.data.frame(get(paste("go_enrich_MF", species, sep = "_"))) %>%
+    filter(ID %in% list.common(go_list_MF)) %>%
+    mutate(GR = as.numeric(Count) / as.numeric(gsub(".*/", "", GeneRatio)),
+           Category = "MF")
+  
+  go_enrich_MF_df$Description <- factor(go_enrich_MF_df$Description, levels = go_enrich_MF_df$Description[order(go_enrich_MF_df$GR)])
+
+  go_enrich_CC_df <- as.data.frame(get(paste("go_enrich_CC", species, sep = "_"))) %>%
+    filter(ID %in% list.common(go_list_CC)) %>%
+    mutate(GR = as.numeric(Count) / as.numeric(gsub(".*/", "", GeneRatio)),
+           Category = "CC")
+  
+  go_enrich_CC_df$Description <- factor(go_enrich_CC_df$Description, levels = go_enrich_CC_df$Description[order(go_enrich_CC_df$GR)])
+  
+  plot <- rbind(go_enrich_BP_df, go_enrich_MF_df, go_enrich_CC_df)
+  plot$Species <- paste(datasets_2$description[i])
+
+  if (i == 1) {
+    plot_df <- plot
+  } else {
+    plot_df <- rbind(plot_df, plot)
+  }
+}
+
+ggplot(plot_df, aes(x = GR, y = Description, size = Count, color = p.adjust)) +
+    geom_point() +
+    labs(
+      title = "Common enriched GO terms",
+      x = "Gene Ratio",
+      y = ""
+    ) +
+    facet_grid(Category ~ Species, scales = "free_y")
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=20, fig.height=20, fig.align="center", cache=FALSE}
+library(RamiGO)
+library(RColorBrewer)
+```
+
+```{r echo=TRUE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=20, fig.height=20, fig.align="center", cache=FALSE}
+set3 <- brewer.pal(10, "Set3")
+goIDs <- list.common(go_list_BP)
+getAmigoTree(goIDs, set3, filename = "common_gos_BP", picType = "png", modeType = "amigo", saveResult = TRUE)
+
+set3 <- brewer.pal(8, "Set3")
+goIDs <- list.common(go_list_MF)
+getAmigoTree(goIDs, set3, filename = "common_gos_MF", picType = "png", modeType = "amigo", saveResult = TRUE)
+
+goIDs <- list.common(go_list_CC)
+getAmigoTree(goIDs, set3, filename = "common_gos_CC", picType = "png", modeType = "amigo", saveResult = TRUE)
+```
+
+![Common GOs BP](common_gos_BP.png)
+
+![Common GOs MF](common_gos_MF.png)
+
+![Common GOs CC](common_gos_CC.png)
+
+- discuss go terms
+- and their relevance for the organisms
+- evolutionarily conserved functions
+
+<br>
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=25, fig.height=25, fig.align="center", cache=FALSE}
+for (i in 1:nrow(datasets_2)) {
+  species <- datasets_2$dataset[i]
+  df_BP <- as.data.frame(get(paste("go_enrich_BP", species, sep = "_")))
+  df_BP <- df_BP[1:15, 1, drop = FALSE]
+  df_BP$species <- datasets_2$description[i]
+  
+  if (i == 1) {
+    df_BP_all <- df_BP
+  } else {
+    df_BP_all <- rbind(df_BP_all, df_BP)
+  }
+}
+
+length(unique(df_BP_all$ID))
+
+library(tidyr)
+df_BP_all$value <- 1
+df_BP_all <- spread(df_BP_all, species, value)
+
+go_sums <- data.frame(ID = df_BP_all$ID,
+                      sum = rowSums(!is.na(df_BP_all[, -1])))
+
+# GO in all species
+go_anno <- data.frame(ID = go_sums$ID)
+go_anno$group <- ifelse(go_sums$sum == 10, "common_all", NA)
+
+x <- subset(go_sums, sum == 1)
+xx <- subset(df_BP_all, ID %in% x$ID)
+
+for (i in 2:11) {
+  xxx <- xx[, i]
+  xxx[which(!is.na(xxx))] <- colnames(xx[, i, drop = FALSE])
+  unique <- as.data.frame(cbind(xx[, 1], xxx)) %>%
+    subset(!is.na(xxx))
+  
+  if (i == 2) {
+    unique_all <- unique
+  } else {
+    unique_all <- rbind(unique_all, unique)
+  }
+}
+
+# Common GOs
+
+unique_common_all <- rbind(unique_all, data.frame(V1 = list.common(go_list_BP), xxx = "common"))
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=25, fig.height=25, fig.align="center", cache=FALSE}
+library(GO.db)
+
+# GO parents list
+ontology <- as.list(GOBPPARENTS)
+
+goChilds <- unique(df_BP_all$ID)
+goChilds <- goChilds[goChilds %in% names(ontology)]
+
+adjList <- matrix(nrow = 0, ncol = 3)
+colnames(adjList) <- c("parent", "rel", "child")
+
+# Find parents
+goChilds <- goChilds[which(goChilds != "all")]
+        
+goFamilyList <- lapply(ontology[goChilds], function(x) data.frame(parent = x, rel = names(x)))
+adjList <- rbind(adjList, as.matrix(cbind(do.call(rbind, goFamilyList), child = rep(names(goFamilyList), sapply(goFamilyList, nrow)))))
+
+# Next parents
+goParents <- unique(as.character(adjList[which(!adjList[,"parent"] %in% adjList[,"child"]), "parent"]))    
+goFamilyList_2 <- lapply(ontology[goParents], function(x) data.frame(parent = x, rel = names(x)))
+adjList <- rbind(adjList, as.matrix(cbind(do.call(rbind, goFamilyList_2), child = rep(names(goFamilyList_2), sapply(goFamilyList_2, nrow)))))
+
+adjList <- adjList[which(adjList[,1] != "all"), , drop = FALSE]
+adjList <- adjList[, c("child","parent", "rel"), drop = FALSE]
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=25, fig.height=25, fig.align="center", cache=FALSE}
+library(igraph)
+
+goGraph <- graph.edgelist(adjList[, c("parent", "child"), drop = FALSE], directed = TRUE)
+goGraph <- set.edge.attribute(goGraph, "type", value = adjList[,"rel"])
+
+goTerms <- sapply(V(goGraph)$name, function(x)
+        {
+            term <- GOTERM[[x]]@Term
+            
+                term <- gsub("( process)$", " pr.", term)
+                term <- gsub(" development ", " dev. ", term)
+                term <- gsub("( development)$", " dev.", term, perl = TRUE)
+                term <- gsub("Development ", "Dev. ", term)
+            
+            # split in two lines
+            spaceLoc <- gregexpr(" ", term, fixed = TRUE)[[1]]
+            if ((spaceLoc[1] != -1) && (length(spaceLoc) > 1))
+            {
+                spaceLoc <- spaceLoc[ceiling(length(spaceLoc)/2)]
+                term <- paste(substr(term, 1, spaceLoc - 1), substr(term, spaceLoc + 1, nchar(term)), sep = "\n")
+            }
+
+            term
+})
+
+goTerms_df <- as.data.frame(goTerms)
+
+goTerms_df$color <- ifelse(rownames(goTerms_df) %in% unique_common_all[which(unique_common_all$xxx == "C. elegans"), 1], "green",
+                           ifelse(rownames(goTerms_df) %in% unique_common_all[which(unique_common_all$xxx == "Chicken"), 1], "yellowgreen",
+                                  ifelse(rownames(goTerms_df) %in% unique_common_all[which(unique_common_all$xxx == "Chimpanzee"), 1], "violetred",
+                                         ifelse(rownames(goTerms_df) %in% unique_common_all[which(unique_common_all$xxx == "Dog"), 1], "turquoise",
+                                                ifelse(rownames(goTerms_df) %in% unique_common_all[which(unique_common_all$xxx == "Fruitfly"), 1], "violet", 
+                                                       ifelse(rownames(goTerms_df) %in% unique_common_all[which(unique_common_all$xxx == "Human"), 1], "thistle", 
+                                                              ifelse(rownames(goTerms_df) %in% unique_common_all[which(unique_common_all$xxx == "Mouse"), 1], "tan1", 
+                                                                     ifelse(rownames(goTerms_df) %in% unique_common_all[which(unique_common_all$xxx == "Pig"), 1], "steelblue", 
+                                                                            ifelse(rownames(goTerms_df) %in% unique_common_all[which(unique_common_all$xxx == "Rat"), 1], "orangered", 
+                                                                                   ifelse(rownames(goTerms_df) %in% unique_common_all[which(unique_common_all$xxx == "Zebrafish"), 1], "olivedrab", 
+                                                                                          ifelse(rownames(goTerms_df) %in% unique_common_all[which(unique_common_all$xxx == "common"), 1], "cyan", 
+                                                                                          ifelse(rownames(goTerms_df) %in% goChilds, "red", "skyblue2"))))))))))))
+
+V(goGraph)$color <- adjustcolor(goTerms_df$color, alpha.f = 0.8)
+V(goGraph)$label <- goTerms
+
+Ecolor <- ifelse(E(goGraph)$type == "is_a", "slategrey",
+                           ifelse(E(goGraph)$type == "part_of", "springgreen4",
+                           ifelse(E(goGraph)$type == "regulates", "tomato",
+                           ifelse(E(goGraph)$type == "negatively_regulates", "orange", "greenyellow"))))
+
+E(goGraph)$color <- Ecolor
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=25, fig.height=25, fig.align="center", cache=FALSE}
+plot(goGraph,
+     vertex.label.color = "black",
+     vertex.label.cex = 0.8,
+     vertex.size = 2,
+     margin = 0)
+
+labels <- c("C. elegans", "Chicken", "Chimpanzee", "Dog", "Fruitfly", "Human", "Mouse", "Pig", "Rat", "Zebrafish", "common", "other enriched GO", "parent")
+colors <- c("green", "yellowgreen", "violetred", "turquoise", "violet", "thistle", "tan1", "steelblue", "orangered", "olivedrab", "cyan", "red", "skyblue2")
+legend("topleft", labels, pch = 19,
+       col = colors, pt.cex = 2, cex = 2, bty = "n", ncol = 2)
+```
+
+------------------
+
+<br>
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=4, fig.align="center", cache=FALSE}
+sessionInfo()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,695 @@
+---
+title: "Exploring the human genome (Part 2) - Transcripts"
+author: "Dr. Shirin Glander"
+date: '`r Sys.Date()`'
+output:
+  md_document:
+    variant: markdown_github
+---
+
+
+# How many transcripts and proteins do genes have?
+
+In [Exploring the human genome (Part 1) - Gene Annotations](https://shiring.github.io/genome/2016/10/23/AnnotationDbi) I examined Ensembl, Entrez and HGNC gene annotations with [AnnotationDbi](http://www.bioconductor.org/packages/release/bioc/html/AnnotationDbi.html) via three R packages: [org.Hs.eg.db](http://bioconductor.org/packages/release/data/annotation/html/org.Hs.eg.db.html), [EnsDb.Hsapiens.v79](https://bioconductor.org/packages/release/data/annotation/html/EnsDb.Hsapiens.v79.html) and [TxDb.Hsapiens.UCSC.hg38.knownGene](http://bioconductor.org/packages/release/data/annotation/html/TxDb.Hsapiens.UCSC.hg38.knownGene.html).
+
+Now, I want to know how many transcripts there are for genes in these databases.
+
+<br>
+
+### What is a transcript?
+
+While a gene is defined as a unit of DNA information which encodes for the production of a protein, it is really more a concept than an actual physical unit. Human genes conists of [exons](https://en.wikipedia.org/wiki/Exon) and [introns](https://en.wikipedia.org/wiki/Intron), which can often be transcribed in different combinations - a process called [alternative splicing](https://en.wikipedia.org/wiki/Alternative_splicing).
+
+> "While the concept of a gene has been helpful in defining the relationship of a portion of a genome to a phenotype, this traditional term may not be as useful as it once was. Currently, “gene” has come to refer principally to a genomic region producing a polyadenylated mRNA that encodes a protein. However, the recent emergence of a large collection of unannotated transcripts with apparently little protein coding capacity, collectively called transcripts of unknown function (TUFs), has begun to blur the physical boundaries and genomic organization of genic regions with noncoding transcripts often overlapping protein-coding genes on the same (sense) and opposite strand (antisense). Moreover, they are often located in intergenic regions, making the genic portions of the human genome an interleaved network of both annotated polyadenylated and nonpolyadenylated transcripts, including splice variants with novel 5′ ends extending hundreds of kilobase. This complex transcriptional organization and other recently observed features of genomes argue for the reconsideration of the term “gene” and suggests that transcripts may be used to define the operational unit of a genome." [Thomas Gingeras, Genome Res. 2007](http://genome.cshlp.org/content/17/6/682.full)
+
+<br>
+
+## org.Hs.eg.db
+
+With org.Hs.eg.db I am using Entrez and Ensembl IDs to obtain Ensembl transcript IDs, which show splice variants of a gene, including protein-coding and non-coding transcripts.
+
+```{r gene_transcripts1, echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE}
+library(AnnotationDbi)
+library(org.Hs.eg.db)
+
+ENTREZID_org <- keys(org.Hs.eg.db, keytype = "ENTREZID")
+ENSEMBL_org <- keys(org.Hs.eg.db, keytype = "ENSEMBL")
+
+# Summarize number of transcripts per gene Entrez ID
+org_trans_entrez <- AnnotationDbi::select(org.Hs.eg.db, keys = ENTREZID_org, columns = c("ENSEMBLTRANS"), keytype = "ENTREZID")
+org_transcript_num_table_entrez <- as.data.frame(table(org_trans_entrez$ENTREZID))
+colnames(org_transcript_num_table_entrez) <- c("Entrez", "orgDb")
+
+# Summarize number of transcripts per gene Ensembl ID
+org_trans_ensembl <- AnnotationDbi::select(org.Hs.eg.db, keys = ENSEMBL_org, columns = c("ENSEMBLTRANS"), keytype = "ENSEMBL")
+org_transcript_num_table_ensembl <- as.data.frame(table(org_trans_ensembl$ENSEMBL))
+colnames(org_transcript_num_table_ensembl) <- c("Ensembl", "orgDb")
+
+# how many NAs are in each column?
+sapply(org_trans_entrez, function(x) sum(is.na(x)))
+sapply(org_trans_ensembl, function(x) sum(is.na(x)))
+```
+
+```{r gene_transcripts1b, echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE}
+head(org_trans_entrez)
+```
+```{r gene_transcripts1c, echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE}
+head(org_trans_ensembl)
+```
+
+Strangely, some genes, like A1BG (Entrez ID 1) are listed with one gene ID but no Ensembl transcript ID. This is weird, especially since I happen to know for this particular gene that it has several transcripts. Also, because each gene must have at least one transcript, all NAs are counted as 1 transcript in the summary table.
+
+Let's check other databases...
+
+<br>
+
+## TxDb.Hsapiens.UCSC.hg38.knownGene
+
+TxDb.Hsapiens.UCSC.hg38.knownGene only has Entrez IDs to identify genes and UCSC transcript ID to identify transcripts.
+
+```{r gene_transcripts2, echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE}
+library(TxDb.Hsapiens.UCSC.hg38.knownGene)
+
+ENTREZID_TxDb <- keys(TxDb.Hsapiens.UCSC.hg38.knownGene, keytype = "GENEID")
+TxDb_trans <- AnnotationDbi::select(TxDb.Hsapiens.UCSC.hg38.knownGene, keys = ENTREZID_TxDb, columns = c("TXID"), keytype = "GENEID")
+
+# Summarize number of transcripts per gene Entrez ID
+TxDb_transcript_num_table_entrez <- as.data.frame(table(TxDb_trans$GENEID))
+colnames(TxDb_transcript_num_table_entrez) <- c("Entrez", "TxDb")
+
+# how many NAs are in each column?
+sapply(TxDb_trans, function(x) sum(is.na(x)))
+```
+
+```{r gene_transcripts2b, echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE}
+head(TxDb_trans)
+```
+
+Here, we don't have NAs in the data and in contrast to org.Hs.eg.db we find at least six transcripts for A1BG.
+
+<br>
+
+## EnsDb.Hsapiens.v79
+
+Like org.Hs.eg.db EnsDb.Hsapiens.v79 has Entrez and Ensembl IDs in reference to Ensembl transcript IDs.
+
+```{r gene_transcripts3, echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE}
+library(EnsDb.Hsapiens.v79)
+
+ENSEMBL_EnsDb <- keys(EnsDb.Hsapiens.v79, keytype = "GENEID")
+ENTREZ_EnsDb <- keys(EnsDb.Hsapiens.v79, keytype = "ENTREZID")
+
+EnsDb_trans_ensembl <- ensembldb::select(EnsDb.Hsapiens.v79, keys = ENSEMBL_EnsDb, columns = c("TXID"), keytype = "GENEID")
+EnsDb_trans_entrez <- ensembldb::select(EnsDb.Hsapiens.v79, keys = ENTREZ_EnsDb, columns = c("TXID"), keytype = "ENTREZID")
+
+# somehow there are empty fields in the Entrez ID column, replacing them with NA
+EnsDb_trans_entrez[EnsDb_trans_entrez ==  ""] <- NA
+
+# how many NAs are in each column?
+sapply(EnsDb_trans_entrez, function(x) sum(is.na(x)))
+
+# and removing NA rows
+EnsDb_trans_entrez <- EnsDb_trans_entrez[!is.na(EnsDb_trans_entrez$ENTREZID), ]
+```
+
+```{r gene_transcripts3b, echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE}
+# order by Entrez ID to compare with other databases
+EnsDb_trans_entrez <- EnsDb_trans_entrez[order(EnsDb_trans_entrez$ENTREZID),]
+
+head(EnsDb_trans_ensembl)
+head(EnsDb_trans_entrez)
+```
+
+Here, we find five transcripts for A1BG.
+
+<br>
+
+```{r gene_transcripts3c, echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE}
+# Summarize number of transcripts per gene Entrez ID
+EnsDb_transcript_num_table_entrez <- as.data.frame(table(EnsDb_trans_entrez$ENTREZID))
+colnames(EnsDb_transcript_num_table_entrez) <- c("Entrez", "EnsDb")
+
+# Summarize number of transcripts per gene Ensembl ID
+EnsDb_transcript_num_table_ensembl <- as.data.frame(table(EnsDb_trans_ensembl$GENEID))
+colnames(EnsDb_transcript_num_table_ensembl) <- c("Ensembl", "EnsDb")
+
+# In the Entrez column, there are some with multiple entries
+# divide entries with multiple gene names into one row per gene/ entry
+head(EnsDb_transcript_num_table_entrez[grep(";", EnsDb_transcript_num_table_entrez$Entrez), ])
+
+library(splitstackshape)
+out <- as.data.frame(cSplit(EnsDb_transcript_num_table_entrez, splitCols = "Entrez", sep = ";", direction = "long"), stringsAsFactors = FALSE)
+out$Entrez <- as.character(out$Entrez)
+
+# remove duplicates and take the mean
+library(plyr)
+EnsDb_transcript_num_table_entrez <- ddply(out, "Entrez", numcolwise(mean))
+```
+
+<br>
+
+## Comparison of transcript numbers per database package
+
+The majority of genes have only one transcript. The number of genes with more transcripts decreases with number of transcripts; this can be seen in the plots below.
+
+### Entrez IDs
+
+```{r transcript_num_table, echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE}
+# merging datasets by Entrez ID
+library(dplyr)
+transcript_num_table_entrez <- full_join(org_transcript_num_table_entrez, TxDb_transcript_num_table_entrez, by = "Entrez")
+transcript_num_table_entrez <- full_join(transcript_num_table_entrez, EnsDb_transcript_num_table_entrez, by = "Entrez")
+
+# gather for plotting
+library(tidyr)
+transcript_num_table_gather_entrez <- transcript_num_table_entrez %>% 
+  gather(DB, count, orgDb:EnsDb)
+
+# How many counts are NA?
+sapply(transcript_num_table_gather_entrez, function(x) sum(is.na(x)))
+
+# removing rows with NA counts
+transcript_num_table_gather_entrez <- transcript_num_table_gather_entrez[!is.na(transcript_num_table_gather_entrez$count), ]
+
+# because there are only a handful of genes with many transcripts, they can't be plotted together with genes with few transcripts
+# separating them in high and low
+transcript_num_table_gather_entrez$group <- ifelse(transcript_num_table_gather_entrez$count > 25, "high", "low")
+
+# setting factor levels
+f = c("low", "high")
+transcript_num_table_gather_entrez <- within(transcript_num_table_gather_entrez, group <- factor(group, levels = f))
+```
+
+```{r my_theme, echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE}
+# setting my custom theme of choice
+library(ggplot2)
+
+my_theme <- function(base_size = 12, base_family = "sans"){
+  theme_grey(base_size = base_size, base_family = base_family) +
+  theme(
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14),
+    panel.grid.major = element_line(colour = "grey"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "aliceblue"),
+    strip.background = element_rect(fill = "lightgrey", color = "grey", size = 1),
+    strip.text = element_text(face = "bold", size = 12, colour = "navy"),
+    legend.position = "bottom",
+    panel.margin = unit(.05, "lines"),
+    panel.border = element_rect(color = "grey", fill = NA, size = 0.5)
+  )
+}
+```
+
+```{r transcript_histogram, echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 11, fig.height = 10, fig.align = "center"}
+p <- ggplot(data = transcript_num_table_gather_entrez, aes(as.numeric(count))) + 
+  geom_histogram(fill = "deepskyblue4") +
+  my_theme() +
+  labs(title = "Histogram of number of transcripts per gene (Entrez ID)", 
+       x = "Number of transcripts per gene", y = "Count") +
+  facet_wrap(DB ~ group, scales = "free", ncol = 2)
+
+ann_text_entrez <- data.frame(x = c(20, 300, 20, 100, 20, 100),
+                       y = c(4000, 350, 40000, 15, 5000, 280),
+                       group = rep(c("low", "high"), 3),
+                       DB = rep(c("EnsDb", "orgDb", "TxDb"), each = 2),
+                       labs = c(paste(length(which(transcript_num_table_gather_entrez$group ==  "low" & 
+                                                     transcript_num_table_gather_entrez$DB ==  "EnsDb"))), 
+                                paste(length(which(transcript_num_table_gather_entrez$group ==  "high" & 
+                                                     transcript_num_table_gather_entrez$DB ==  "EnsDb"))),
+                                paste(length(which(transcript_num_table_gather_entrez$group ==  "low" & 
+                                                     transcript_num_table_gather_entrez$DB ==  "orgDb"))), 
+                                paste(length(which(transcript_num_table_gather_entrez$group ==  "high" & 
+                                                     transcript_num_table_gather_entrez$DB ==  "orgDb"))),
+                                paste(length(which(transcript_num_table_gather_entrez$group ==  "low" & 
+                                                     transcript_num_table_gather_entrez$DB ==  "TxDb"))), 
+                                paste(length(which(transcript_num_table_gather_entrez$group ==  "high" & 
+                                                     transcript_num_table_gather_entrez$DB ==  "TxDb")))))
+
+p + geom_text(data = ann_text_entrez, aes(x, y, label = labs, group = NULL), size = 8)
+
+```
+
+This time, orgDb has the highest number of Entrez ID gene entries with corresponding transcript information, the majority of which have fewer than 25 transcripts (59984 genes); only 152 genes have more than 25 transcripts. EnsDb and TxDB have comparable numbers of gene entries, also for genes with few (23971 and 24669 genes) and many transcripts (566 and 552 genes).
+
+<br>
+
+### Ensembl IDs
+
+```{r transcript_num_table2, echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE}
+# merging datasets by Ensembl ID
+transcript_num_table_ensembl <- full_join(org_transcript_num_table_ensembl, EnsDb_transcript_num_table_ensembl, by = "Ensembl")
+
+# gather for plotting
+transcript_num_table_gather_ensembl <- transcript_num_table_ensembl %>% 
+  gather(DB, count, orgDb:EnsDb)
+
+# How many counts are NA?
+sapply(transcript_num_table_gather_ensembl, function(x) sum(is.na(x)))
+
+# removing rows with NA counts
+transcript_num_table_gather_ensembl <- transcript_num_table_gather_ensembl[!is.na(transcript_num_table_gather_ensembl$count), ]
+
+# because there are only a handful of genes with many transcripts, they can't be plotted together with genes with few transcripts
+# separating them in high and low
+transcript_num_table_gather_ensembl$group <- ifelse(transcript_num_table_gather_ensembl$count > 25, "high", "low")
+
+# setting factor levels
+f = c("low", "high")
+transcript_num_table_gather_ensembl <- within(transcript_num_table_gather_ensembl, group <- factor(group, levels = f))
+```
+
+```{r transcript_histogram2, echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 11, fig.height = 8, fig.align = "center"}
+p <- ggplot(data = transcript_num_table_gather_ensembl, aes(as.numeric(count))) + 
+  geom_histogram(fill = "deepskyblue4") +
+  my_theme() +
+  labs(title = "Histogram of number of transcripts per gene (Ensembl ID)", 
+       x = "Number of transcripts per gene", y = "Count") +
+  facet_wrap(DB ~ group, scales = "free", ncol = 2)
+
+ann_text_ensembl <- data.frame(x = c(10, 75, 10, 100),
+                              y = c(30000, 100, 15000, 100),
+                              group = rep(c("low", "high"), 4),
+                              DB = rep(c("EnsDb", "orgDb"), each = 2),
+                              labs = c(paste(length(which(transcript_num_table_gather_ensembl$group ==  "low" & 
+                                                            transcript_num_table_gather_ensembl$DB ==  "EnsDb"))), 
+                                       paste(length(which(transcript_num_table_gather_ensembl$group ==  "high" & 
+                                                            transcript_num_table_gather_ensembl$DB ==  "EnsDb"))),
+                                       paste(length(which(transcript_num_table_gather_ensembl$group ==  "low" & 
+                                                            transcript_num_table_gather_ensembl$DB ==  "orgDb"))), 
+                                       paste(length(which(transcript_num_table_gather_ensembl$group ==  "high" & 
+                                                            transcript_num_table_gather_ensembl$DB ==  "orgDb")))))
+
+p + geom_text(data = ann_text_ensembl, aes(x, y, label = labs, group = NULL), size = 8)
+
+```
+
+For Ensembl gene IDs EnsDb has the higher number of entries with transcript information; most of these genes (65374) have fewer than 25 transcripts. While orgDb has fewer Ensembl-transcript entries, proportionally more have a high number of transcripts (1035 vs 400), while 26980 genes have low transcript numbers.
+
+<br>
+
+## Comparison of transcript numbers per gene
+
+Now that we know what the distribution of transcript numbers per gene is in different database packages, I want to directly compare the numbers of transcripts that are identified for each gene.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 11, fig.height = 8, fig.align = "center"}
+# for comparison replacing NAs with 0
+transcript_num_table_ensembl_NAtozero <- transcript_num_table_ensembl
+transcript_num_table_ensembl_NAtozero[is.na(transcript_num_table_ensembl_NAtozero)] <- 0
+
+transcript_num_table_entrez_NAtozero <- transcript_num_table_entrez
+transcript_num_table_entrez_NAtozero[is.na(transcript_num_table_entrez_NAtozero)] <- 0
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+library(ggrepel)
+
+p1 <- ggplot(transcript_num_table_ensembl_NAtozero, aes(x = orgDb, y = EnsDb)) + 
+  geom_abline(linetype="dashed") +
+  geom_point(colour = "deepskyblue4", alpha = 0.3) + 
+  my_theme() +
+  geom_smooth(size = 1, color = "black") +            # Add a loess smoothed fit curve with confidence region
+  labs(title = "Number of transcripts per Ensembl ID") +
+  geom_text_repel(data = subset(transcript_num_table_ensembl_NAtozero, orgDb > 140 | EnsDb > 150), aes(label = Ensembl))
+
+p2 <- ggplot(transcript_num_table_entrez_NAtozero, aes(x = orgDb, y = TxDb)) + 
+  geom_abline(linetype="dashed") + 
+  geom_point(colour = "deepskyblue4", alpha = 0.3) + 
+  my_theme() +
+  geom_smooth(size = 1, color = "black") +
+  labs(title = "Number of transcripts per Entrez ID") +
+  geom_text_repel(data = subset(transcript_num_table_entrez_NAtozero, orgDb > 100 | TxDb > 200), aes(label = Entrez))
+
+p3 <- ggplot(transcript_num_table_entrez_NAtozero, aes(x = orgDb, y = EnsDb)) + 
+  geom_abline(linetype="dashed") +
+  geom_point(colour = "deepskyblue4", alpha = 0.3) + 
+  my_theme() +
+  geom_smooth(size = 1, color = "black") +
+  labs(title = "Number of transcripts per Entrez ID") +
+  geom_text_repel(data = subset(transcript_num_table_entrez_NAtozero, orgDb > 100 | EnsDb > 900), aes(label = Entrez))
+
+p4 <- ggplot(transcript_num_table_entrez_NAtozero, aes(x = TxDb, y = EnsDb)) + 
+  geom_abline(linetype="dashed") +
+  geom_point(colour = "deepskyblue4", alpha = 0.3) + 
+  my_theme() +
+  geom_smooth(size = 1, color = "black") +
+  labs(title = "Number of transcripts per Entrez ID") +
+  geom_text_repel(data = subset(transcript_num_table_entrez_NAtozero, TxDb > 150 | EnsDb > 900), aes(label = Entrez))
+
+library(gridExtra)
+library(grid)
+
+grid.arrange(p1, p2, p3, p4, ncol = 2)
+
+```
+
+The plots above show scatterplots with fitted loess curves with confidence regions of the numbers of transcripts for each gene with either Entrez or Ensembl entries from different database packages; dashed lines show 1:1 ratio. For most extreme genes, the Ensembl/ Entrez ID is given in the plots.
+
+While some genes do have the same number of transcripts in different database packages, the majority do not. Entrez IDs seem to give a better correlation than Ensembl IDs, except for a few extreme outliers.
+
+<br>
+
+## Is there a correlation between number of transcripts and number of exons of a gene?
+
+Because the number of exons a gene has exponentially increases the number of potential transcripts produced via alternative splicing, it would make sense if the number of exons correlates with the number of transcripts of a gene. However, not all combinations of exons will produce a functioning protein, so there won't be as many transcripts as theoretically possible.
+
+Exon IDs are only available in TxDb.Hsapiens.UCSC.hg38.knownGene and EnsDb.Hsapiens.v79.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+TxDb_exons <- AnnotationDbi::select(TxDb.Hsapiens.UCSC.hg38.knownGene, keys = ENTREZID_TxDb, columns = c("EXONID"), keytype = "GENEID")
+
+EnsDb_exons_ensembl <- ensembldb::select(EnsDb.Hsapiens.v79, keys = ENSEMBL_EnsDb, columns = c("EXONID"), keytype = "GENEID")
+EnsDb_exons_entrez <- ensembldb::select(EnsDb.Hsapiens.v79, keys = ENTREZ_EnsDb, columns = c("EXONID"), keytype = "ENTREZID")
+
+# summarize number of exons per gene
+TxDb_exons_num_table_entrez <- as.data.frame(table(TxDb_exons$GENEID))
+
+EnsDb_exons_num_table_ensembl <- as.data.frame(table(EnsDb_exons_ensembl$GENEID))
+EnsDb_exons_num_table_entrez <- as.data.frame(table(EnsDb_exons_entrez$ENTREZID))
+
+# there are over 98000 entries without corresponding Entrez ID, removing those
+EnsDb_exons_num_table_entrez <- EnsDb_exons_num_table_entrez[-1, ]
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+EnsDb_trans_vs_exons_ensembl <- full_join(EnsDb_transcript_num_table_ensembl, EnsDb_exons_num_table_ensembl, by = c("Ensembl" = "Var1"))
+colnames(EnsDb_trans_vs_exons_ensembl)[2:3] <- c("EnsDb_transcripts", "EnsDb_exons")
+
+EnsDb_trans_vs_exons_entrez <- full_join(EnsDb_transcript_num_table_entrez, EnsDb_exons_num_table_entrez, by = c("Entrez" = "Var1"))
+colnames(EnsDb_trans_vs_exons_entrez)[2:3] <- c("EnsDb_transcripts", "EnsDb_exons")
+
+TxDb_trans_vs_exons_entrez <- full_join(TxDb_transcript_num_table_entrez, TxDb_exons_num_table_entrez, by = c("Entrez" = "Var1"))
+colnames(TxDb_trans_vs_exons_entrez)[2:3] <- c("TxDb_transcripts", "TxDb_exons")
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 8, fig.height = 10, fig.align = "center"}
+p1 <- ggplot(EnsDb_trans_vs_exons_ensembl, aes(x = EnsDb_transcripts, y = EnsDb_exons)) + 
+  geom_abline(linetype="dashed") +
+  geom_point(colour = "deepskyblue4", alpha = 0.3) + 
+  my_theme() +
+  geom_smooth(size = 1, color = "black") +
+  labs(title = "Number of transcripts vs number of exons\nper Ensembl ID in EnsDb") +
+  geom_text_repel(data = subset(EnsDb_trans_vs_exons_ensembl, EnsDb_transcripts > 150 | EnsDb_exons > 300), aes(label = Ensembl))
+
+p2 <- ggplot(EnsDb_trans_vs_exons_entrez, aes(x = EnsDb_transcripts, y = EnsDb_exons)) + 
+  geom_abline(linetype="dashed") +
+  geom_point(colour = "deepskyblue4", alpha = 0.3) + 
+  my_theme() +
+  geom_smooth(size = 1, color = "black") +
+  labs(title = "Number of transcripts vs number of exons\nper Entrez ID in EnsDb") +
+  geom_text_repel(data = subset(EnsDb_trans_vs_exons_entrez, EnsDb_transcripts > 300 | EnsDb_exons > 1000), aes(label = Entrez))
+
+p3 <- ggplot(TxDb_trans_vs_exons_entrez, aes(x = TxDb_transcripts, y = TxDb_exons)) + 
+  geom_abline(linetype="dashed") +
+  geom_point(colour = "deepskyblue4", alpha = 0.3) + 
+  my_theme() +
+  geom_smooth(size = 1, color = "black") +
+  labs(title = "Number of transcripts vs number of exons\nper Entrez ID in TxDb") +
+  geom_text_repel(data = subset(TxDb_trans_vs_exons_entrez, TxDb_transcripts > 200 | TxDb_exons > 400), aes(label = Entrez))
+
+grid.arrange(p1, p2, p3, ncol = 1)
+```
+
+Indeed, there is a reasonably good correlation between number of transcripts and number of exons ins genes. The scatterplots above show transcript vs exon number per gene in the three database packages with fitted loess curves with confidence regions. As expected, the increase is not exponential as theoretically possible, but stronger than 1:1. For Entrez IDs, in both EnsDb and TxDbm genes with up to about 100 transcripts show a steeper correlation than genes with more than 100 transcripts. For Ensembl IDs the cutoff is around 40 transcripts.
+
+<br>
+
+### What genes have many exons but few transcripts?
+
+Interestingly, there are a couple of genes with many exons but only few transcripts. To find out more about these genes, I will compare their proportion of gene biotypes.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+# gene biotypes are only available in EnsDb
+EnsDb_trans_vs_exons_ensembl$ratio <- EnsDb_trans_vs_exons_ensembl$EnsDb_exons/EnsDb_trans_vs_exons_ensembl$EnsDb_transcripts
+EnsDb_trans_vs_exons_ensembl_genes <- as.character(EnsDb_trans_vs_exons_ensembl[order(EnsDb_trans_vs_exons_ensembl$ratio, decreasing = TRUE), "Ensembl"][1:100])
+
+EnsDb_trans_vs_exons_entrez$ratio <- EnsDb_trans_vs_exons_entrez$EnsDb_exons/EnsDb_trans_vs_exons_entrez$EnsDb_transcripts
+EnsDb_trans_vs_exons_entrez_genes <- as.character(EnsDb_trans_vs_exons_entrez[order(EnsDb_trans_vs_exons_entrez$ratio, decreasing = TRUE), "Entrez"][1:100])
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+# get all gene biotypes for all gene IDs
+biotypes_exons_trans_EnsDb_ensembl_all <- ensembldb::select(EnsDb.Hsapiens.v79, keys = EnsDb_trans_vs_exons_ensembl_genes, 
+                                          columns = "GENEBIOTYPE", keytype = "GENEID")
+
+biotypes_exons_trans_EnsDb_entrez_all <- ensembldb::select(EnsDb.Hsapiens.v79, keys = EnsDb_trans_vs_exons_entrez_genes, 
+                                          columns = "GENEBIOTYPE", keytype = "ENTREZID")
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+# get all gene biotypes for all gene IDs
+biotypes_EnsDb_ensembl_all <- ensembldb::select(EnsDb.Hsapiens.v79, keys = keys(EnsDb.Hsapiens.v79, keytype = "GENEID"), 
+                                          columns = "GENEBIOTYPE", keytype = "GENEID")
+
+biotypes_EnsDb_entrez_all <- ensembldb::select(EnsDb.Hsapiens.v79, keys = keys(EnsDb.Hsapiens.v79, keytype = "ENTREZID"), 
+                                          columns = "GENEBIOTYPE", keytype = "ENTREZID")
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+# how many NAs are in each column?
+sapply(biotypes_exons_trans_EnsDb_ensembl_all, function(x) sum(is.na(x)))
+sapply(biotypes_exons_trans_EnsDb_entrez_all, function(x) sum(is.na(x)))
+
+# summary table of number of genebiotypes
+biotypes_exons_trans_EnsDb_ensembl_all_num_table <- as.data.frame(table(biotypes_exons_trans_EnsDb_ensembl_all$GENEBIOTYPE))
+biotypes_exons_trans_EnsDb_entrez_all_num_table <- as.data.frame(table(biotypes_exons_trans_EnsDb_entrez_all$GENEBIOTYPE))
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+# subset to keep only those biotypes that are among the top genes
+biotypes_EnsDb_ensembl_all_subs <- biotypes_EnsDb_ensembl_all[which(biotypes_EnsDb_ensembl_all$GENEBIOTYPE %in% 
+                                                                      unique(biotypes_exons_trans_EnsDb_ensembl_all$GENEBIOTYPE)), ]
+
+biotypes_EnsDb_entrez_all_subs <- biotypes_EnsDb_entrez_all[which(biotypes_EnsDb_entrez_all$GENEBIOTYPE %in% 
+                                                                      unique(biotypes_exons_trans_EnsDb_entrez_all$GENEBIOTYPE)), ]
+
+# summary table of biotypes background (all genes)
+biotypes_EnsDb_ensembl_all_subs_table <- as.data.frame(table(biotypes_EnsDb_ensembl_all_subs$GENEBIOTYPE))
+biotypes_EnsDb_entrez_all_subs_table <- as.data.frame(table(biotypes_EnsDb_entrez_all_subs$GENEBIOTYPE))
+
+# add background number of biotypes to number among top genes
+biotypes_EnsDb_ensembl_top_num_table <- merge(biotypes_exons_trans_EnsDb_ensembl_all_num_table, biotypes_EnsDb_ensembl_all_subs_table, by = "Var1", all.x = TRUE)
+biotypes_EnsDb_entrez_top_num_table <- merge(biotypes_exons_trans_EnsDb_entrez_all_num_table, biotypes_EnsDb_entrez_all_subs_table, by = "Var1", all.x = TRUE)
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+# merge
+biotypes_top_num_table <- merge(biotypes_EnsDb_ensembl_top_num_table, biotypes_EnsDb_entrez_top_num_table, by = "Var1", all = TRUE)
+colnames(biotypes_top_num_table) <- c("GENEBIOTYPE", "Ensembl_top", "Ensembl_bg", "Entrez_top", "Entrez_bg")
+
+biotypes_top_num_table$Ensembl <- biotypes_top_num_table$Ensembl_top/biotypes_top_num_table$Ensembl_bg
+biotypes_top_num_table$Entrez <- biotypes_top_num_table$Entrez_top/biotypes_top_num_table$Entrez_bg
+
+# gather for plotting
+biotypes_top_num_table_gather <- biotypes_top_num_table[, c(1, 6, 7)] %>% 
+  gather(GENEBIOTYPE, count, Ensembl:Entrez)
+colnames(biotypes_top_num_table_gather)[2] <- "Gene_ID"
+
+# replace NA with 0
+biotypes_top_num_table_gather[is.na(biotypes_top_num_table_gather)] <- 0
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 12, fig.height = 4, fig.align = "center"}
+ggplot(biotypes_top_num_table_gather, aes(x = factor(GENEBIOTYPE), y = count, fill = Gene_ID)) + 
+  geom_bar(stat = "identity", position = "dodge") + 
+  my_theme() + 
+  theme(legend.position = "right") + coord_flip() +
+  labs(title = "Gene biotypes of genes with many exons but few transcripts", x = "", y = "Ratio of biotype count vs background number",
+       fill = "Gene ID") + 
+  scale_x_discrete(breaks = biotypes_top_num_table_gather$GENEBIOTYPE,
+                      labels = gsub("_", " ", biotypes_top_num_table_gather$GENEBIOTYPE)) +
+  scale_fill_brewer(palette = "Set1")
+
+```
+
+Compared to the background distribution of biotypes, the proportionally most strongly represented group are LRG genes. As defined by [Ensembl's glossary](http://www.ensembl.org/common/Help/Glossary?db=core):
+
+> "An LRG (Locus Reference Genomic) is a fixed sequence, independent of the genome, specifically created for the diagnostic community to record DNA sequence variation on a fixed framework. Sequence variants in LSDBs (Locus Specific Databases) are reported using LRG sequences."
+
+Other than this, there are only protein coding, processed and pseudogenes among genes with many exons and few transcripts. So, nothing exceptional about these genes's biotypes.
+
+<br>
+
+## What types of genes have the most transcripts?
+
+Is there a biological function associated with having many transcripts? In order to find out more about these genes, I am looking at
+
+1. their biotypes and
+2. for over-represented gene ontology (GO) categories.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 5, fig.align = "center"}
+# mean number of transcripts over all database packages
+mean_num_transcripts_ensembl <- data.frame(mean_num_transcripts = rowMeans(transcript_num_table_ensembl_NAtozero[, -1]),
+               row.names = transcript_num_table_ensembl_NAtozero[, 1])
+
+mean_num_transcripts_entrez <- data.frame(mean_num_transcripts = rowMeans(transcript_num_table_entrez_NAtozero[, -1]),
+               row.names = transcript_num_table_entrez_NAtozero[, 1])
+
+# standard error of mean
+mean_num_transcripts_ensembl$sem <- apply(transcript_num_table_ensembl_NAtozero[, -1], 1, function(x) sd(x)/sqrt(length(x)))
+mean_num_transcripts_entrez$sem <- apply(transcript_num_table_entrez_NAtozero[, -1], 1, function(x) sd(x)/sqrt(length(x)))
+
+# ranking the mean
+mean_num_transcripts_ensembl$rank <- rank(mean_num_transcripts_ensembl$mean_num_transcripts)
+mean_num_transcripts_ensembl <- mean_num_transcripts_ensembl[order(mean_num_transcripts_ensembl$rank, decreasing = TRUE), ]
+
+mean_num_transcripts_entrez$rank <- rank(mean_num_transcripts_entrez$mean_num_transcripts)
+mean_num_transcripts_entrez <- mean_num_transcripts_entrez[order(mean_num_transcripts_entrez$rank, decreasing = TRUE), ]
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 8, fig.height = 8, fig.align = "center", include=FALSE, eval=FALSE}
+# distribution of mean number of transcripts
+p1 <- ggplot(mean_num_transcripts_ensembl, aes(x=mean_num_transcripts)) + geom_density(fill="navy") + my_theme() +
+  labs(title = "Mean number of transcripts per Ensembl ID", x = "mean number of transcripts pr gene")
+p2 <- ggplot(mean_num_transcripts_entrez, aes(x=mean_num_transcripts)) + geom_density(fill="navy") + my_theme() +
+  labs(title = "Mean number of transcripts per Entrez ID", x = "mean number of transcripts per gene")
+grid.arrange(p1, p2, ncol = 1)
+
+```
+
+<br>
+
+I am picking the top 1000 genes with highest mean number of transcripts.
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 6, fig.height = 5, fig.align = "center"}
+# picking top genes
+mean_num_transcripts_ensembl_top <- mean_num_transcripts_ensembl[1:1000, ]
+mean_num_transcripts_entrez_top <- mean_num_transcripts_entrez[1:1000, ]
+
+# distribution of mean number of transcripts
+p1 <- ggplot(mean_num_transcripts_ensembl_top, aes(x=mean_num_transcripts)) + geom_density(fill="navy") + my_theme() +
+  labs(title = "Mean number of transcripts\nper Ensembl ID for the top genes", x = "mean number of transcripts pr gene")
+p2 <- ggplot(mean_num_transcripts_entrez_top, aes(x=mean_num_transcripts)) + geom_density(fill="navy") + my_theme() +
+  labs(title = "Mean number of transcripts\nper Entrez ID for the top genes", x = "mean number of transcripts per gene")
+grid.arrange(p1, p2, ncol = 1)
+
+```
+
+The density distribution of the mean number of transcripts per gene (mean over database packages) for the top genes with highest transcript numbers shows the stark difference between Ensembl and Entrez IDs.
+
+<br>
+
+### Gene biotypes of top genes with highest mean number of transcripts
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+biotypes_EnsDb_ensembl_top <- ensembldb::select(EnsDb.Hsapiens.v79, keys = rownames(mean_num_transcripts_ensembl_top), 
+                                          columns = "GENEBIOTYPE", keytype = "GENEID")
+
+biotypes_EnsDb_entrez_top <- ensembldb::select(EnsDb.Hsapiens.v79, keys = rownames(mean_num_transcripts_entrez_top), 
+                                          columns = "GENEBIOTYPE", keytype = "ENTREZID")
+
+# how many NAs are in each column?
+sapply(biotypes_EnsDb_ensembl_top, function(x) sum(is.na(x)))
+sapply(biotypes_EnsDb_entrez_top, function(x) sum(is.na(x)))
+
+# summary table of number of genebiotypes
+biotypes_EnsDb_ensembl_top_num_table <- as.data.frame(table(biotypes_EnsDb_ensembl_top$GENEBIOTYPE))
+biotypes_EnsDb_entrez_top_num_table <- as.data.frame(table(biotypes_EnsDb_entrez_top$GENEBIOTYPE))
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+# subset to keep only those biotypes that are among the top genes
+biotypes_EnsDb_ensembl_all_subs <- biotypes_EnsDb_ensembl_all[which(biotypes_EnsDb_ensembl_all$GENEBIOTYPE %in% 
+                                                                      unique(biotypes_EnsDb_ensembl_top_num_table$Var1)), ]
+
+biotypes_EnsDb_entrez_all_subs <- biotypes_EnsDb_entrez_all[which(biotypes_EnsDb_entrez_all$GENEBIOTYPE %in% 
+                                                                      unique(biotypes_EnsDb_entrez_top_num_table$Var1)), ]
+
+# summary table of biotypes background (all genes)
+biotypes_EnsDb_ensembl_all_subs_table <- as.data.frame(table(biotypes_EnsDb_ensembl_all_subs$GENEBIOTYPE))
+biotypes_EnsDb_entrez_all_subs_table <- as.data.frame(table(biotypes_EnsDb_entrez_all_subs$GENEBIOTYPE))
+
+# add background number of biotypes to number among top genes
+biotypes_EnsDb_ensembl_top_num_table <- merge(biotypes_EnsDb_ensembl_top_num_table, biotypes_EnsDb_ensembl_all_subs_table, by = "Var1", all.x = TRUE)
+biotypes_EnsDb_entrez_top_num_table <- merge(biotypes_EnsDb_entrez_top_num_table, biotypes_EnsDb_entrez_all_subs_table, by = "Var1", all.x = TRUE)
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 10, fig.height = 10, fig.align = "center"}
+# merge
+biotypes_top_num_table <- merge(biotypes_EnsDb_ensembl_top_num_table, biotypes_EnsDb_entrez_top_num_table, by = "Var1", all = TRUE)
+colnames(biotypes_top_num_table) <- c("GENEBIOTYPE", "Ensembl_top", "Ensembl_bg", "Entrez_top", "Entrez_bg")
+
+biotypes_top_num_table$Ensembl <- biotypes_top_num_table$Ensembl_top/biotypes_top_num_table$Ensembl_bg
+biotypes_top_num_table$Entrez <- biotypes_top_num_table$Entrez_top/biotypes_top_num_table$Entrez_bg
+
+# gather for plotting
+biotypes_top_num_table_gather <- biotypes_top_num_table[, c(1, 6, 7)] %>% 
+  gather(GENEBIOTYPE, count, Ensembl:Entrez)
+colnames(biotypes_top_num_table_gather)[2] <- "Gene_ID"
+
+# replace NA with 0
+biotypes_top_num_table_gather[is.na(biotypes_top_num_table_gather)] <- 0
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE, fig.width = 12, fig.height = 4, fig.align = "center"}
+ggplot(biotypes_top_num_table_gather, aes(x = factor(GENEBIOTYPE), y = count, fill = Gene_ID)) + 
+  geom_bar(stat = "identity", position = "dodge") + 
+  my_theme() + 
+  theme(legend.position = "right") + coord_flip() +
+  labs(title = "Gene biotypes of top genes\nwith highest transcript numbers", x = "", y = "Ratio of biotype count vs background number",
+       fill = "Gene ID") + 
+  scale_x_discrete(breaks = biotypes_top_num_table_gather$GENEBIOTYPE,
+                      labels = gsub("_", " ", biotypes_top_num_table_gather$GENEBIOTYPE)) +
+  scale_fill_brewer(palette = "Set1")
+
+```
+
+Again, compared to background, we find a high proportion of LRG, protein coding, processed and pseudogenes. But here, we also see a few other biotypes represented among genes with most transcripts. Especially interesting is that we find [lincRNAs](http://portals.broadinstitute.org/genome_bio/human_lincrnas/) and [miRNAs](https://en.wikipedia.org/wiki/MicroRNA) among them, not something I would have expected...
+
+<br>
+
+### Enrichment Analysis of top genes with highest mean number of transcripts
+
+Functional profiles for the top 100 genes with most transcripts were created with [clusterProfiler](https://bioconductor.org/packages/release/bioc/html/clusterProfiler.html)'s **compareCluster** function.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=4, fig.height=4, fig.align="center", cache=FALSE}
+library(clusterProfiler)
+library(DOSE)
+
+biotypes_EnsDb_ensembl_top_entrez <- bitr(biotypes_EnsDb_ensembl_top$GENEID, fromType = "ENSEMBL", toType = "ENTREZID", OrgDb = org.Hs.eg.db)[, 2]
+
+biotypes_EnsDb_top_compare <- list(Ensembl = biotypes_EnsDb_ensembl_top_entrez,
+                                   Entrez = biotypes_EnsDb_entrez_top$ENTREZID)
+```
+
+<br>
+
+#### Grouping GO terms
+
+With **groupGO**, we can see the distribution of GO categories among input genes.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=6, fig.height=6, fig.align="center", cache=FALSE}
+cgg <- compareCluster(geneCluster = biotypes_EnsDb_top_compare, fun = "groupGO", OrgDb = org.Hs.eg.db)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=6, fig.height=5, fig.align="center", cache=FALSE}
+dotplot(cgg, showCategory = 50)
+```
+
+<br>
+
+#### GO category enrichment
+
+[Over-representation](http://bioconductor.org/packages/release/bioc/vignettes/DOSE/inst/doc/enrichmentAnalysis.html) of GO categories is calculated with **enrichGO**.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=6, fig.height=5, fig.align="center", cache=FALSE}
+cg <- compareCluster(geneCluster = biotypes_EnsDb_top_compare, fun = "enrichGO", OrgDb = org.Hs.eg.db)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4, fig.align="center", cache=FALSE}
+dotplot(cg)
+```
+
+Especially interesting to me is that the GO enrichment analysis of genes with many transcripts finds these genes to be overproportionally involved in immune system functions like [MCH class II](http://www.cell.com/cell/abstract/S0092-8674(11)00300-X?_returnURL=http%3A%2F%2Flinkinghub.elsevier.com%2Fretrieve%2Fpii%2FS009286741100300X%3Fshowall%3Dtrue) and [antigen binding](https://www.ncbi.nlm.nih.gov/books/NBK27160/). These functions are known for their high variability, which is necessary for efficient immune defenses against a wide variety of intruders (pathogens).
+
+We also see an enrichment of genes involved in [cell-cell-adhesion](https://www.ncbi.nlm.nih.gov/books/NBK26937/), specifically [cadherin binding](https://en.wikipedia.org/wiki/Cadherin). These have also been known for their high variability via alternative splicing.
+
+------------------
+
+<br>
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=6, fig.height=4, fig.align="center", cache=FALSE}
+sessionInfo()
+```
+
+
