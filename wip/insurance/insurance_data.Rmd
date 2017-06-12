@@ -1,0 +1,82 @@
+---
+title: "Insurance"
+output: html_document
+---
+
+http://archive.ics.uci.edu/ml/datasets/Insurance+Company+Benchmark+%28COIL+2000%29
+
+Attribute 86 is the response variable.
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+
+train_data <- read.table("ticdata2000.txt") %>%
+  mutate(V86 = as.factor(V86))
+test_data <- read.table("ticeval2000.txt")
+test_result <- read.table("tictgts2000.txt")
+```
+
+```{r}
+which(is.na(train_data))
+```
+
+```{r fig.width=5, fig.height=3}
+train_data %>%
+  ggplot(aes(x = V86)) +
+    geom_bar()
+```
+
+```{r fig.width=5, fig.height=3}
+test_result %>%
+  ggplot(aes(x = V1)) +
+    geom_bar()
+```
+
+```{r pca, fig.width=7, fig.height=5, warning=FALSE, message=FALSE}
+library(pcaGoPromoter)
+library(ellipse)
+
+# perform pca and extract scores
+pcaOutput <- pca(t(train_data[, -86]), printDropped = FALSE, scale = TRUE, center = TRUE)
+pcaOutput2 <- as.data.frame(pcaOutput$scores)
+  
+# define groups for plotting
+pcaOutput2$groups <- train_data$V86
+  
+centroids <- aggregate(cbind(PC1, PC2) ~ groups, pcaOutput2, mean)
+
+conf.rgn  <- do.call(rbind, lapply(unique(pcaOutput2$groups), function(t)
+  data.frame(groups = as.character(t),
+             ellipse(cov(pcaOutput2[pcaOutput2$groups == t, 1:2]),
+                   centre = as.matrix(centroids[centroids$groups == t, 2:3]),
+                   level = 0.95),
+             stringsAsFactors = FALSE)))
+    
+ggplot(data = pcaOutput2, aes(x = PC1, y = PC2, group = groups, color = groups)) + 
+    geom_polygon(data = conf.rgn, aes(fill = groups), alpha = 0.1) +
+    geom_point(size = 2, alpha = 0.6) + 
+    scale_color_brewer(palette = "Set1") +
+    labs(color = "",
+         fill = "",
+         x = paste0("PC1: ", round(pcaOutput$pov[1], digits = 2) * 100, "% variance"),
+         y = paste0("PC2: ", round(pcaOutput$pov[2], digits = 2) * 100, "% variance")) 
+```
+
+https://arxiv.org/pdf/1604.08079v2.pdf
+
+http://dl.acm.org/citation.cfm?id=2907070)
+
+https://cran.r-project.org/web/packages/UBL/UBL.pdf
+
+```{r}
+library(UBL)
+
+train_data_new <- NCLClassif(V86 ~ ., train_data)
+```
+
+---
+
+```{r}
+sessionInfo()
+```
+
