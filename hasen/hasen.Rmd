@@ -1,0 +1,672 @@
+---
+title: "Hare populations in Germany"
+author: "Dr. Shirin Glander"
+date: "`r Sys.Date()`"
+output:
+  md_document:
+    variant: markdown_github
+---
+
+For Easter, I wanted to have a look at the number of hares in Germany. 
+
+Below, you can see the code I used to produce this plot.
+
+---
+
+### Hare population numbers
+
+The German hunter's association ([Deutscher Jagdverband](www.jagdverband.de)) publishes population numbers for a variety of common species of wild game, including hares. The most recent numbers are for the year 2015/16.
+
+I downloaded the pdf and extracted the table on page 1 with the **tabulizer** package.
+
+```{r message=FALSE}
+library(tidyverse)
+```
+
+```{r warning=FALSE, message=FALSE, eval=FALSE}
+#devtools::install_github("ropensci/tabulizer")
+library(tabulizer)
+
+txt <- extract_tables("2015-16 Jahresstrecke Feldhase.pdf")
+
+hares <- txt[[1]] %>%
+  as.data.frame(stringsAsFactors = FALSE)
+
+# first row contains column names, remove from df and set as colnames
+hares_df <- data.frame(hares[-1 , ])
+colnames(hares_df) <- gsub(" ", "", as.character(c("bundesland", unlist(hares[1, -1]))))
+
+# remove the spaces in the numbers and make numeric
+hares_df <- apply(hares_df, 2, function(x) gsub(" ", "", x))
+hares_df[, -1] <- apply(hares_df[, -1], 2, function(x) as.numeric(x))
+
+hare_final <- as.data.frame(hares_df, stringsAsFactors = FALSE)
+```
+
+```{r echo=FALSE, eval=FALSE}
+save(hare_final, file = "hare_final.RData")
+```
+
+```{r echo=FALSE}
+load("hare_final.RData")
+```
+
+```{r message=FALSE, warning=FALSE, fig.width=15, fig.height=5, echo=FALSE, eval=FALSE}
+library(tidyverse)
+hare_final %>%
+  gather(x, y, 2:12) %>%
+  mutate(group = ifelse(bundesland == "gesamt", "total", "individual")) %>%
+  ggplot(aes(x = x, y = as.numeric(y), color = bundesland, group = bundesland)) +
+    geom_point() +
+    geom_line() +
+    facet_wrap(~ group, ncol = 2, scales = "free")
+```
+
+<br>
+
+### The map
+
+I downloaded the ESRI Shapefile of German federal states from the [Bundesamt für Kartographie und Geodäsie, Frankfurt am Main, 2011](https://www.arcgis.com/home/item.html?id=ae25571c60d94ce5b7fcbf74e27c00e0) and read it in with the **rgdal** package.
+
+```{r warning=FALSE, message=FALSE}
+library(maptools)
+
+ger <- rgdal::readOGR(dsn = "shp", layer = "vg2500_bld")
+```
+
+```{r echo=FALSE, eval=FALSE}
+class(ger)
+str(ger@data)
+ger@data$GEN
+```
+
+I then convert the shapefile into a dataframe for plotting. This allowes the plotting of polygons in the shape of ech federal state with ggplot.
+
+```{r warning=FALSE, message=FALSE}
+library(plyr)
+ger_df <- fortify(ger)
+ger@data$id <- rownames(ger@data)
+ger_df_final <- join(ger_df, ger@data, by = "id")
+ger_df_final$GEN <- as.character(ger_df_final$GEN)
+ger_df_final$GEN <- gsub("\xfc", "ü", ger_df_final$GEN)
+ger_df_final$GEN <- gsub("ü", "ue", ger_df_final$GEN)
+```
+
+To match the names of the federal states in the map dataframe with the hare population table, I assign a corresponding column to the latter.
+
+```{r}
+hare_final2 <- filter(hare_final, bundesland != "gesamt")
+hare_final2$GEN <- as.factor(c("Baden-Wuerttemberg", "Bayern", "Berlin", "Brandenburg", "Bremen", "Hamburg", "Hessen", "Mecklenburg-Vorpommern", "Niedersachsen", "Nordrhein-Westfalen", "Rheinland-Pfalz", "Saarland", "Sachsen", "Sachsen-Anhalt", "Schleswig-Holstein", "Thueringen"))
+colnames(hare_final2)[2:12] <- paste0("Y_", gsub("/", "_", colnames(hare_final)[2:12]))
+
+hare_final2[, 2:12] <- apply(hare_final2[, 2:12], 2, function(x) as.numeric(x))
+```
+
+<br>
+
+### Area
+
+The hare population numbers are given as absolute numbers but I want them normalized by area. The German statistics portal (http://www.statistik-portal.de) provides this data on their website. I use the **XML** package to scrape it from there.
+
+```{r eval=FALSE}
+library(XML)
+table = readHTMLTable("http://www.statistik-portal.de/Statistik-Portal/de_jb01_jahrtab1.asp", header = TRUE, which = 1, stringsAsFactors = FALSE)
+
+table$V1 <- gsub("Ã¼", "ü", table$V1)
+colnames(table) <- c("GEN", "area", "pop_total", "pop_male", "pop_female", "inh_p_km2")
+
+# numbers are in German format, so need to convert them to English decimal notation
+table[, -1] <- apply(table[, -1], 2, function(x) as.numeric(gsub(",", ".", gsub("\\.", "", x))))
+
+table <- table[-17, ]
+table$GEN <- as.factor(table$GEN)
+``` 
+
+```{r echo=FALSE, eval=FALSE}
+save(table, file = "table.RData")
+```
+
+```{r echo=FALSE}
+load("table.RData")
+```
+
+I then divide each population number by area (in km2).
+
+```{r}
+hare_final2$GEN <- as.character(hare_final2$GEN)
+table$GEN <- hare_final2$GEN
+
+hare_final3 <- hare_final2 %>%
+  left_join(table, by = "GEN")
+
+hare_final3[, 2:12] <- apply(hare_final3[, 2:12], 2, function(x) x / hare_final3$area)
+```
+
+This final table I then join with the map dataframe.
+
+```{r}
+map <- left_join(ger_df_final, hare_final3, by = "GEN")
+```
+
+<br>
+
+### The background map
+
+The background map shows Germany's federal states (as polygons) colored according to how many hares there were relative to the area in km2.
+
+I define the mapping theme for ggplot, so that I have no axes, grids, etc. and a transparent background.
+
+```{r}
+map_theme <- list(theme(panel.grid.minor = element_blank(),
+                        panel.grid.major = element_blank(),
+                        panel.background = element_rect(fill = "transparent", color = NA),
+                        plot.background = element_rect(fill = "transparent", color = NA),
+                        panel.border = element_blank(),
+                        axis.line = element_blank(),
+                        axis.text.x = element_blank(),
+                        axis.text.y = element_blank(),
+                        axis.ticks = element_blank(),
+                        axis.title.x = element_blank(),
+                        axis.title.y = element_blank(),
+                        plot.title = element_text(size = 18)))
+```
+
+```{r fig.width=10, fig.height=10, warning=FALSE, message=FALSE, echo=FALSE, eval=FALSE}
+all <- hare_final2 %>%
+  gather(x, y, Y_2005_06:Y_2015_16) %>%
+  group_by(GEN) %>%
+  dplyr::summarise(all = sum(na.omit(y)))
+```
+
+```{r fig.width=10, fig.height=10, warning=FALSE, message=FALSE, echo=FALSE, eval=FALSE}
+library(RColorBrewer)
+
+hare_final2 %>%
+  gather(x, y, Y_2005_06:Y_2015_16) %>%
+  left_join(all, by = "GEN") %>%
+  mutate(perc = as.numeric(paste0(round(100 * y / all, digits = 2)))) %>%
+  ggplot(aes(x = 1, y = perc, fill = x)) +
+    geom_bar(stat="identity", width=1) + 
+    coord_polar(theta="y") + 
+    xlab(NULL) + 
+    ylab(NULL) + 
+    theme(plot.margin = unit(c(0,0,0,0),"mm")) +
+    facet_wrap(~ GEN, ncol = 4) +
+    theme_minimal() +
+    theme(axis.text.x=element_blank()) +
+    scale_fill_manual(values = colorRampPalette(brewer.pal(16, "Accent"))(16))
+```
+
+```{r echo=FALSE, eval=FALSE}
+p1 <- ggplot(map, aes(long, lat, group = group, fill = Y_2015_16)) +
+  map_theme +
+  geom_polygon() +
+  geom_path(color = "white", size = 0.5) + 
+  scale_fill_gradientn(colors = rev(terrain.colors(10)), limits = c(0, max(as.numeric(hare_final3$Y_2015_16)))) +
+  coord_cartesian(ylim = c(47, 55.5), xlim = c(5, 15.5)) +
+  theme(legend.justification = "top") +
+  labs(
+    title = " ",
+    fill = "# / km2"
+  )
+```
+
+The background of each polygon is also filled with a hare image with the hare's size being proportional to the percentage of total hare numbers of each federal state compared to the total number of hares in Germany in 2015/16.
+
+To achieve this, I first downloaded an open-source image of a rabbit and read it with the **png** package. This image I then want to plot with **gplot**'s *annotation_custom()* function, so I need to convert the image to a raster.
+
+```{r}
+library(png)
+bunny <-  readPNG("rabbit-297212_1280.png") #https://pixabay.com
+
+library(grid)
+g <- rasterGrob(bunny, interpolate = TRUE)
+```
+
+```{r echo=FALSE, eval=FALSE}
+p1 + annotation_raster(my_image, xmin = 9.5, xmax = 10, ymin = 52, ymax = 52.5)
+```
+
+I am plotting hares only for the 8 federal states with percentage above 1, because the other ones would be too small on the plot.
+
+```{r echo=FALSE, eval=FALSE}
+arrange(hare_final_pie, -percent)
+```
+
+For each of these 8 federal states, I am plotting the hare image in relative size by scaling the xmax and ymax values according to the percentage values for each state. The image canvas always has a size of 15 by 15, so I am centering the images at 7.5. I then save each image as a png with transparent background.
+
+```{r eval=FALSE}
+val <- round(filter(hare_final_pie, GEN == "Bayern")$percent, digits = 0) * 0.5 / 2
+
+df <- data.frame(xmin = 7.5 - val,
+                 xmax = 7.5 + val,
+                 ymin = 7.5 - val,
+                 ymax = 7.5 + val)
+
+qplot(0:15, 0:15, geom = "blank") +
+  annotation_custom(g, xmin = df$xmin, xmax = df$xmax, ymin = df$ymin, ymax = df$ymax) +
+  map_theme
+ggsave("my_image_Bayern.png", bg = "transparent")
+```
+
+```{r eval=FALSE}
+val <- round(filter(hare_final_pie, GEN == "Niedersachsen")$percent, digits = 0) * 0.5 / 2
+
+df <- data.frame(xmin = 7.5 - val,
+                 xmax = 7.5 + val,
+                 ymin = 7.5 - val,
+                 ymax = 7.5 + val)
+
+qplot(0:15, 0:15, geom = "blank") +
+  annotation_custom(g, xmin = df$xmin, xmax = df$xmax, ymin = df$ymin, ymax = df$ymax) +
+  map_theme
+ggsave("my_image_Niedersachsen.png", bg = "transparent")
+```
+
+```{r eval=FALSE}
+val <- round(filter(hare_final_pie, GEN == "Nordrhein-Westfalen")$percent, digits = 0) * 0.5 / 2
+
+df <- data.frame(xmin = 7.5 - val,
+                 xmax = 7.5 + val,
+                 ymin = 7.5 - val,
+                 ymax = 7.5 + val)
+
+qplot(0:15, 0:15, geom = "blank") +
+  annotation_custom(g, xmin = df$xmin, xmax = df$xmax, ymin = df$ymin, ymax = df$ymax) +
+  map_theme
+ggsave("my_image_Nordrhein-Westfalen.png", bg = "transparent")
+```
+
+```{r eval=FALSE}
+val <- round(filter(hare_final_pie, GEN == "Schleswig-Holstein")$percent, digits = 0) * 0.5 / 2
+
+df <- data.frame(xmin = 7.5 - val,
+                 xmax = 7.5 + val,
+                 ymin = 7.5 - val,
+                 ymax = 7.5 + val)
+
+qplot(0:15, 0:15, geom = "blank") +
+  annotation_custom(g, xmin = df$xmin, xmax = df$xmax, ymin = df$ymin, ymax = df$ymax) +
+  map_theme
+ggsave("my_image_Schleswig-Holstein.png", bg = "transparent")
+```
+
+```{r eval=FALSE}
+val <- round(filter(hare_final_pie, GEN == "Baden-Wuerttemberg")$percent, digits = 0) * 0.5 / 2
+
+df <- data.frame(xmin = 7.5 - val,
+                 xmax = 7.5 + val,
+                 ymin = 7.5 - val,
+                 ymax = 7.5 + val)
+
+qplot(0:15, 0:15, geom = "blank") +
+  annotation_custom(g, xmin = df$xmin, xmax = df$xmax, ymin = df$ymin, ymax = df$ymax) +
+  map_theme
+ggsave("my_image_Baden-Wuerttemberg.png", bg = "transparent")
+```
+
+```{r eval=FALSE}
+val <- round(filter(hare_final_pie, GEN == "Hessen")$percent, digits = 0) * 0.5 / 2
+
+df <- data.frame(xmin = 7.5 - val,
+                 xmax = 7.5 + val,
+                 ymin = 7.5 - val,
+                 ymax = 7.5 + val)
+
+qplot(0:15, 0:15, geom = "blank") +
+  annotation_custom(g, xmin = df$xmin, xmax = df$xmax, ymin = df$ymin, ymax = df$ymax) +
+  map_theme
+ggsave("my_image_Hessen.png", bg = "transparent")
+```
+
+```{r eval=FALSE}
+val <- round(filter(hare_final_pie, GEN == "Rheinland-Pfalz")$percent, digits = 0) * 0.5 / 2
+
+df <- data.frame(xmin = 7.5 - val,
+                 xmax = 7.5 + val,
+                 ymin = 7.5 - val,
+                 ymax = 7.5 + val)
+
+qplot(0:15, 0:15, geom = "blank") +
+  annotation_custom(g, xmin = df$xmin, xmax = df$xmax, ymin = df$ymin, ymax = df$ymax) +
+  map_theme
+ggsave("my_image_Rheinland-Pfalz.png", bg = "transparent")
+```
+
+```{r eval=FALSE}
+val <- round(filter(hare_final_pie, GEN == "Brandenburg")$percent, digits = 0) * 0.5 / 2
+
+df <- data.frame(xmin = 7.5 - val,
+                 xmax = 7.5 + val,
+                 ymin = 7.5 - val,
+                 ymax = 7.5 + val)
+
+qplot(0:15, 0:15, geom = "blank") +
+  annotation_custom(g, xmin = df$xmin, xmax = df$xmax, ymin = df$ymin, ymax = df$ymax) +
+  map_theme
+ggsave("my_image_Brandenburg.png", bg = "transparent")
+```
+
+<br>
+
+Next, I follow the instructions and code from a [StackOverflow post](http://stackoverflow.com/questions/28206611/adding-custom-image-to-geom-polygon-fill-in-ggplot): Each image is now read in again and converted to a dataframe for plotting. Because I only want to fill within the polygon borders, I am restricting the points to those, that fall in these shapes. I need to use the "groups" column here, because this is the column that was used for plotting the map polygons.
+
+```{r}
+#http://stackoverflow.com/questions/28206611/adding-custom-image-to-geom-polygon-fill-in-ggplot
+# converting raster image to plottable data.frame
+library(sp)
+
+ggplot_rasterdf <- function(color_matrix, bottom = 0, top = 1, left = 0, right = 1) {
+  require("dplyr")
+  require("tidyr")
+
+  if (dim(color_matrix)[3] > 3) hasalpha <- T else hasalpha <- F
+
+  outMatrix <- matrix("#00000000", nrow = dim(color_matrix)[1], ncol = dim(color_matrix)[2])
+
+  for (i in 1:dim(color_matrix)[1])
+    for (j in 1:dim(color_matrix)[2]) 
+      outMatrix[i, j] <- rgb(color_matrix[i,j,1], color_matrix[i,j,2], color_matrix[i,j,3], ifelse(hasalpha, color_matrix[i,j,4], 1))
+
+  colnames(outMatrix) <- seq(1, ncol(outMatrix))
+  rownames(outMatrix) <- seq(1, nrow(outMatrix))
+  as.data.frame(outMatrix) %>% mutate(Y = nrow(outMatrix):1) %>% gather(X, color, -Y) %>% 
+    mutate(X = left + as.integer(as.character(X))*(right - left)/ncol(outMatrix), Y = bottom + Y*(top - bottom)/nrow(outMatrix))
+}
+```
+
+```{r eval=FALSE}
+my_image <- readPNG("my_image_Bayern.png")
+
+groups <- as.character(unique(filter(map, GEN == "Bayern")$group))
+
+my_image_dat <- ggplot_rasterdf(my_image, 
+                                left = min(map[map$group %in% groups,]$long), 
+                                right = max(map[map$group %in% groups,]$long),
+                                bottom = min(map[map$group %in% groups,]$lat),
+                                top = max(map[map$group %in% groups,]$lat) )
+
+bayern <- my_image_dat[point.in.polygon(my_image_dat$X, my_image_dat$Y, 
+                                               map[map$group %in% groups,]$long, 
+                                               map[map$group %in% groups,]$lat) %>% as.logical,]
+```
+
+```{r eval=FALSE}
+my_image <- readPNG("my_image_Niedersachsen.png")
+
+groups <- as.character(unique(filter(map, GEN == "Niedersachsen")$group))
+
+my_image_dat <- ggplot_rasterdf(my_image, 
+                                left = min(map[map$group %in% groups,]$long), 
+                                right = max(map[map$group %in% groups,]$long),
+                                bottom = min(map[map$group %in% groups,]$lat),
+                                top = max(map[map$group %in% groups,]$lat) )
+
+niedersachsen <- my_image_dat[point.in.polygon(my_image_dat$X, my_image_dat$Y, 
+                                        map[map$group %in% groups,]$long, 
+                                        map[map$group %in% groups,]$lat) %>% as.logical,]
+```
+
+```{r eval=FALSE}
+my_image <- readPNG("my_image_Nordrhein-Westfalen.png")
+
+groups <- as.character(unique(filter(map, GEN == "Nordrhein-Westfalen")$group))
+
+my_image_dat <- ggplot_rasterdf(my_image, 
+                                left = min(map[map$group %in% groups,]$long), 
+                                right = max(map[map$group %in% groups,]$long),
+                                bottom = min(map[map$group %in% groups,]$lat),
+                                top = max(map[map$group %in% groups,]$lat) )
+
+nrw <- my_image_dat[point.in.polygon(my_image_dat$X, my_image_dat$Y, 
+                                               map[map$group %in% groups,]$long, 
+                                               map[map$group %in% groups,]$lat) %>% as.logical,]
+```
+
+```{r eval=FALSE}
+my_image <- readPNG("my_image_Schleswig-Holstein.png")
+
+groups <- as.character(unique(filter(map, GEN == "Schleswig-Holstein")$group))
+
+my_image_dat <- ggplot_rasterdf(my_image, 
+                                left = min(map[map$group %in% groups,]$long), 
+                                right = max(map[map$group %in% groups,]$long),
+                                bottom = min(map[map$group %in% groups,]$lat),
+                                top = max(map[map$group %in% groups,]$lat) )
+
+sh <- my_image_dat[point.in.polygon(my_image_dat$X, my_image_dat$Y, 
+                                               map[map$group %in% groups,]$long, 
+                                               map[map$group %in% groups,]$lat) %>% as.logical,]
+```
+
+```{r eval=FALSE}
+my_image <- readPNG("my_image_Baden-Wuerttemberg.png")
+
+groups <- as.character(unique(filter(map, GEN == "Baden-Wuerttemberg")$group))
+
+my_image_dat <- ggplot_rasterdf(my_image, 
+                                left = min(map[map$group %in% groups,]$long), 
+                                right = max(map[map$group %in% groups,]$long),
+                                bottom = min(map[map$group %in% groups,]$lat),
+                                top = max(map[map$group %in% groups,]$lat) )
+
+bw <- my_image_dat[point.in.polygon(my_image_dat$X, my_image_dat$Y, 
+                                               map[map$group %in% groups,]$long, 
+                                               map[map$group %in% groups,]$lat) %>% as.logical,]
+```
+
+```{r eval=FALSE}
+my_image <- readPNG("my_image_Hessen.png")
+
+groups <- as.character(unique(filter(map, GEN == "Hessen")$group))
+
+my_image_dat <- ggplot_rasterdf(my_image, 
+                                left = min(map[map$group %in% groups,]$long), 
+                                right = max(map[map$group %in% groups,]$long),
+                                bottom = min(map[map$group %in% groups,]$lat),
+                                top = max(map[map$group %in% groups,]$lat) )
+
+hessen <- my_image_dat[point.in.polygon(my_image_dat$X, my_image_dat$Y, 
+                                               map[map$group %in% groups,]$long, 
+                                               map[map$group %in% groups,]$lat) %>% as.logical,]
+```
+
+```{r eval=FALSE}
+my_image <- readPNG("my_image_Rheinland-Pfalz.png")
+
+groups <- as.character(unique(filter(map, GEN == "Rheinland-Pfalz")$group))
+
+my_image_dat <- ggplot_rasterdf(my_image, 
+                                left = min(map[map$group %in% groups,]$long), 
+                                right = max(map[map$group %in% groups,]$long),
+                                bottom = min(map[map$group %in% groups,]$lat),
+                                top = max(map[map$group %in% groups,]$lat) )
+
+rp <- my_image_dat[point.in.polygon(my_image_dat$X, my_image_dat$Y, 
+                                               map[map$group %in% groups,]$long, 
+                                               map[map$group %in% groups,]$lat) %>% as.logical,]
+```
+
+```{r eval=FALSE}
+my_image <- readPNG("my_image_Brandenburg.png")
+
+groups <- as.character(unique(filter(map, GEN == "Brandenburg")$group))
+
+my_image_dat <- ggplot_rasterdf(my_image, 
+                                left = min(map[map$group %in% groups,]$long), 
+                                right = max(map[map$group %in% groups,]$long),
+                                bottom = min(map[map$group %in% groups,]$lat),
+                                top = max(map[map$group %in% groups,]$lat) )
+
+brandenburg <- my_image_dat[point.in.polygon(my_image_dat$X, my_image_dat$Y, 
+                                               map[map$group %in% groups,]$long, 
+                                               map[map$group %in% groups,]$lat) %>% as.logical,]
+```
+
+```{r echo=FALSE, eval=FALSE}
+save(bayern, file = "bayern.RData")
+save(niedersachsen, file = "niedersachsen.RData")
+save(nrw, file = "nrw.RData")
+save(sh, file = "sh.RData")
+save(bw, file = "bw.RData")
+save(hessen, file = "hessen.RData")
+save(rp, file = "rp.RData")
+save(brandenburg, file = "brandenburg.RData")
+```
+
+```{r echo=FALSE}
+load("bayern.RData")
+load("niedersachsen.RData")
+load("nrw.RData")
+load("sh.RData")
+load("bw.RData")
+load("hessen.RData")
+load("rp.RData")
+load("brandenburg.RData")
+```
+
+<br>
+
+Now, I can plot the background plot. I also set the x- and y-limits now, as well as an empty title because I want to overlay the pie charts onto this plot and need to have the same coordinates and margins for this. I am also defining the legend position to be on the top right, so that I can plot the legend of the pie charts on the bottom right.
+
+```{r}
+p1 <- ggplot() +
+  map_theme +
+  geom_polygon(data = map, aes(long, lat, group = group, fill = Y_2015_16)) + 
+  geom_path(data = map, aes(long, lat, group = group), color = "white", size = 0.5) + 
+  scale_fill_gradientn(colors = rev(terrain.colors(10)), limits = c(0, max(as.numeric(hare_final3$Y_2015_16)))) +
+  coord_cartesian(ylim = c(47, 55.5), xlim = c(5, 15.5)) +
+  theme(legend.justification = "top") +
+  labs(
+    title = " ",
+    fill = "# / km2"
+  ) +
+  geom_tile(data = bayern, aes(x = X, y = Y), fill = bayern$color) +
+  geom_tile(data = niedersachsen, aes(x = X, y = Y), fill = niedersachsen$color) +
+  geom_tile(data = nrw, aes(x = X, y = Y), fill = nrw$color) +
+  geom_tile(data = sh, aes(x = X, y = Y), fill = sh$color) +
+  geom_tile(data = bw, aes(x = X, y = Y), fill = bw$color) +
+  geom_tile(data = hessen, aes(x = X, y = Y), fill = hessen$color) +
+  geom_tile(data = rp, aes(x = X, y = Y), fill = rp$color) +
+  geom_tile(data = brandenburg, aes(x = X, y = Y), fill = brandenburg$color)
+```
+
+<br>
+
+### The pie plot
+
+Over each federal state, I want to plot a pie chart that shows the percentage of the total hare population that falls on each federal state. I use the **scatterpie** package for that. The coordinates for each pie should be the center points of each federal state, which I determined with the following code from a [StackOverflow post](http://stackoverflow.com/questions/10368180/plotting-pie-graphs-on-map-in-ggplot).
+
+```{r message=FALSE}
+library(scatterpie)
+
+# http://stackoverflow.com/questions/10368180/plotting-pie-graphs-on-map-in-ggplot
+getLabelPoint <- function(county) {Polygon(county[c('long', 'lat')])@labpt}
+
+centroids <- by(map, map$GEN, getLabelPoint)    
+centroids <- do.call("rbind.data.frame", centroids) %>%
+  tibble::rownames_to_column()
+names(centroids) <- c("GEN", "long", "lat")
+```
+
+```{r message=FALSE, echo=FALSE, eval=FALSE}
+hare_final_pie <- hare_final2 %>%
+  gather(x, y, Y_2005_06:Y_2015_16) %>%
+  left_join(all, by = "GEN") %>%
+  mutate(perc = as.numeric(paste0(round(100 * y / all, digits = 2))),
+         GEN = as.character(GEN))
+
+spread <- spread(hare_final_pie[, c(2, 6, 3)], x, perc)
+
+centroids$GEN <- spread$GEN
+
+hare_final_pie <- left_join(centroids, 
+                            spread, by = "GEN")
+
+colnames(hare_final_pie) <- gsub("Y", "y", colnames(hare_final_pie))
+
+hare_final_pie[hare_final_pie$GEN == "Brandenburg", "long"] <- 14
+hare_final_pie[hare_final_pie$GEN == "Brandenburg", "lat"] <- 52
+
+hare_final_pie[hare_final_pie$GEN == "Niedersachsen", "long"] <- 9.5
+hare_final_pie[hare_final_pie$GEN == "Niedersachsen", "lat"] <- 52.5
+```
+
+I then calculate the percentages and join them with the centroid coordinates. I am also adjusting the positions of the pie charts for some federal states so that they don't overlap with other pie charts or with the background images.
+
+```{r message=FALSE}
+hare_final_pie <- hare_final2 %>%
+  select(one_of(c("GEN", "Y_2015_16"))) %>%
+  mutate(percent = round(Y_2015_16 / sum(Y_2015_16) * 100, digits = 2),
+         rest = 100 - percent) %>%
+  left_join(centroids, by = "GEN")
+
+hare_final_pie[hare_final_pie$GEN == "Brandenburg", "long"] <- 14
+hare_final_pie[hare_final_pie$GEN == "Brandenburg", "lat"] <- 52
+
+hare_final_pie[hare_final_pie$GEN == "Niedersachsen", "long"] <- 8
+hare_final_pie[hare_final_pie$GEN == "Niedersachsen", "lat"] <- 52.8
+
+hare_final_pie[hare_final_pie$GEN == "Schleswig-Holstein", "long"] <- 10.5
+hare_final_pie[hare_final_pie$GEN == "Schleswig-Holstein", "lat"] <- 54
+
+hare_final_pie[hare_final_pie$GEN == "Hamburg", "long"] <- 10.2
+
+hare_final_pie[hare_final_pie$GEN == "Berlin", "long"] <- 13.6
+
+hare_final_pie[hare_final_pie$GEN == "Nordrhein-Westfalen", "long"] <- 6.8
+
+hare_final_pie[hare_final_pie$GEN == "Hessen", "long"] <- 9.2
+hare_final_pie[hare_final_pie$GEN == "Hessen", "lat"] <- 50.9
+
+hare_final_pie[hare_final_pie$GEN == "Rheinland-Pfalz", "long"] <- 7
+hare_final_pie[hare_final_pie$GEN == "Rheinland-Pfalz", "lat"] <- 50
+
+hare_final_pie[hare_final_pie$GEN == "Baden-Wuerttemberg", "long"] <- 9.5
+hare_final_pie[hare_final_pie$GEN == "Baden-Wuerttemberg", "lat"] <- 49
+
+hare_final_pie[hare_final_pie$GEN == "Bayern", "long"] <- 11
+hare_final_pie[hare_final_pie$GEN == "Bayern", "lat"] <- 49.6
+```
+
+Now, I am plottin the second plot with only the pie charts. Theoretically, one could plot these pie charts directly on top of another ggplot but here this doesn't work because I am using conflicting fill attributes: one with a continuous scale for the polygons and another with a categorical scale for the pie charts. Therefore, I am overlaying the two plots instead.
+
+```{r}
+hare_final_pie$radius <- 0.2
+
+p2 <- ggplot() +
+  geom_scatterpie(data = hare_final_pie, aes(x = long, y = lat, group = GEN, r = radius), cols = colnames(hare_final_pie)[3:4]) +
+  map_theme +
+  coord_cartesian(ylim = c(47, 55.5), xlim = c(5, 15.5)) +
+  theme(legend.justification = "bottom") +
+  scale_fill_manual(values = c("black", "transparent")) +
+  labs(
+    title = "German hare populations in 2015/16 by federal state",
+    fill = ""
+  )
+```
+
+```{r warning=FALSE, echo=FALSE, eval=FALSE}
+hare_final_pie$radius <- 0.2
+ggplot() +
+  geom_polygon(data = map, aes(x = long, y = lat, group = group)) +
+  geom_path(data = map, aes(x = long, y = lat, group = group)) +
+  geom_scatterpie(data = hare_final_pie, aes(x = long, y = lat, group = GEN, r = radius), cols = colnames(hare_final_pie)[4:14]) +
+  theme_minimal() +
+  scale_fill_manual(values = colorRampPalette(brewer.pal(16, "Accent"))(16))
+```
+
+```{r warning=FALSE, fig.width=12, fig.height=9.5}
+grid.newpage()
+pushViewport(viewport(layout = grid.layout(1, 1 ,widths = unit(1 ,"npc"))))
+print(p1 + theme(legend.position = "right"), vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
+print(p2 + theme(legend.position = "right"), vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
+```
+
+------------------
+
+<br>
+
+```{r }
+sessionInfo()
+```
