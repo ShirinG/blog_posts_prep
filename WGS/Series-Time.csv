@@ -1,0 +1,101 @@
+SeriesCode,Year,DESCRIPTION
+SP.ADO.TFRT,YR1960,Interpolated using data for 1957 and 1962.
+SP.ADO.TFRT,YR1961,Interpolated using data for 1957 and 1962.
+SP.ADO.TFRT,YR1962,The data refer to 1960-1965.
+SP.DYN.LE60.FE.IN,YR1962,"The data refer to five-year periods running from 1 July, 1960 to 30 June, 1965."
+SP.DYN.LE60.MA.IN,YR1962,"The data refer to five-year periods running from 1 July, 1960 to 30 June, 1965."
+SP.POP.BRTH.MF,YR1962,The data refer to 1960-1965.
+SP.ADO.TFRT,YR1963,Interpolated using data for 1962 and 1967.
+SP.ADO.TFRT,YR1964,Interpolated using data for 1962 and 1967.
+SP.ADO.TFRT,YR1965,Interpolated using data for 1962 and 1967.
+SP.ADO.TFRT,YR1966,Interpolated using data for 1962 and 1967.
+SP.ADO.TFRT,YR1967,The data refer to 1965-1970.
+SP.POP.BRTH.MF,YR1967,The data refer to 1965-1970.
+SP.DYN.LE60.MA.IN,YR1967,"The data refer to five-year periods running from 1 July, 1965 to 30 June, 1970."
+SP.DYN.LE60.FE.IN,YR1967,"The data refer to five-year periods running from 1 July, 1965 to 30 June, 1970."
+SP.ADO.TFRT,YR1968,Interpolated using data for 1967 and 1972.
+SP.ADO.TFRT,YR1969,Interpolated using data for 1967 and 1972.
+SP.ADO.TFRT,YR1970,Interpolated using data for 1967 and 1972.
+SP.ADO.TFRT,YR1971,Interpolated using data for 1967 and 1972.
+SP.ADO.TFRT,YR1972,The data refer to 1970-1975.
+SP.DYN.LE60.FE.IN,YR1972,"The data refer to five-year periods running from 1 July, 1970 to 30 June, 1975."
+SP.DYN.LE60.MA.IN,YR1972,"The data refer to five-year periods running from 1 July, 1970 to 30 June, 1975."
+SP.POP.BRTH.MF,YR1972,The data refer to 1970-1975.
+SP.ADO.TFRT,YR1973,Interpolated using data for 1972 and 1977.
+SP.ADO.TFRT,YR1974,Interpolated using data for 1972 and 1977.
+SP.ADO.TFRT,YR1975,Interpolated using data for 1972 and 1977.
+SP.ADO.TFRT,YR1976,Interpolated using data for 1972 and 1977.
+SP.ADO.TFRT,YR1977,The data refer to 1975-1980.
+SP.POP.BRTH.MF,YR1977,The data refer to 1975-1980.
+SP.DYN.LE60.MA.IN,YR1977,"The data refer to five-year periods running from 1 July, 1975 to 30 June, 1980."
+SP.DYN.LE60.FE.IN,YR1977,"The data refer to five-year periods running from 1 July, 1975 to 30 June, 1980."
+SP.ADO.TFRT,YR1978,Interpolated using data for 1977 and 1982.
+SP.ADO.TFRT,YR1979,Interpolated using data for 1977 and 1982.
+SP.ADO.TFRT,YR1980,Interpolated using data for 1977 and 1982.
+SP.ADO.TFRT,YR1981,Interpolated using data for 1977 and 1982.
+SP.ADO.TFRT,YR1982,The data refer to 1980-1985.
+SP.DYN.LE60.FE.IN,YR1982,"The data refer to five-year periods running from 1 July, 1980 to 30 June, 1985."
+SP.DYN.LE60.MA.IN,YR1982,"The data refer to five-year periods running from 1 July, 1980 to 30 June, 1985."
+SP.POP.BRTH.MF,YR1982,The data refer to 1980-1985.
+SP.ADO.TFRT,YR1983,Interpolated using data for 1982 and 1987.
+SP.ADO.TFRT,YR1984,Interpolated using data for 1982 and 1987.
+SP.ADO.TFRT,YR1985,Interpolated using data for 1982 and 1987.
+SP.ADO.TFRT,YR1986,Interpolated using data for 1982 and 1987.
+SP.ADO.TFRT,YR1987,The data refer to 1985-1990.
+SP.POP.BRTH.MF,YR1987,The data refer to 1985-1990.
+SP.DYN.LE60.MA.IN,YR1987,"The data refer to five-year periods running from 1 July, 1985 to 30 June, 1990."
+SP.DYN.LE60.FE.IN,YR1987,"The data refer to five-year periods running from 1 July, 1985 to 30 June, 1990."
+SP.ADO.TFRT,YR1988,Interpolated using data for 1987 and 1992.
+SP.ADO.TFRT,YR1989,Interpolated using data for 1987 and 1992.
+SP.ADO.TFRT,YR1990,Interpolated using data for 1987 and 1992.
+SP.POP.BRTH.MF,YR1990,Interpolated using data for 1987 and 1992.
+SP.ADO.TFRT,YR1991,Interpolated using data for 1987 and 1992.
+SP.ADO.TFRT,YR1992,The data refer to 1990-1995.
+SP.POP.BRTH.MF,YR1992,The data refer to 1990-1995.
+SP.DYN.LE60.FE.IN,YR1992,"The data refer to five-year periods running from 1 July, 1990 to 30 June, 1995."
+SP.DYN.LE60.MA.IN,YR1992,"The data refer to five-year periods running from 1 July, 1990 to 30 June, 1995."
+SP.ADO.TFRT,YR1993,Interpolated using data for 1992 and 1997.
+SP.ADO.TFRT,YR1994,Interpolated using data for 1992 and 1997.
+SP.ADO.TFRT,YR1995,Interpolated using data for 1992 and 1997.
+SP.ADO.TFRT,YR1996,Interpolated using data for 1992 and 1997.
+SP.ADO.TFRT,YR1997,The data refer to 1995-2000.
+SP.DYN.LE60.MA.IN,YR1997,"The data refer to five-year periods running from 1 July, 1995 to 30 June, 2000."
+SP.DYN.LE60.FE.IN,YR1997,"The data refer to five-year periods running from 1 July, 1995 to 30 June, 2000."
+SP.POP.BRTH.MF,YR1997,The data refer to 1995-2000.
+SP.ADO.TFRT,YR1998,Interpolated using data for 1997 and 2002.
+SP.ADO.TFRT,YR1999,Interpolated using data for 1997 and 2002.
+SP.ADO.TFRT,YR2000,Interpolated using data for 1997 and 2002.
+SP.ADO.TFRT,YR2001,Interpolated using data for 1997 and 2002.
+SP.ADO.TFRT,YR2002,The data refer to 2000-2005.
+SP.POP.BRTH.MF,YR2002,The data refer to 2000-2005.
+SP.DYN.LE60.FE.IN,YR2002,"The data refer to five-year periods running from 1 July, 2000 to 30 June, 2005."
+SP.DYN.LE60.MA.IN,YR2002,"The data refer to five-year periods running from 1 July, 2000 to 30 June, 2005."
+IC.FRM.FEMO.ZS,YR2002,The sample was drawn from the manufacturing sector only.
+IC.FRM.FEMO.ZS,YR2003,The sample was drawn from the manufacturing sector only.
+SP.ADO.TFRT,YR2003,Interpolated using data for 2002 and 2007.
+SP.ADO.TFRT,YR2004,Interpolated using data for 2002 and 2007.
+IC.FRM.FEMO.ZS,YR2004,The sample was drawn from the manufacturing sector only.
+IC.FRM.FEMO.ZS,YR2005,The sample was drawn from the manufacturing sector only.
+SP.ADO.TFRT,YR2005,Interpolated using data for 2002 and 2007.
+SP.ADO.TFRT,YR2006,Interpolated using data for 2002 and 2007.
+IC.FRM.FEMO.ZS,YR2006,The sample was drawn from the manufacturing sector only.
+IC.FRM.FEMO.ZS,YR2007,The sample was drawn from the manufacturing sector only.
+SP.ADO.TFRT,YR2007,The data refer to 2005-2010.
+SP.DYN.LE60.MA.IN,YR2007,"The data refer to five-year periods running from 1 July, 2005 to 30 June, 2010."
+SP.DYN.LE60.FE.IN,YR2007,"The data refer to five-year periods running from 1 July, 2005 to 30 June, 2010."
+SP.POP.BRTH.MF,YR2007,The data refer to 2005-2010.
+SP.POP.BRTH.MF,YR2008,Interpolated using data for 2007 and 2012.
+SP.ADO.TFRT,YR2008,Interpolated using data for 2007 and 2012.
+SP.ADO.TFRT,YR2009,Interpolated using data for 2007 and 2012.
+SP.POP.BRTH.MF,YR2009,Interpolated using data for 2007 and 2012.
+SP.POP.BRTH.MF,YR2010,Interpolated using data for 2007 and 2012.
+SP.ADO.TFRT,YR2010,Interpolated using data for 2007 and 2012.
+SP.ADO.TFRT,YR2011,Interpolated using data for 2007 and 2012.
+SP.POP.BRTH.MF,YR2011,Interpolated using data for 2007 and 2012.
+SP.POP.BRTH.MF,YR2012,The data refer to 2010-2015.
+SP.DYN.LE60.FE.IN,YR2012,"The data refer to five-year periods running from 1 July, 2010 to 30 June, 2015."
+SP.DYN.LE60.MA.IN,YR2012,"The data refer to five-year periods running from 1 July, 2010 to 30 June, 2015."
+SP.ADO.TFRT,YR2012,The data refer to 2010-2015.
+SP.ADO.TFRT,YR2013,Interpolated using data for 2012 and 2017.
+SP.POP.BRTH.MF,YR2013,Interpolated using data for 2012 and 2017.
+SP.ADO.TFRT,YR2014,Interpolated using data for 2012 and 2017.

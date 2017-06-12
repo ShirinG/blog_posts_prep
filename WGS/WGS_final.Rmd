@@ -1,0 +1,840 @@
+---
+title: "Scratching the surface of gender bias"
+author: "Dr. Shirin Glander"
+date: '`r Sys.Date()`'
+output:
+  md_document:
+    variant: markdown_github
+---
+
+Today, I want to share my analysis of the World Gender Statistics dataset. 
+
+Last week I already introduced [my Shiny app](https://shiring.shinyapps.io/wgs_app/), where you can explore 160 measurements for 164 countries over 56 years. This week I've included a statistical analysis of these countries and measurements and put some finishing touches on the app.
+
+Just in case anybody needed proof that gender bias is not only a problem of "other countries", my analysis showed very nicely, that the Western world isn't (yet, I hope) gender neutral in regards to many statistics!
+
+You can also load the app via Github with the **shiny** package. [There, you can also find the source code for the app](https://github.com/ShirinG/WGS_app).
+
+```{r echo=TRUE, eval = FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=8, fig.align="center", cache=FALSE}
+library(shiny)
+runGitHub("ShirinG/WGS_app") 
+```
+
+<br>
+
+## The data
+
+The data was downloaded from [The World Bank's Open Data project](http://data.worldbank.org/) via [Kaggle](https://www.kaggle.com/theworldbank/world-gender-statistic). The main data table shows
+
+- Country.Name: the name of the country
+- Country.Code: the country's code
+- Indicator.Name: the name of the variable that this row represents
+- Indicator.Code: a unique id for the variable
+- 1960 - 2016: one column EACH for the value of the variable in each year it was available
+
+Unfortunately, the dataset doesn't include a column that indicated which two female/ male statistics belong together and there is no consistent naming scheme either. Therefore, I chose to focus on those statistics, where the counterparts could be easily extracted: indicator codes that differed only in containing ".FE" or ".MA". I then split the subsetted dataframe into female and male and produced a third dataset with the ratios between male and female values. To calculate the ratios, I added 0.001 to each data point, so that zero values would not produce NAs.
+
+The finished datasets were saved as "R.Data" files, so that I could easily load them into the Shiny app.
+
+```{r echo=TRUE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+dataset <- read.csv("Data.csv")
+dataset_subs <- dataset[grep(".FE|.MA", dataset$Indicator.Code), ]
+head(dataset_subs)
+
+dataset_subs$Indicator.Name <- as.character(dataset_subs$Indicator.Name)
+
+dataset_fem <- dataset[grep("female", dataset$Indicator.Name), ]
+dataset_fem$Indicator.Name <- gsub("female", "", dataset_fem$Indicator.Name)
+dataset_fem$Indicator.Name <- gsub(",", "", dataset_fem$Indicator.Name)
+dataset_fem$Indicator.Code <- gsub(".FE", "", dataset_fem$Indicator.Code)
+dataset_fem$gender <- "female"
+
+dataset_male <- dataset[-grep("female", dataset$Indicator.Name), ]
+dataset_male$Indicator.Name <- gsub("male", "", dataset_male$Indicator.Name)
+dataset_male$Indicator.Name <- gsub(",", "", dataset_male$Indicator.Name)
+dataset_male$Indicator.Code <- gsub(".FE", "", dataset_male$Indicator.Code)
+dataset_male$gender <- "male"
+
+dataset_fem <- dataset_fem[which(dataset_fem$Indicator.Name %in% dataset_male$Indicator.Name), ]
+dataset_male <- dataset_male[which(dataset_male$Indicator.Name %in% dataset_fem$Indicator.Name), ]
+
+dataset_fem <- dataset_fem[which(dataset_fem$Country.Code %in% dataset_male$Country.Code), ]
+dataset_male <- dataset_male[which(dataset_male$Country.Code %in% dataset_fem$Country.Code), ]
+
+library(dplyr)
+dataset_fem <- arrange(dataset_fem, Country.Code)
+dataset_male <- arrange(dataset_male, Country.Code)
+
+dataset_fem$Country.Code <- as.character(dataset_fem$Country.Code)
+dataset_male$Country.Code <- as.character(dataset_male$Country.Code)
+
+save(dataset_fem, file = "dataset_fem.RData")
+save(dataset_male, file = "dataset_male.RData")
+```
+
+```{r echo=TRUE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+length(unique(dataset_fem$Indicator.Name)) == length(unique(dataset_male$Indicator.Name))
+
+for (n in 1:length(unique(dataset_fem$Indicator.Name))) {
+  code <- unique(dataset_fem$Indicator.Name)[n]
+  print(code)
+                 
+  fem <- dataset_fem[which(dataset_fem$Indicator.Name == code), ]
+  male <- dataset_male[which(dataset_male$Indicator.Name == code), ]
+
+  for (i in 1:nrow(fem)) {
+    if (i == 1) {
+      diff <- (male[i, 5:61] + 0.001) / (fem[i, 5:61] + 0.001)
+      diff_table <- cbind(male[i, c(1:4)], diff)
+    } else {
+      diff <- (male[i, 5:61] + 0.001) / (fem[i, 5:61] + 0.001)
+      diff_table <- rbind(diff_table, 
+                          cbind(male[i, c(1:4)], diff))
+    }
+  }
+  
+  if (n == 1) {
+    diff_table_bind <- diff_table
+  } else {
+    diff_table_bind <- rbind(diff_table_bind, diff_table)
+  }
+}
+
+diff_table_bind$Country.Code <- as.character(diff_table_bind$Country.Code)
+```
+
+```{r echo=TRUE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+measures <- unique(diff_table_bind$Indicator.Name)
+save(measures, file = "measures.RData")
+
+years <- gsub("X", "", colnames(diff_table_bind)[-c(1:4)])
+years <- years[-length(years)]
+save(years, file = "years.RData")
+```
+
+<br>
+
+## The world map
+
+The map has been downloaded from [the Natural Earth Data website](http://www.naturalearthdata.com/downloads/110m-cultural-vectors/). The country borders were reduced by 200 meters with [ArcGIS Pro](https://www.esri.de/produkte/arcgis-pro), so that clicking within any country on the map would show the corresponding country's border as the nearest point. [ArcGIS Pro](https://www.esri.de/produkte/arcgis-pro) was also used to convert the map to [Mercator projection](https://en.wikipedia.org/wiki/Mercator_projection). The changed shapefiles can be downloaded from [my Github repository](https://github.com/ShirinG/blog_posts_prep/tree/master/WGS/shapefiles/changed_borders).
+
+```{r echo=TRUE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+library(rgdal)
+library(plyr)
+library(scales)
+
+wmap_countries <- readOGR(dsn = "shapefiles/changed_borders", layer = "ne_110m_admin_0_countries_smaller_wm")
+wmap_countries_df <- fortify(wmap_countries)
+wmap_countries@data$id <- rownames(wmap_countries@data)
+wmap_countries_df_final <- join(wmap_countries_df, wmap_countries@data, by = "id")
+wmap_countries_df_final$adm0_a3 <- as.character(wmap_countries_df_final$adm0_a3)
+save(wmap_countries_df_final, file = "wmap_countries_smaller_df_final.RData")
+
+diff_table_bind <- diff_table_bind[which(diff_table_bind$Country.Code %in% wmap_countries_df_final$adm0_a3), ]
+save(diff_table_bind, file = "diff_table_bind.RData")
+
+countries <- as.character(unique(diff_table_bind$Country.Name))
+save(countries, file = "countries.RData")
+```
+
+```{r echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+load("measures.RData")
+load("years.RData")
+load("countries.RData")
+
+measure = measures[1]
+year = years[56]
+
+country = countries[1]
+
+load("diff_table_bind.RData")
+load("dataset_fem.RData")
+load("dataset_male.RData")
+load("wmap_countries_smaller_df_final.RData")
+```
+
+```{r echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+library(dplyr)
+library(tidyr)
+
+library(ggplot2)
+
+map_theme <- list(theme(panel.grid.minor = element_blank(),
+                        panel.grid.major = element_blank(),
+                        panel.background = element_blank(),
+                        plot.background = element_rect(fill = "white"),
+                        panel.border = element_blank(),
+                        axis.line = element_blank(),
+                        axis.text.x = element_blank(),
+                        axis.text.y = element_blank(),
+                        axis.ticks = element_blank(),
+                        axis.title.x = element_blank(),
+                        axis.title.y = element_blank(),
+                        plot.title = element_text(size = 18)))
+
+my_theme <- function(base_size = 12, base_family = "sans"){
+  theme_minimal(base_size = base_size, base_family = base_family) +
+  theme(
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14),
+    panel.grid.major = element_line(color = "grey"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    strip.background = element_rect(fill = "royalblue", color = "grey", size = 1),
+    strip.text = element_text(face = "bold", size = 12, color = "white"),
+    legend.position = "right",
+    panel.border = element_rect(color = "grey", fill = NA, size = 0.5)
+  )
+}
+
+colfunc <- colorRampPalette(c("yellow", "red"))
+```
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=4, fig.align="center", cache=FALSE}
+diff_table_timeline <- rbind(dataset_fem, dataset_male) %>%
+  subset(Indicator.Name == measure) %>%
+  subset(Country.Code %in% wmap_countries_df_final$adm0_a3) %>%
+  subset(as.character(Country.Name) == country)
+
+diff_table_timeline_gather <- gather(diff_table_timeline, year, value, X1960:X2015)
+diff_table_timeline_gather$year <- gsub("X", "", diff_table_timeline_gather$year)
+
+ggplot(diff_table_timeline_gather, aes(x = year, y = value, color = gender, group = gender)) +
+  geom_line(size = 1, alpha = 0.7) +
+  geom_point(size = 2, alpha = 0.7) +
+  my_theme() +
+  scale_color_brewer(palette = "Set1") +
+  labs(title = paste(measure),
+       subtitle = paste(country),
+       x = "Year",
+       y = "Value",
+       color = "Gender")
+```
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=4, fig.align="center", cache=FALSE}
+diff_table_timeline_2 <- cbind(diff_table_timeline[, c(1:4, 62)], t(apply(diff_table_timeline[, grep("^X[0-9]+$", colnames(diff_table_timeline))], 1, function(x) 
+  diff(na.omit(x))
+  )))
+
+if (ncol(diff_table_timeline_2[, grep("^X[0-9]+$", colnames(diff_table_timeline_2))]) > 0) {
+  diff_table_timeline_gather <- gather(diff_table_timeline_2, year, value, -Country.Name, -Country.Code, -Indicator.Name, -Indicator.Code, -gender)
+  diff_table_timeline_gather$year <- gsub("X", "", diff_table_timeline_gather$year)
+  
+  ggplot(diff_table_timeline_gather, aes(x = year, y = value, color = gender, group = gender)) +
+    geom_line(size = 1, alpha = 0.7) +
+    geom_point(size = 2, alpha = 0.7) +
+    my_theme() +
+    scale_color_brewer(palette = "Set1") +
+    labs(title = paste("Change in", measure),
+         subtitle = paste(country),
+         x = "Year",
+         y = "Value",
+         color = "Gender")
+} else {
+  print("No data to calculate differences.")
+}
+
+```
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+diff_table_map <- diff_table_bind[which(diff_table_bind$Indicator.Name == measure),
+                                        c(1:3, which(colnames(diff_table_bind) == paste0("X", year)))]
+      colnames(diff_table_map)[ncol(diff_table_map)] <- "value"
+
+      library(dplyr)
+      map <- left_join(subset(wmap_countries_df_final, !continent == "Antarctica"), diff_table_map, by = c("adm0_a3" = "Country.Code"))
+
+      ggplot(map, aes(long, lat, group = group, fill = log2(value))) +
+        coord_equal() +
+        map_theme +
+        geom_polygon() +
+        geom_path(color = "white", size = 0.5) +
+        labs(title = paste(measure),
+             fill = "log2 of male / female") +
+        scale_fill_gradient2(low = "blue", midpoint = 0, mid = "yellow", high = "red")
+```
+
+<br>
+
+### Which countries are most biased?
+
+To explore differences between countries and statistics, I prepared a dataset that contains the first and last non-NA value in each time series of the male/ female ratio data (per statistic and country) to calculate whether the change over time was statistically significant. As for the world map plots, I am using the log2 of the ratios, so that ratios bigger and smaller than 1 can be more easily compared.
+
+You can explore which countries have the strongest bias and the biggest change for each statistic in the app under the tab "Latest ratios".
+
+```{r echo=TRUE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+year_table <- diff_table_bind[which(diff_table_bind$Country.Code %in% wmap_countries_df_final$adm0_a3), ]
+
+# last non-NA value
+last_val <- apply(year_table[, grep("^X[0-9]+$", colnames(year_table))], 1, function(x) 
+  na.omit(x)[length(na.omit(x))]
+  )
+last_val_df <- data.frame(unlist(last_val))
+last_val_df$year_of_val <- gsub("([0-9]+)(.X)([0-9]+)", "\\3", rownames(last_val_df))
+rownames(last_val_df) <- gsub("([0-9]+)(.X)([0-9]+)", "\\1", rownames(last_val_df))
+
+# first non-NA value
+first_val <- apply(year_table[, grep("^X[0-9]+$", colnames(year_table))], 1, function(x) 
+  na.omit(x)[1]
+  )
+first_val_df <- data.frame(na.omit(first_val))
+
+year_table_last_val <- cbind(year_table[rownames(last_val_df), 1:3], last_val_df, first_val_df)
+
+year_table_last_val$difference <- (year_table_last_val$unlist.last_val. + 0.001) / (year_table_last_val$na.omit.first_val. + 0.001)
+save(year_table_last_val, file = "year_table_last_val.RData")
+```
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+dif_sum <- apply(year_table[, grep("^X[0-9]+$", colnames(year_table))], 1, function(x) 
+  sum(diff(log2(x[!is.na(x)])))
+  )
+
+dif_sum_df <- data.frame(unlist(dif_sum))
+
+year_table_dif_sum <- cbind(year_table[rownames(dif_sum_df), 1:3], dif_sum_df)
+save(year_table_dif_sum, file = "year_table_dif_sum.RData")
+```
+
+```{r echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+load("year_table_last_val.RData")
+load("year_table_dif_sum.RData")
+```
+
+To identify countries with strongest biases towards either men or women, I calculated the absolute log2 ratio of male/ female values and subsetted the top 10 countries with highest absolute bias. I then counted for how many statistics each country was in the top 10.
+
+```{r echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+for (i in 1:length(measures)) {
+  
+  m <- measures[i]
+  
+  subs <- subset(year_table_last_val, Indicator.Name == m)[, c(1, 4)] %>%
+    mutate(abs_ratio = abs(log2(unlist.last_val.))) %>%
+    arrange(desc(abs_ratio))
+
+  subs$measure <- m
+    
+  if (i == 1) {
+    subs_comb <- subs[1:10, ]
+    
+  } else {
+    subs_comb <- rbind(subs_comb, subs[1:10, ])
+  }
+}
+```
+
+```{r echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=25, fig.align="center", cache=FALSE}
+subs_comb_ordered <- arrange(as.data.frame(table(subs_comb$Country.Name)), desc(Freq))
+
+subs_comb$Country.Name <- factor(subs_comb$Country.Name, levels = subs_comb_ordered$Var1)
+
+ggplot(subs_comb, aes(x = Country.Name)) +
+  geom_bar(fill = "navyblue", alpha = 0.7) +
+  coord_flip() +
+  my_theme() +
+  labs(title = "Most biased countries",
+       subtitle = "For how many statistics were the countries in top 10 with highest absolute bias",
+       x = "")
+```
+
+This plot shows that there are quite a few European/ Western countries with high biases in some statistics. For example:
+
+```{r echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=20, fig.align="center", cache=FALSE}
+arrange(subs_comb[which(subs_comb$Country.Name %in% c("Germany", "Netherlands", "United States", "United Kingdom")), - 2], 
+        Country.Name, desc(abs_ratio))
+```
+
+So, let's take a closer look at the countries: I am calculating the sums of absolute male/ female ratios (again log2) for each country and show it on the map:
+
+```{r echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+for (i in 1:length(countries)) {
+  
+  c <- countries[i]
+  
+  subs <- subset(year_table_last_val, Country.Name == c)[, c(2, 3, 4)] %>%
+    mutate(abs_ratio = abs(log2(unlist.last_val.))) %>%
+    arrange(desc(abs_ratio))
+
+  if (i == 1) {
+    subs_country <- data.frame(country = c, Country.Code = subs$Country.Code, sum_abs_ratio = sum(subs$abs_ratio))
+    
+  } else {
+    subs_country <- rbind(subs_country, data.frame(country = c, Country.Code = subs$Country.Code, sum_abs_ratio = sum(subs$abs_ratio)))
+  }
+}
+```
+
+```{r echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE, fig.width=10, fig.align="center", cache=FALSE}
+left_join(subset(wmap_countries_df_final, !continent == "Antarctica"), subs_country, by = c("adm0_a3" = "Country.Code")) %>%
+  ggplot(aes(long, lat, group = group, fill = sum_abs_ratio)) +
+        coord_equal() +
+        map_theme +
+        geom_polygon() +
+        geom_path(color = "white", size = 0.5) +
+        labs(title = "General gender bias per country",
+             subtitle = "Sum of absolute gender biases for all statistics",
+             fill = "sum of absolute\nlog2 of male / female") +
+        scale_fill_gradient2(low = "blue", mid = "blue", high = "red")
+```
+
+<br>
+
+## Statistical Analysis
+
+You can explore the results for the individual statistics in the app under "Analysis - Plots" and "Analysis - Tests".
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+map <- left_join(subset(wmap_countries_df_final, !continent == "Antarctica"), subset(year_table_last_val, Indicator.Name == measure), by = c("adm0_a3" = "Country.Code"))
+
+      ggplot(map, aes(long, lat, group = group, fill = log2(unlist.last_val.))) +
+        coord_equal() +
+        map_theme +
+        geom_polygon() +
+        geom_path(size = 1, color = "white") +
+        labs(title = paste(measure),
+             subtitle = "2014 or 2015",
+             fill = "log2 of male / female") +
+        scale_fill_gradient2(low = "blue", midpoint = 0, mid = "yellow", high = "red", na.value = "grey") +
+        scale_color_brewer(palette="Set1")
+```
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+na.countries <- unique(map[is.na(map$unlist.last_val.), "adm0_a3"])
+
+year_table_dif_sum_na <- year_table_dif_sum
+year_table_dif_sum_na$unlist.dif_sum. <- ifelse(year_table_dif_sum_na$Country.Code %in% na.countries, NA, year_table_dif_sum_na$unlist.dif_sum.)
+
+map_2 <- left_join(subset(wmap_countries_df_final, !continent == "Antarctica"), subset(year_table_dif_sum_na, Indicator.Name == measure), by = c("adm0_a3" = "Country.Code"))
+
+      ggplot(map_2, aes(long, lat, group = group, fill = unlist.dif_sum.)) +
+        coord_equal() +
+        map_theme +
+        geom_polygon() +
+        geom_path(size = 1, color = "white") +
+        labs(title = paste(measure),
+             fill = "sum of\ndifferences\nover time") +
+        scale_fill_gradient2(low = "blue", midpoint = 0, mid = "yellow", high = "red", na.value = "grey")
+```
+
+<br>
+
+### The variables
+
+The world data contains information on each country. I used the following variables to test for statistical significance:
+
+1. economic status,
+2. income group,
+3. estimated population size,
+4. estimated gross domestic product (GDP) and
+5. continent.
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+subs <- map[!duplicated(map$adm0_a3), c("adm0_a3", "name", "economy", "income_grp", "unlist.last_val.")]
+arrange(subset(subs, !is.na(unlist.last_val.)), economy, income_grp)
+arrange(subset(subs, !is.na(unlist.last_val.)), income_grp, economy)
+```
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+ggplot(subset(wmap_countries_df_final, !continent == "Antarctica"), aes(long, lat, group = group, fill = economy)) +
+        coord_equal() +
+        map_theme +
+        geom_polygon() +
+        geom_path(color = "white", size = 1) +
+        labs(title = "Economy",
+             fill = "")
+```
+     
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+ggplot(subset(wmap_countries_df_final, !continent == "Antarctica"), aes(long, lat, group = group, fill = income_grp)) +
+        coord_equal() +
+        map_theme +
+        geom_polygon() +
+        geom_path(color = "white", size = 1) +
+        labs(title = "Income group",
+             fill = "")
+```
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+ggplot(subset(wmap_countries_df_final, !continent == "Antarctica"), aes(long, lat, group = group, fill = pop_est)) +
+        coord_equal() +
+        map_theme +
+        geom_polygon() +
+        geom_path(color = "white", size = 1) +
+        labs(title = "Population",
+             fill = "") +
+  scale_fill_gradient2(low = "blue", mid = "blue", high = "red", na.value = "grey30")
+```
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+ggplot(subset(wmap_countries_df_final, !continent == "Antarctica"), aes(long, lat, group = group, fill = gdp_md_est)) +
+        coord_equal() +
+        map_theme +
+        geom_polygon() +
+        geom_path(color = "white", size = 1) +
+        labs(title = "Gross domestic product",
+             fill = "") +
+    scale_fill_gradient2(low = "blue", mid = "blue", high = "red", na.value = "grey30")
+```
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4, fig.align="center", cache=FALSE}
+stats_test <- left_join(subset(year_table_last_val, Indicator.Name == measure), country.inf, by = c("Country.Code" = "adm0_a3"))
+
+stats_test %>%
+  rename(latest_value = unlist.last_val.) %>%
+  rename(first_value = na.omit.first_val.) %>%
+  gather(x, y, latest_value, first_value) %>%
+  ggplot(aes(x = log2(y), color = x, fill = x)) +
+    my_theme() +
+    geom_density(alpha = 0.3) +
+    labs(title = paste(measure),
+         x = "log2 of male / female",
+         y = "Density",
+         color = "",
+         fill = "") +
+  scale_color_brewer(palette = "Set1")
+```
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4, fig.align="center", cache=FALSE}
+ggplot(stats_test, aes(x = log2(unlist.last_val.), fill = income_grp, color = income_grp)) +
+  my_theme() +
+  geom_density(alpha = 0.3) +
+  labs(title = paste(measure),
+       subtitle = "2014 or 2015",
+       fill = "Income group",
+       color = "Income group",
+       x = "log2 of most recent value",
+       y = "Density")
+```
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4, fig.align="center", cache=FALSE}
+ggplot(stats_test, aes(x = log2(unlist.last_val.), fill = economy, color = economy)) +
+  my_theme() +
+  geom_density(alpha = 0.3) +
+  labs(title = paste(measure),
+       subtitle = "2014 or 2015",
+       fill = "Economy",
+       color = "Economy",
+       x = "log2 of most recent value",
+       y = "Density")
+```
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=4, fig.align="center", cache=FALSE}
+labels <- c(na.omit.first_val. = "first value", unlist.last_val. = "latest value")
+
+stats_test %>%
+  gather(x, y, unlist.last_val., na.omit.first_val.) %>%
+  ggplot(aes(x = economy, y = log2(y), fill = economy, color = economy)) +
+      geom_hline(yintercept = 0, color = "red", size = 2, alpha = 0.3) +
+      geom_boxplot() +
+      geom_violin(alpha = 0.5) +
+      my_theme() +
+      coord_flip() +
+      scale_color_hue(l = 50) +
+      guides(fill=FALSE, color = FALSE) +
+      labs(title = paste(measure),
+           y = "log2 of male / female",
+           x = "Economy",
+           color = "",
+           fill = "") +
+      facet_grid(~ x, scales = "free", labeller = labeller(x = labels))
+```
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=4, fig.align="center", cache=FALSE}
+stats_test %>%
+  gather(x, y, unlist.last_val., na.omit.first_val.) %>%
+  ggplot(aes(x = income_grp, y = log2(y), fill = income_grp, color = income_grp)) +
+      geom_hline(yintercept = 0, color = "red", size = 2, alpha = 0.7) +
+      geom_boxplot() +
+      geom_violin(alpha = 0.5) +
+      my_theme() +
+      coord_flip() +
+      scale_color_hue(l = 50) +
+      guides(fill=FALSE, color = FALSE) +
+      labs(title = paste(measure),
+           y = "log2 of male / female",
+           x = "Income group") +
+      facet_grid(~ x, scales = "free", labeller = labeller(x = labels))
+```
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4, fig.align="center", cache=FALSE}
+stats_test %>%
+  ggplot(aes(x = log2(unlist.last_val.), y = pop_est)) +
+      geom_hline(yintercept = 0, color = "red", size = 2, alpha = 0.7) +
+      geom_smooth() +
+      geom_point(alpha = 0.5, color = "navyblue", size = 2) +
+      my_theme() +
+      labs(title = paste(measure),
+           x = "log2 of male / female",
+           y = "Population estimate")
+```
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4, fig.align="center", cache=FALSE}
+stats_test %>%
+  ggplot(aes(x = pop_est, y = na.omit.first_val., fill = pop_est, color = pop_est)) +
+      geom_point(alpha = 0.7, size = 2) +
+      my_theme()
+```
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4, fig.align="center", cache=FALSE}
+stats_test %>%
+  ggplot(aes(x = log2(unlist.last_val.), y = gdp_md_est)) +
+      geom_hline(yintercept = 0, color = "red", size = 2, alpha = 0.7) +
+      geom_smooth() +
+      geom_point(alpha = 0.5, color = "navyblue", size = 2) +
+      my_theme() +
+      labs(title = paste(measure),
+           x = "log2 of male / female",
+           y = "Gross Domestic Product")
+```
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4, fig.align="center", cache=FALSE}
+stats_test %>%
+  ggplot(aes(x = gdp_md_est, y = na.omit.first_val., fill = gdp_md_est, color = gdp_md_est)) +
+      geom_point(alpha = 0.7, size = 2) +
+      my_theme()
+```
+
+Because not all data was normally distributed I explored [non-parametric models](https://en.wikipedia.org/wiki/Nonparametric_statistics), as well as an [ANOVA](https://en.wikipedia.org/wiki/Analysis_of_variance).
+The plots for each statistic can be explored in my app, so here, I am only showing the results for which measures were statistically significant for the different variables.
+
+<br>
+
+## Wilcoxon Signed-Rank Test
+
+The [Wilcoxon Signed-Rank test](https://en.wikipedia.org/wiki/Wilcoxon_signed-rank_test) can be used to test whether observations from repeated measures differ statistically from each other. Here, I am using it to test whether the most recent recorded value is significantly different from the first recorded value. Because I am testing the same data multiple times, I am correcting the p-values and only consider them significant with False Discovery Rate (FDR) below 10% (adjusted p-value < 0.1). 
+
+```{r echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4, fig.align="center", cache=FALSE}
+country.inf <- subset(wmap_countries_df_final[, c(17, 25, 26, 31, 32, 42, 43, 47, 48, 62)], !continent == "Antarctica")
+country.inf <- country.inf[!duplicated(country.inf), ]
+```
+
+```{r echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+for (i in 1:length(measures)) {
+  m <- measures[i]
+  stats_test <- left_join(subset(year_table_last_val, Indicator.Name == m), country.inf, by = c("Country.Code" = "adm0_a3"))
+  table <- wilcox.test(log2(stats_test$na.omit.first_val.), log2(stats_test$unlist.last_val.), paired = TRUE) 
+  
+  table <- data.frame(Indicator.Name = paste(m),
+                      diff = (median(stats_test$unlist.last_val.) + 0.0001) / (median(stats_test$na.omit.first_val.) + 0.0001),
+                      V = table$statistic,
+                      p.value = table$p.value,
+                      alternative = table$alternative)
+
+  if (i == 1) {
+    table_wilcox <- table
+  } else {
+    table_wilcox <- rbind(table_wilcox, table)
+  }
+}
+
+table_wilcox$p.adj <- p.adjust(table_wilcox$p.value, method = "fdr")
+table_wilcox$significant <- as.factor(ifelse(table_wilcox$p.adj < 0.1, "significant", "non-significant"))
+
+sig <- subset(table_wilcox, significant == "significant")
+```
+
+```{r echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE, fig.width=15, fig.height=12, fig.align="center", cache=FALSE}
+left_join(subset(year_table_last_val, Indicator.Name %in% sig$Indicator.Name), country.inf, by = c("Country.Code" = "adm0_a3")) %>%
+  gather(x, y, unlist.last_val., na.omit.first_val.) %>%
+  ggplot(aes(x = Indicator.Name, y = log2(y), color = x, fill = x)) +
+  geom_boxplot(alpha = 0.5, outlier.shape = NA) +
+  coord_flip() +
+  my_theme() +
+  scale_y_continuous(limits = c(-3, 3)) +
+  labs(
+    title = "Measures with significant difference over time",
+    subtitle = "Wilcoxon Signed-Rank Test",
+    x = "",
+    y = "log2(male/ female)")
+```
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=15, fig.height=12, fig.align="center", cache=FALSE}
+sig %>%
+  ggplot(aes(x = Indicator.Name, y = log2(diff), color = p.adj)) +
+  geom_point(size = 3) +
+  coord_flip() +
+  my_theme() +
+  labs(
+    title = "Measures with significant difference over time",
+    subtitle = "Wilcoxon Signed-Rank Test",
+    x = "",
+    y = "log2 difference last / first ratio")
+```
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+stats_test <- left_join(subset(year_table_last_val, Indicator.Name == measure), country.inf, by = c("Country.Code" = "adm0_a3"))
+
+table <- wilcox.test(log2(stats_test$na.omit.first_val.), log2(stats_test$unlist.last_val.), paired=TRUE) 
+
+table <- data.frame(row.names = table$method,
+                    V = table$statistic,
+                    p.value = table$p.value,
+                    alternative = table$alternative)
+
+table
+```
+
+<br>
+
+## Kruskal-Wallis Test
+
+The [Kruskal-Wallis test](https://en.wikipedia.org/wiki/Kruskal%E2%80%93Wallis_one-way_analysis_of_variance) is a simple non-parametric statistical test. I used it here to test for each variable of interest whether it has a statistically significant effect on the most recent recorded value. Because I am testing the same data multiple times, I am correcting the p-values and only consider them significant with False Discovery Rate (FDR) below 10% (adjusted p-value < 0.1). 
+
+```{r echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE, fig.width=15, fig.height=12, fig.align="center", cache=FALSE}
+for (i in 1:length(measures)) {
+  m <- measures[i]
+  
+  stats_test <- left_join(subset(year_table_last_val, Indicator.Name == m), country.inf, by = c("Country.Code" = "adm0_a3"))
+
+    stats_test$economy_rank <- as.numeric(as.character(gsub("(^[1-7])(.*)", "\\1", stats_test$economy)))
+    stats_test$income_grp_rank <- as.numeric(as.character(gsub("(^[1-5])(.*)", "\\1", stats_test$income_grp)))
+
+    k_economy_rank <- kruskal.test(log2(unlist.last_val.) ~ economy_rank, data = stats_test)
+    k_income_rank <- kruskal.test(log2(unlist.last_val.) ~ income_grp_rank, data = stats_test)
+    k_pop <- kruskal.test(log2(unlist.last_val.) ~ pop_est, data = stats_test)
+    k_gdp <- kruskal.test(log2(unlist.last_val.) ~ gdp_md_est, data = stats_test)
+    k_continent <- kruskal.test(log2(unlist.last_val.) ~ continent, data = stats_test)
+
+    kruskal_last_val <- data.frame(
+      group = c("economy (rank)", "income_grp (rank)", "pop_est", "gdp_md_est", "continent"),
+      p.val = c(k_economy_rank$p.value, k_income_rank$p.value, k_pop$p.value, k_gdp$p.value, k_continent$p.value))
+
+    kruskal_last_val$p.adj <- p.adjust(kruskal_last_val$p.val, method = "fdr")
+
+    if (i == 1) {
+      kruskal_last_val_df <- kruskal_last_val[, -2]
+      colnames(kruskal_last_val_df)[2] <- paste(m)
+    } else {
+      pre <- kruskal_last_val[, -2]
+      colnames(pre)[2] <- paste(m)
+      
+      kruskal_last_val_df <- left_join(kruskal_last_val_df, pre, by = "group")
+    }
+}
+```
+
+```{r echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE, fig.width=15, fig.height=25, fig.align="center", cache=FALSE}
+eco <- t(kruskal_last_val_df[1, -1])
+eco_sig <- eco[which(eco < 0.1), ]
+  
+left_join(subset(year_table_last_val, Indicator.Name %in% names(eco_sig)), country.inf, by = c("Country.Code" = "adm0_a3")) %>%
+  ggplot(aes(y = log2(unlist.last_val.), x = Indicator.Name, color = economy, fill = economy)) +
+  coord_flip() +
+  geom_boxplot(alpha = 0.5, outlier.shape = NA) +
+  my_theme() +
+  scale_y_continuous(limits = c(-3, 3)) +
+  labs(
+    title = "Measures with significant difference in economy",
+    subtitle = "Kruskal-Wallis Test",
+    x = "",
+    y = "log2(male/ female)")
+```
+
+```{r echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE, fig.width=15, fig.height=25, fig.align="center", cache=FALSE}
+inc <- t(kruskal_last_val_df[2, -1])
+inc_sig <- inc[which(inc < 0.1), ]
+  
+left_join(subset(year_table_last_val, Indicator.Name %in% names(inc_sig)), country.inf, by = c("Country.Code" = "adm0_a3")) %>%
+  ggplot(aes(y = log2(unlist.last_val.), x = Indicator.Name, color = income_grp, fill = income_grp)) +
+  coord_flip() +
+  geom_boxplot(alpha = 0.5, outlier.shape = NA) +
+  my_theme() +
+  scale_y_continuous(limits = c(-3, 3)) +
+  labs(
+    title = "Measures with significant difference in income group",
+    subtitle = "Kruskal-Wallis Test",
+    x = "",
+    y = "log2(male/ female)")
+```
+
+```{r echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE, fig.width=15, fig.height=25, fig.align="center", cache=FALSE}
+cont <- t(kruskal_last_val_df[5, -1])
+cont_sig <- cont[which(cont < 0.1), ]
+  
+left_join(subset(year_table_last_val, Indicator.Name %in% names(cont_sig)), country.inf, by = c("Country.Code" = "adm0_a3")) %>%
+  ggplot(aes(y = log2(unlist.last_val.), x = Indicator.Name, color = continent, fill = continent)) +
+  coord_flip() +
+  geom_boxplot(alpha = 0.5, outlier.shape = NA) +
+  my_theme() +
+  scale_y_continuous(limits = c(-3, 3)) +
+  labs(
+    title = "Measures with significant difference in continent",
+    subtitle = "Kruskal-Wallis Test",
+    x = "",
+    y = "log2(male/ female)")
+```
+
+For population and GDP, there were no statistically significant measures.
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+stats_test$economy_rank <- as.numeric(as.character(gsub("(^[1-7])(.*)", "\\1", stats_test$economy)))
+stats_test$income_grp_rank <- as.numeric(as.character(gsub("(^[1-5])(.*)", "\\1", stats_test$income_grp)))
+
+k_economy_factor <- kruskal.test(log2(unlist.last_val.) ~ ordered(economy), data = stats_test)
+k_economy_rank <- kruskal.test(log2(unlist.last_val.) ~ economy_rank, data = stats_test)
+k_income_factor <- kruskal.test(log2(unlist.last_val.) ~ ordered(income_grp), data = stats_test)
+k_income_rank <- kruskal.test(log2(unlist.last_val.) ~ income_grp_rank, data = stats_test)
+k_pop <- kruskal.test(log2(unlist.last_val.) ~ pop_est, data = stats_test)
+k_gdp <- kruskal.test(log2(unlist.last_val.) ~ gdp_md_est, data = stats_test)
+k_continent <- kruskal.test(log2(unlist.last_val.) ~ continent, data = stats_test)
+
+kruskal_last_val <- data.frame(
+  group = c("economy (factor)", "economy (rank)", "income_grp (factor)", "income_grp (rank)", "pop_est", "gdp_md_est", "continent"),
+  p.val = c(k_economy_factor$p.value, k_economy_rank$p.value, k_income_factor$p.value, k_income_rank$p.value, k_pop$p.value, k_gdp$p.value, k_continent$p.value))
+
+kruskal_last_val$p.adj <- p.adjust(kruskal_last_val$p.val, method = "fdr")
+kruskal_last_val$significant <- ifelse(kruskal_last_val$p.adj < 0.1, "significant", "non-significant")
+kruskal_last_val
+```
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+library(np)
+bw.all <- npregbw(log2(unlist.last_val.) ~ gdp_md_est + pop_est + economy_rank + income_grp_rank + continent, 
+                  regtype = "ll",
+                  bwmethod = "cv.aic",
+                  gradients = TRUE,
+                  data = stats_test)
+model.np <- npreg(bws = bw.all)
+summary(model.np)
+
+plot(model.np,
+     plot.errors.method = "bootstrap",
+     plot.errors.boot.num = 25)
+
+npsigtest(model.np)
+```
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+mod.boik <- lm(log2(unlist.last_val.) ~ gdp_md_est * pop_est * economy_rank * income_grp_rank * continent, data = stats_test)
+anova(mod.boik)
+
+plot(mod.boik)
+```
+
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=16, fig.height=8, fig.align="center", cache=FALSE}
+library(WRS2)
+
+with(stats_test, pbcor(log2(unlist.last_val.), gdp_md_est))
+with(stats_test, pbcor(log2(unlist.last_val.), pop_est))
+
+fitqa <- Qanova(log2(unlist.last_val.) ~ income_grp * economy * pop_est * gdp_md_est, data = stats_test)
+fitqa
+```
+
+```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4, fig.align="center", cache=FALSE}
+library(robustlmm)
+
+rfm <- rlmer(log2(unlist.last_val.) ~ (1|income_grp) * (1|economy), stats_test)
+summary(rfm)
+
+plot(rfm)
+```
+
+------------------
+
+<br>
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=4, fig.align="center", cache=FALSE}
+sessionInfo()
+```

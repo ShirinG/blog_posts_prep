@@ -1,0 +1,2049 @@
+CountryCode,SeriesCode,DESCRIPTION
+ABW,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+ABW,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+ABW,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+ABW,SP.DYN.LE00.IN,Derived using male and female life expectancy
+ABW,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+ABW,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+ABW,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+ADO,SP.DYN.CBRT.IN,Data sources : Eurostat
+ADO,SP.DYN.CDRT.IN,Data sources : Eurostat
+ADO,SP.DYN.TFRT.IN,Data sources : Eurostat
+ADO,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+AFG,NY.GNP.PCAP.PP.CD,Estimates are based on regression.
+AFG,SH.XPD.PCAP.PP.KD,Non-profit institutions (such as NGOs) serving households are accounted for in “external assistance” and recorded under government expenditure. 
+AFG,SH.XPD.PUBL.ZS,Non-profit institutions (such as NGOs) serving households are accounted for in “external assistance” and recorded under government expenditure. 
+AFG,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+AFG,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+AFG,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+AFG,SP.DYN.LE00.IN,Derived using male and female life expectancy
+AFG,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+AFG,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+AFG,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+AGO,SH.XPD.PCAP.PP.KD,Some estimates should be viewed with caution as these are derived from scarce data.
+AGO,SH.XPD.PUBL.ZS,Some estimates should be viewed with caution as these are derived from scarce data.
+AGO,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+AGO,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+AGO,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+AGO,SP.DYN.LE00.IN,Derived using male and female life expectancy
+AGO,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+AGO,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+AGO,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+ALB,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+ALB,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+ALB,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+ALB,SP.DYN.LE00.IN,Derived using male and female life expectancy
+ALB,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+ALB,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+ALB,SP.POP.TOTL,"Data sources : Institute of Statistics, Eurostat"
+ARE,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+ARE,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+ARE,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+ARE,SP.DYN.LE00.IN,Derived using male and female life expectancy
+ARE,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+ARE,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+ARE,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+ARG,FP.CPI.TOTL.ZG,"Data are officially reported statistics by the National Statistics and Censuses Institute of Argentina. On February 1, 2013, the International Monetary Fund (IMF) issued a declaration of censure, and in December 2013 called on Argentina to adopt measures to address the quality of official GDP and consumer price index data, and issued an updated statement on Argentina’s progress on August 31, 2016: http://www.imf.org/en/News/Articles/2016/08/31/PR16389-Statement-by-the-IMF-Executive-Board-on-Argentina. The IMF Executive Board will review this issue again in November 2016."
+ARG,NY.GDP.MKTP.KD.ZG,"Data are officially reported statistics by the National Statistics and Censuses Institute of Argentina. On February 1, 2013, the International Monetary Fund (IMF) issued a declaration of censure, and in December 2013 called on Argentina to adopt measures to address the quality of official GDP and consumer price index data, and issued an updated statement on Argentina’s progress on August 31, 2016: http://www.imf.org/en/News/Articles/2016/08/31/PR16389-Statement-by-the-IMF-Executive-Board-on-Argentina. The IMF Executive Board will review this issue again in November 2016."
+ARG,NY.GNP.ATLS.CD,"Based on data officially reported by the National Statistics and Censuses Institute of Argentina. On February 1, 2013, the International Monetary Fund (IMF) issued a declaration of censure, and in December 2013 called on Argentina to adopt measures to address the quality of official GDP and consumer price index data, and issued an updated statement on Argentina’s progress on August 31, 2016: http://www.imf.org/en/News/Articles/2016/08/31/PR16389-Statement-by-the-IMF-Executive-Board-on-Argentina. The IMF Executive Board will review this issue again in November 2016.
+
+The World Bank systematically assesses the appropriateness of official exchange rates as conversion factors. An alternative conversion factor is used when the official exchange rate is judged to diverge by an exceptionally large margin from the rate effectively applied to domestic transactions of foreign currencies and traded products. In the case of Argentina, the World Bank has found that during 2012-2015 there were two exchange rates (official and parallel) and parallel exchange rate (blue chip swap rate) was used in around 20% of the transactions. Based on this information an alternative conversion factor has been calculated using a weighted average method for this period."
+ARG,NY.GNP.PCAP.CD,"Based on data officially reported by the National Statistics and Censuses Institute of Argentina. On February 1, 2013, the International Monetary Fund (IMF) issued a declaration of censure, and in December 2013 called on Argentina to adopt measures to address the quality of official GDP and consumer price index data, and issued an updated statement on Argentina’s progress on August 31, 2016: http://www.imf.org/en/News/Articles/2016/08/31/PR16389-Statement-by-the-IMF-Executive-Board-on-Argentina. The IMF Executive Board will review this issue again in November 2016.
+
+The World Bank systematically assesses the appropriateness of official exchange rates as conversion factors. An alternative conversion factor is used when the official exchange rate is judged to diverge by an exceptionally large margin from the rate effectively applied to domestic transactions of foreign currencies and traded products. In the case of Argentina, the World Bank has found that during 2012-2015 there were two exchange rates (official and parallel) and parallel exchange rate (blue chip swap rate) was used in around 20% of the transactions. Based on this information an alternative conversion factor has been calculated using a weighted average method for this period."
+ARG,NY.GNP.PCAP.PP.CD,Data series will be calculated once ongoing revisions to official statistics reported by the National Statistics and Censuses Institute of Argentina have been finalized.
+ARG,SG.NOD.CONS,There is no nondiscrimination provision.
+ARG,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+ARG,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+ARG,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+ARG,SP.DYN.LE00.IN,Derived using male and female life expectancy
+ARG,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+ARG,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+ARG,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+ARM,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+ARM,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+ARM,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+ARM,SP.DYN.LE00.IN,Derived using male and female life expectancy
+ARM,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+ARM,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+ARM,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+ASM,SP.DYN.CBRT.IN,Data sources : United Nations Population and Vital Statistics Report
+ASM,SP.DYN.CDRT.IN,Data sources : United Nations Population and Vital Statistics Report
+ASM,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+ATG,SP.DYN.CBRT.IN,Data sources : United Nations Population and Vital Statistics Report
+ATG,SP.DYN.CDRT.IN,Data sources : United Nations Population and Vital Statistics Report
+ATG,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+ATG,SP.DYN.LE00.IN,Derived using male and female life expectancy
+ATG,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+ATG,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+ATG,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+AUS,SG.MMR.LEVE.EP,No paid or unpaid maternity leave is available.
+AUS,SG.NOD.CONS,There is no nondiscrimination provision.
+AUS,SG.OBT.IDCD.MR,There is no national identity card.
+AUS,SG.POP.MIGR.FE.ZS,"Includes Christmas Island, Cocos (Keeling) Islands and Norfolk Island."
+AUS,SH.MMR.LEVE,Paid parental leave is available
+AUS,SH.MMR.WAGE.ZS,Paid parental leave is available
+AUS,SH.XPD.PCAP.PP.KD,"About 30% of the expenditure in residential facilities for care of the aged has a health purpose, but this is difficult to estimate routinely and so is not included under health at present. Such health-purpose expenditure was about US$ 2.1 billion in 2005–06 or 0.2% of GDP. The data for 2007 corresponds to the fiscal year 2007–08 starting on 01 July 2007. All 2008 entries are estimates made by WHO unless otherwise specified."
+AUS,SH.XPD.PUBL.ZS,"About 30% of the expenditure in residential facilities for care of the aged has a health purpose, but this is difficult to estimate routinely and so is not included under health at present. Such health-purpose expenditure was about US$ 2.1 billion in 2005–06 or 0.2% of GDP. The data for 2007 corresponds to the fiscal year 2007–08 starting on 01 July 2007. All 2008 entries are estimates made by WHO unless otherwise specified."
+AUS,SP.ADO.TFRT,"Including Christmas Island, Cocos (Keeling) Islands and Norfolk Island."
+AUS,SP.DYN.CBRT.IN,Data sources : Australian Bureau of Statistics
+AUS,SP.DYN.CDRT.IN,Data sources : Australian Bureau of Statistics
+AUS,SP.DYN.LE00.FE.IN,Data sources : Australian Bureau of Statistics
+AUS,SP.DYN.LE00.IN,Derived using male and female life expectancy
+AUS,SP.DYN.LE00.MA.IN,Data sources : Australian Bureau of Statistics
+AUS,SP.DYN.TFRT.IN,Data sources : Australian Bureau of Statistics
+AUS,SP.POP.0014.TO.ZS,"Including Other Territories comprising Jervis Bay Territory, Christmas Island and the Cocos (Keeling) Islands. "
+AUS,SP.POP.1564.TO.ZS,"Including Other Territories comprising Jervis Bay Territory, Christmas Island and the Cocos (Keeling) Islands. "
+AUS,SP.POP.65UP.TO.ZS,"Including Other Territories comprising Jervis Bay Territory, Christmas Island and the Cocos (Keeling) Islands. "
+AUS,SP.POP.AG00.FE.IN,"Including Christmas Island, Cocos (Keeling) Islands and Norfolk Island."
+AUS,SP.POP.AG00.MA.IN,"Including Christmas Island, Cocos (Keeling) Islands and Norfolk Island."
+AUS,SP.POP.AG01.FE.IN,"Including Christmas Island, Cocos (Keeling) Islands and Norfolk Island."
+AUS,SP.POP.AG01.MA.IN,"Including Christmas Island, Cocos (Keeling) Islands and Norfolk Island."
+AUS,SP.POP.AG02.FE.IN,"Including Christmas Island, Cocos (Keeling) Islands and Norfolk Island."
+AUS,SP.POP.AG02.MA.IN,"Including Christmas Island, Cocos (Keeling) Islands and Norfolk Island."
+AUS,SP.POP.AG03.FE.IN,"Including Christmas Island, Cocos (Keeling) Islands and Norfolk Island."
+AUS,SP.POP.AG03.MA.IN,"Including Christmas Island, Cocos (Keeling) Islands and Norfolk Island."
+AUS,SP.POP.AG04.FE.IN,"Including Christmas Island, Cocos (Keeling) Islands and Norfolk Island."
+AUS,SP.POP.AG04.MA.IN,"Including Christmas Island, Cocos (Keeling) Islands and Norfolk Island."
+AUS,SP.POP.AG05.FE.IN,"Including Christmas Island, Cocos (Keeling) Islands and Norfolk Island."
+AUS,SP.POP.AG05.MA.IN,"Including Christmas Island, Cocos (Keeling) Islands and Norfolk Island."
+AUS,SP.POP.BRTH.MF,"Including Christmas Island, Cocos (Keeling) Islands and Norfolk Island."
+AUS,SP.POP.TOTL,Data sources : Australian Bureau of Statistics
+AUS,SP.POP.TOTL.FE.ZS,"Including Other Territories comprising Jervis Bay Territory, Christmas Island and the Cocos (Keeling) Islands. "
+AUT,SG.NOD.CONS,There is no nondiscrimination provision.
+AUT,SP.DYN.CBRT.IN,Data sources : Eurostat
+AUT,SP.DYN.CDRT.IN,Data sources : Eurostat
+AUT,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, Statistik Austria"
+AUT,SP.DYN.LE00.IN,Derived using male and female life expectancy
+AUT,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, Statistik Austria"
+AUT,SP.DYN.TFRT.IN,Data sources : Eurostat
+AUT,SP.POP.TOTL,Data sources : Eurostat
+AZE,SG.NOD.CONS,There is no nondiscrimination provision.
+AZE,SG.POP.MIGR.FE.ZS,Includes Nagorno-Karabakh.
+AZE,SH.XPD.PCAP.PP.KD,Adjustments for currency change (from old to new manat) were made for the entire Azerbaijan series starting from World Health Statistics 2008.
+AZE,SH.XPD.PUBL.ZS,Adjustments for currency change (from old to new manat) were made for the entire Azerbaijan series starting from World Health Statistics 2008.
+AZE,SP.ADO.TFRT,Including Nagorno-Karabakh.
+AZE,SP.DYN.CBRT.IN,"Data sources : State Statistical Committee, United Nations World Population Prospects"
+AZE,SP.DYN.CDRT.IN,"Data sources : State Statistical Committee, United Nations World Population Prospects"
+AZE,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+AZE,SP.DYN.LE00.IN,Derived using male and female life expectancy
+AZE,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+AZE,SP.DYN.TFRT.IN,"Data sources : State Statistical Committee, Eurostat, United Nations World Population Prospects"
+AZE,SP.POP.AG00.FE.IN,Including Nagorno-Karabakh.
+AZE,SP.POP.AG00.MA.IN,Including Nagorno-Karabakh.
+AZE,SP.POP.AG01.FE.IN,Including Nagorno-Karabakh.
+AZE,SP.POP.AG01.MA.IN,Including Nagorno-Karabakh.
+AZE,SP.POP.AG02.FE.IN,Including Nagorno-Karabakh.
+AZE,SP.POP.AG02.MA.IN,Including Nagorno-Karabakh.
+AZE,SP.POP.AG03.FE.IN,Including Nagorno-Karabakh.
+AZE,SP.POP.AG03.MA.IN,Including Nagorno-Karabakh.
+AZE,SP.POP.AG04.FE.IN,Including Nagorno-Karabakh.
+AZE,SP.POP.AG04.MA.IN,Including Nagorno-Karabakh.
+AZE,SP.POP.AG05.FE.IN,Including Nagorno-Karabakh.
+AZE,SP.POP.AG05.MA.IN,Including Nagorno-Karabakh.
+AZE,SP.POP.BRTH.MF,Including Nagorno-Karabakh.
+AZE,SP.POP.TOTL,"Data sources : Eurostat, State Statistical Committee, United Nations World Population Prospects"
+BDI,SH.XPD.PCAP.PP.KD,Some estimates should be viewed with caution as these are derived from scarce data.
+BDI,SH.XPD.PUBL.ZS,Some estimates should be viewed with caution as these are derived from scarce data.
+BDI,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+BDI,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+BDI,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+BDI,SP.DYN.LE00.IN,Derived using male and female life expectancy
+BDI,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+BDI,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+BDI,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+BEL,SH.XPD.PCAP.PP.KD,From 2003 onwards the basic information used changed from national Accounts to NHA
+BEL,SH.XPD.PUBL.ZS,From 2003 onwards the basic information used changed from national Accounts to NHA
+BEL,SP.DYN.CBRT.IN,"Data sources : Eurostat, National Institute of Statistics"
+BEL,SP.DYN.CDRT.IN,"Data sources : Eurostat, National Institute of Statistics"
+BEL,SP.DYN.LE00.FE.IN,Data sources : Eurostat
+BEL,SP.DYN.LE00.IN,Derived using male and female life expectancy
+BEL,SP.DYN.LE00.MA.IN,Data sources : Eurostat
+BEL,SP.DYN.TFRT.IN,Data sources : Eurostat
+BEL,SP.POP.TOTL,Data sources : Eurostat
+BEN,SG.NOD.CONS,There is no nondiscrimination provision.
+BEN,SH.XPD.PCAP.PP.KD,Estimates have been revised based on provisional NHA report.
+BEN,SH.XPD.PUBL.ZS,Estimates have been revised based on provisional NHA report.
+BEN,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+BEN,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+BEN,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+BEN,SP.DYN.LE00.IN,Derived using male and female life expectancy
+BEN,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+BEN,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+BEN,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+BFA,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+BFA,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+BFA,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+BFA,SP.DYN.LE00.IN,Derived using male and female life expectancy
+BFA,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+BFA,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+BFA,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+BGD,SG.GEN.PARL.ZS,"In 2004, the number of seats in parliament was raised from 300 to 345, with the addition of 45 reserved seats for women. These reserved seats were filled in September and October 2005, being allocated to political parties in proportion to their share of the national vote received in the 2001 election. 
+The parliament was dissolved on 27 October 2006, in view of elections that are yet to take place. Women held 52 of the 345 seats (15%) in the outgoing parliament. 
+45 reserved seats reserved for women are yet to be filled in 2008."
+BGD,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+BGD,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+BGD,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+BGD,SP.DYN.LE00.IN,Derived using male and female life expectancy
+BGD,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+BGD,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+BGD,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+BGR,SG.NOD.CONS,There is no nondiscrimination provision.
+BGR,SP.DYN.CBRT.IN,"Data sources : Eurostat, National Statistical Institute"
+BGR,SP.DYN.CDRT.IN,"Data sources : Eurostat, National Statistical Institute"
+BGR,SP.DYN.LE00.FE.IN,Data sources : Eurostat
+BGR,SP.DYN.LE00.IN,Derived using male and female life expectancy
+BGR,SP.DYN.LE00.MA.IN,Data sources : Eurostat
+BGR,SP.DYN.TFRT.IN,Data sources : Eurostat
+BGR,SP.POP.TOTL,Data sources : Eurostat
+BHR,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+BHR,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+BHR,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+BHR,SP.DYN.LE00.IN,Derived using male and female life expectancy
+BHR,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+BHR,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+BHR,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+BHS,SG.OBT.IDCD.MR,There is no national identity card.
+BHS,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+BHS,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+BHS,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+BHS,SP.DYN.LE00.IN,Derived using male and female life expectancy
+BHS,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+BHS,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+BHS,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+BIH,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+BIH,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+BIH,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+BIH,SP.DYN.LE00.IN,Derived using male and female life expectancy
+BIH,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+BIH,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+BIH,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+BLR,SG.OBT.IDCD.MR,There is no national identity card.
+BLR,SP.DYN.CBRT.IN,"Data sources : Eurostat, TransMONEE, United Nations World Population Prospects"
+BLR,SP.DYN.CDRT.IN,"Data sources : Eurostat, TransMONEE, United Nations World Population Prospects"
+BLR,SP.DYN.LE00.FE.IN,"Data sources : Statistical Year Book; Human Mortality Database by University of California, Berkeley, and Max Planck Institute for Demographic Research; Eurostat; TransMONEE"
+BLR,SP.DYN.LE00.IN,Derived using male and female life expectancy
+BLR,SP.DYN.LE00.MA.IN,"Data sources : Statistical Year Book; Human Mortality Database by University of California, Berkeley, and Max Planck Institute for Demographic Research; Eurostat; TransMONEE"
+BLR,SP.DYN.TFRT.IN,"Data sources : Eurostat, Center for Demography and Human Ecology, United Nations World Population Prospects"
+BLR,SP.POP.TOTL,Data sources : National Statistical Committee of the Republic of Belarus
+BLZ,SG.OBT.IDCD.MR,There is no national identity card.
+BLZ,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+BLZ,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+BLZ,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+BLZ,SP.DYN.LE00.IN,Derived using male and female life expectancy
+BLZ,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+BLZ,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+BLZ,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+BMU,SP.DYN.CBRT.IN,"Data sources : Bermuda Government Department of Statistics, United Nations Population and Vital Statistics Report"
+BMU,SP.DYN.CDRT.IN,"Data sources : Bermuda Government Department of Statistics, United Nations Population and Vital Statistics Report"
+BMU,SP.DYN.LE00.FE.IN,"Data sources : Bermuda Government Department of Statistics, United Nations Population and Vital Statistics Report"
+BMU,SP.DYN.LE00.IN,Derived using male and female life expectancy
+BMU,SP.DYN.LE00.MA.IN,"Data sources : Bermuda Government Department of Statistics, United Nations Population and Vital Statistics Report"
+BMU,SP.DYN.TFRT.IN,"Data sources : Bermuda Government Department of Statistics, United Nations Population and Vital Statistics Report"
+BMU,SP.POP.TOTL,Data sources : Bermuda Government Department of Statistics
+BOL,SH.XPD.PCAP.PP.KD,Change of level in 2003 is due to reclassification of public spending.
+BOL,SH.XPD.PUBL.ZS,Change of level in 2003 is due to reclassification of public spending.
+BOL,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+BOL,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+BOL,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+BOL,SP.DYN.LE00.IN,Derived using male and female life expectancy
+BOL,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+BOL,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+BOL,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+BRA,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+BRA,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+BRA,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+BRA,SP.DYN.LE00.IN,Derived using male and female life expectancy
+BRA,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+BRA,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+BRA,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+BRB,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+BRB,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+BRB,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+BRB,SP.DYN.LE00.IN,Derived using male and female life expectancy
+BRB,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+BRB,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+BRB,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+BRN,SG.NOD.CONS,There is no nondiscrimination provision.
+BRN,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+BRN,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+BRN,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+BRN,SP.DYN.LE00.IN,Derived using male and female life expectancy
+BRN,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+BRN,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+BRN,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+BTN,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+BTN,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+BTN,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+BTN,SP.DYN.LE00.IN,Derived using male and female life expectancy
+BTN,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+BTN,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+BTN,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+BWA,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+BWA,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+BWA,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+BWA,SP.DYN.LE00.IN,Derived using male and female life expectancy
+BWA,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+BWA,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+BWA,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+CAF,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+CAF,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+CAF,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+CAF,SP.DYN.LE00.IN,Derived using male and female life expectancy
+CAF,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+CAF,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+CAF,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+CAN,SG.OBT.IDCD.MR,There is no national identity card.
+CAN,SP.DYN.CBRT.IN,"Data sources : Statistics Canada, United Nations Population and Vital Statistics Report, United Nations World Population Prospects"
+CAN,SP.DYN.CDRT.IN,"Data sources : Statistics Canada, United Nations Population and Vital Statistics Report, United Nations World Population Prospects"
+CAN,SP.DYN.LE00.FE.IN,"Data sources : Statistics Canada, United Nations World Population Prospects"
+CAN,SP.DYN.LE00.IN,Derived using male and female life expectancy
+CAN,SP.DYN.LE00.MA.IN,"Data sources : Statistics Canada, United Nations World Population Prospects"
+CAN,SP.DYN.TFRT.IN,"Data sources : Statistics Canada, United Nations World Population Prospects"
+CAN,SP.POP.TOTL,Data sources : Statistics Canada
+CHE,SP.DYN.CBRT.IN,Data sources : Eurostat
+CHE,SP.DYN.CDRT.IN,Data sources : Eurostat
+CHE,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, Swiss Federal Statistical Office"
+CHE,SP.DYN.LE00.IN,Derived using male and female life expectancy
+CHE,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, Swiss Federal Statistical Office"
+CHE,SP.DYN.TFRT.IN,Data sources : Eurostat
+CHE,SP.POP.TOTL,Data sources : Eurostat
+CHI,SG.POP.MIGR.FE.ZS,"Refers to Guernsey, and Jersey."
+CHI,SP.ADO.TFRT,"Refers to Guernsey, and Jersey."
+CHI,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+CHI,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+CHI,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+CHI,SP.DYN.LE00.IN,Derived using male and female life expectancy
+CHI,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+CHI,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+CHI,SP.POP.0014.TO.ZS,"Refers to Guernsey, and Jersey."
+CHI,SP.POP.1564.TO.ZS,"Refers to Guernsey, and Jersey."
+CHI,SP.POP.65UP.TO.ZS,"Refers to Guernsey, and Jersey."
+CHI,SP.POP.AG00.FE.IN,"Refers to Guernsey, and Jersey."
+CHI,SP.POP.AG00.MA.IN,"Refers to Guernsey, and Jersey."
+CHI,SP.POP.AG01.FE.IN,"Refers to Guernsey, and Jersey."
+CHI,SP.POP.AG01.MA.IN,"Refers to Guernsey, and Jersey."
+CHI,SP.POP.AG02.FE.IN,"Refers to Guernsey, and Jersey."
+CHI,SP.POP.AG02.MA.IN,"Refers to Guernsey, and Jersey."
+CHI,SP.POP.AG03.FE.IN,"Refers to Guernsey, and Jersey."
+CHI,SP.POP.AG03.MA.IN,"Refers to Guernsey, and Jersey."
+CHI,SP.POP.AG04.FE.IN,"Refers to Guernsey, and Jersey."
+CHI,SP.POP.AG04.MA.IN,"Refers to Guernsey, and Jersey."
+CHI,SP.POP.AG05.FE.IN,"Refers to Guernsey, and Jersey."
+CHI,SP.POP.AG05.MA.IN,"Refers to Guernsey, and Jersey."
+CHI,SP.POP.BRTH.MF,"Refers to Guernsey, and Jersey."
+CHI,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+CHI,SP.POP.TOTL.FE.ZS,"Refers to Guernsey, and Jersey."
+CHL,SG.NOD.CONS,There is no nondiscrimination provision.
+CHL,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+CHL,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+CHL,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+CHL,SP.DYN.LE00.IN,Derived using male and female life expectancy
+CHL,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+CHL,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+CHL,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+CHN,SG.NOD.CONS,There is no nondiscrimination provision.
+CHN,SG.POP.MIGR.FE.ZS,"For statistical purposes, the data for China do not include Hong Kong and Macao, Special Administrative Regions (SAR) of China."
+CHN,SP.ADO.TFRT,"The data for China do not include Hong Kong SAR, China; Macao SAR, China; and Taiwan, China."
+CHN,SP.DYN.CBRT.IN,Data sources : National Bureau of Statistics
+CHN,SP.DYN.CDRT.IN,Data sources : National Bureau of Statistics
+CHN,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+CHN,SP.DYN.LE00.IN,Derived using male and female life expectancy
+CHN,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+CHN,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+CHN,SP.POP.0014.TO.ZS,"Excluding Hong Kong SAR, Macao SAR, Taiwan."
+CHN,SP.POP.1564.TO.ZS,"Excluding Hong Kong SAR, Macao SAR, Taiwan."
+CHN,SP.POP.65UP.TO.ZS,"Excluding Hong Kong SAR, Macao SAR, Taiwan."
+CHN,SP.POP.AG00.FE.IN,"The data for China do not include Hong Kong SAR, China; Macao SAR, China; and Taiwan, China."
+CHN,SP.POP.AG00.MA.IN,"The data for China do not include Hong Kong SAR, China; Macao SAR, China; and Taiwan, China."
+CHN,SP.POP.AG01.FE.IN,"The data for China do not include Hong Kong SAR, China; Macao SAR, China; and Taiwan, China."
+CHN,SP.POP.AG01.MA.IN,"The data for China do not include Hong Kong SAR, China; Macao SAR, China; and Taiwan, China."
+CHN,SP.POP.AG02.FE.IN,"The data for China do not include Hong Kong SAR, China; Macao SAR, China; and Taiwan, China."
+CHN,SP.POP.AG02.MA.IN,"The data for China do not include Hong Kong SAR, China; Macao SAR, China; and Taiwan, China."
+CHN,SP.POP.AG03.FE.IN,"The data for China do not include Hong Kong SAR, China; Macao SAR, China; and Taiwan, China."
+CHN,SP.POP.AG03.MA.IN,"The data for China do not include Hong Kong SAR, China; Macao SAR, China; and Taiwan, China."
+CHN,SP.POP.AG04.FE.IN,"The data for China do not include Hong Kong SAR, China; Macao SAR, China; and Taiwan, China."
+CHN,SP.POP.AG04.MA.IN,"The data for China do not include Hong Kong SAR, China; Macao SAR, China; and Taiwan, China."
+CHN,SP.POP.AG05.FE.IN,"The data for China do not include Hong Kong SAR, China; Macao SAR, China; and Taiwan, China."
+CHN,SP.POP.AG05.MA.IN,"The data for China do not include Hong Kong SAR, China; Macao SAR, China; and Taiwan, China."
+CHN,SP.POP.BRTH.MF,"The data for China do not include Hong Kong SAR, China; Macao SAR, China; and Taiwan, China."
+CHN,SP.POP.TOTL,Data sources : National Bureau of Statistics
+CHN,SP.POP.TOTL.FE.ZS,"Excluding Hong Kong SAR, Macao SAR, Taiwan."
+CIV,SG.NOD.CONS,There is no nondiscrimination provision.
+CIV,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+CIV,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+CIV,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+CIV,SP.DYN.LE00.IN,Derived using male and female life expectancy
+CIV,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+CIV,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+CIV,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+CMR,SG.NOD.CONS,There is no nondiscrimination provision.
+CMR,SH.XPD.PCAP.PP.KD,Some estimates should be viewed with caution as these are derived from scarce data.
+CMR,SH.XPD.PUBL.ZS,Some estimates should be viewed with caution as these are derived from scarce data.
+CMR,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+CMR,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+CMR,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+CMR,SP.DYN.LE00.IN,Derived using male and female life expectancy
+CMR,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+CMR,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+CMR,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+COG,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+COG,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+COG,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+COG,SP.DYN.LE00.IN,Derived using male and female life expectancy
+COG,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+COG,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+COG,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+COL,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+COL,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+COL,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+COL,SP.DYN.LE00.IN,Derived using male and female life expectancy
+COL,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+COL,SP.DYN.TFRT.IN,"Data sources : United Nations World Population Prospects, DHS 2010"
+COL,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+COM,SH.XPD.PCAP.PP.KD,Some estimates should be viewed with caution as these are derived from scarce data.
+COM,SH.XPD.PUBL.ZS,Some estimates should be viewed with caution as these are derived from scarce data.
+COM,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+COM,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+COM,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+COM,SP.DYN.LE00.IN,Derived using male and female life expectancy
+COM,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+COM,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+COM,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+CPV,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+CPV,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+CPV,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+CPV,SP.DYN.LE00.IN,Derived using male and female life expectancy
+CPV,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+CPV,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+CPV,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+CRI,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+CRI,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+CRI,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+CRI,SP.DYN.LE00.IN,Derived using male and female life expectancy
+CRI,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+CRI,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+CRI,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+CUB,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+CUB,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+CUB,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+CUB,SP.DYN.LE00.IN,Derived using male and female life expectancy
+CUB,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+CUB,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+CUB,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+CUW,SP.DYN.CBRT.IN,Data sources : Central bureau of Statistics
+CUW,SP.DYN.CDRT.IN,Data sources : Central bureau of Statistics
+CUW,SP.DYN.LE00.FE.IN,Data sources : Central bureau of Statistics
+CUW,SP.DYN.LE00.IN,Derived using male and female life expectancy
+CUW,SP.DYN.LE00.MA.IN,Data sources : Central bureau of Statistics
+CUW,SP.DYN.TFRT.IN,Data sources : Central bureau of Statistics
+CUW,SP.POP.TOTL,Data sources : Central bureau of Statistics
+CYM,SP.DYN.CBRT.IN,Data sources : United Nations Population and Vital Statistics Report
+CYM,SP.DYN.CDRT.IN,Data sources : United Nations Population and Vital Statistics Report
+CYM,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+CYP,NY.GDP.PCAP.CD,Data are for areas under the effective control of the Government of the Republic of Cyprus.
+CYP,NY.GNP.PCAP.CD,Data are for areas under the effective control of the Government of the Republic of Cyprus.
+CYP,NY.GNP.PCAP.PP.CD,Data are for areas under the effective control of the Government of the Republic of Cyprus.
+CYP,SG.POP.MIGR.FE.ZS,Includes Northern-Cyprus.
+CYP,SP.ADO.TFRT,Including Northern-Cyprus.
+CYP,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+CYP,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+CYP,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+CYP,SP.DYN.LE00.IN,Derived using male and female life expectancy
+CYP,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+CYP,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+CYP,SP.POP.0014.TO.ZS,Including Northern-Cyprus.
+CYP,SP.POP.1564.TO.ZS,Including Northern-Cyprus.
+CYP,SP.POP.65UP.TO.ZS,Including Northern-Cyprus.
+CYP,SP.POP.AG00.FE.IN,Including Northern-Cyprus.
+CYP,SP.POP.AG00.MA.IN,Including Northern-Cyprus.
+CYP,SP.POP.AG01.FE.IN,Including Northern-Cyprus.
+CYP,SP.POP.AG01.MA.IN,Including Northern-Cyprus.
+CYP,SP.POP.AG02.FE.IN,Including Northern-Cyprus.
+CYP,SP.POP.AG02.MA.IN,Including Northern-Cyprus.
+CYP,SP.POP.AG03.FE.IN,Including Northern-Cyprus.
+CYP,SP.POP.AG03.MA.IN,Including Northern-Cyprus.
+CYP,SP.POP.AG04.FE.IN,Including Northern-Cyprus.
+CYP,SP.POP.AG04.MA.IN,Including Northern-Cyprus.
+CYP,SP.POP.AG05.FE.IN,Including Northern-Cyprus.
+CYP,SP.POP.AG05.MA.IN,Including Northern-Cyprus.
+CYP,SP.POP.BRTH.MF,Including Northern-Cyprus.
+CYP,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+CYP,SP.POP.TOTL.FE.ZS,Including Northern-Cyprus.
+CZE,SG.NOD.CONS,There is no nondiscrimination provision.
+CZE,SP.DYN.CBRT.IN,Data sources : Eurostat
+CZE,SP.DYN.CDRT.IN,Data sources : Eurostat
+CZE,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, Statistical Year Book"
+CZE,SP.DYN.LE00.IN,Derived using male and female life expectancy
+CZE,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, Statistical Year Book"
+CZE,SP.DYN.TFRT.IN,Data sources : Eurostat
+CZE,SP.POP.TOTL,Data sources : Eurostat
+DEU,SG.NOD.CONS,There is no nondiscrimination provision.
+DEU,SP.DYN.CBRT.IN,Data sources : Eurostat
+DEU,SP.DYN.CDRT.IN,Data sources : Eurostat
+DEU,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, United Nations World Population Prospects"
+DEU,SP.DYN.LE00.IN,Derived using male and female life expectancy
+DEU,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, United Nations World Population Prospects"
+DEU,SP.DYN.TFRT.IN,Data sources : Eurostat
+DEU,SP.POP.TOTL,Data sources : Eurostat
+DJI,SG.NOD.CONS,There is no nondiscrimination provision.
+DJI,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+DJI,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+DJI,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+DJI,SP.DYN.LE00.IN,Derived using male and female life expectancy
+DJI,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+DJI,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+DJI,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+DMA,SG.OBT.IDCD.MR,There is no national identity card.
+DMA,SP.DYN.CBRT.IN,Data sources : United Nations Population and Vital Statistics Report
+DMA,SP.DYN.CDRT.IN,Data sources : United Nations Population and Vital Statistics Report
+DMA,SP.DYN.LE00.FE.IN,Data sources : United Nations Population and Vital Statistics Report
+DMA,SP.DYN.LE00.IN,Derived using male and female life expectancy
+DMA,SP.DYN.LE00.MA.IN,Data sources : United Nations Population and Vital Statistics Report
+DMA,SP.DYN.TFRT.IN,Data sources : United Nations Population and Vital Statistics Report
+DMA,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+DNK,SG.NOD.CONS,There is no nondiscrimination provision.
+DNK,SG.OBT.IDCD.MR,There is no national identity card.
+DNK,SP.DYN.CBRT.IN,Data sources : Eurostat
+DNK,SP.DYN.CDRT.IN,Data sources : Eurostat
+DNK,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, Statistics Denmark"
+DNK,SP.DYN.LE00.IN,Derived using male and female life expectancy
+DNK,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, Statistics Denmark"
+DNK,SP.DYN.TFRT.IN,Data sources : Eurostat
+DNK,SP.POP.TOTL,Data sources : Eurostat
+DOM,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+DOM,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+DOM,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+DOM,SP.DYN.LE00.IN,Derived using male and female life expectancy
+DOM,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+DOM,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+DOM,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+DZA,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+DZA,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+DZA,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+DZA,SP.DYN.LE00.IN,Derived using male and female life expectancy
+DZA,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+DZA,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+DZA,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+ECU,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+ECU,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+ECU,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+ECU,SP.DYN.LE00.IN,Derived using male and female life expectancy
+ECU,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+ECU,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+ECU,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+EGY,SG.GEN.PARL.ZS,Figures correspond to the results of elections to the Lower House completed in January 2012. Elections to the Upper House will be completed in early 2012.
+EGY,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+EGY,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+EGY,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+EGY,SP.DYN.LE00.IN,Derived using male and female life expectancy
+EGY,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+EGY,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+EGY,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+ERI,NY.GNP.PCAP.PP.CD,Estimates are based on regression.
+ERI,SH.XPD.PCAP.PP.KD,Some estimates should be viewed with caution as these are derived from scarce data.
+ERI,SH.XPD.PUBL.ZS,Some estimates should be viewed with caution as these are derived from scarce data.
+ERI,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+ERI,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+ERI,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+ERI,SP.DYN.LE00.IN,Derived using male and female life expectancy
+ERI,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+ERI,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+ERI,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+ESP,SG.POP.MIGR.FE.ZS,"Includes Canary Islands, Ceuta and Melilla."
+ESP,SP.ADO.TFRT,"Including Canary Islands, Ceuta and Melilla."
+ESP,SP.DYN.CBRT.IN,Data sources : Eurostat
+ESP,SP.DYN.CDRT.IN,Data sources : Eurostat
+ESP,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, Instituto Nacional de Estadistica"
+ESP,SP.DYN.LE00.IN,Derived using male and female life expectancy
+ESP,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, Instituto Nacional de Estadistica"
+ESP,SP.DYN.TFRT.IN,Data sources : Eurostat
+ESP,SP.POP.AG00.FE.IN,"Including Canary Islands, Ceuta and Melilla."
+ESP,SP.POP.AG00.MA.IN,"Including Canary Islands, Ceuta and Melilla."
+ESP,SP.POP.AG01.FE.IN,"Including Canary Islands, Ceuta and Melilla."
+ESP,SP.POP.AG01.MA.IN,"Including Canary Islands, Ceuta and Melilla."
+ESP,SP.POP.AG02.FE.IN,"Including Canary Islands, Ceuta and Melilla."
+ESP,SP.POP.AG02.MA.IN,"Including Canary Islands, Ceuta and Melilla."
+ESP,SP.POP.AG03.FE.IN,"Including Canary Islands, Ceuta and Melilla."
+ESP,SP.POP.AG03.MA.IN,"Including Canary Islands, Ceuta and Melilla."
+ESP,SP.POP.AG04.FE.IN,"Including Canary Islands, Ceuta and Melilla."
+ESP,SP.POP.AG04.MA.IN,"Including Canary Islands, Ceuta and Melilla."
+ESP,SP.POP.AG05.FE.IN,"Including Canary Islands, Ceuta and Melilla."
+ESP,SP.POP.AG05.MA.IN,"Including Canary Islands, Ceuta and Melilla."
+ESP,SP.POP.BRTH.MF,"Including Canary Islands, Ceuta and Melilla."
+ESP,SP.POP.TOTL,Data sources : Eurostat
+EST,SP.DYN.CBRT.IN,Data sources : Eurostat
+EST,SP.DYN.CDRT.IN,Data sources : Eurostat
+EST,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, United Nations World Population Prospects"
+EST,SP.DYN.LE00.IN,Derived using male and female life expectancy
+EST,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, United Nations World Population Prospects"
+EST,SP.DYN.TFRT.IN,"Data sources : Eurostat, Statistical Office of Estonia"
+EST,SP.POP.TOTL,Data sources : Eurostat
+ETH,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+ETH,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+ETH,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+ETH,SP.DYN.LE00.IN,Derived using male and female life expectancy
+ETH,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+ETH,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+ETH,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+FIN,SG.NOD.CONS,There is no nondiscrimination provision.
+FIN,SG.POP.MIGR.FE.ZS,Includes Åland Islands.
+FIN,SP.ADO.TFRT,Including Åland Islands.
+FIN,SP.DYN.CBRT.IN,Data sources : Eurostat
+FIN,SP.DYN.CDRT.IN,Data sources : Eurostat
+FIN,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, Statistics Finland"
+FIN,SP.DYN.LE00.IN,Derived using male and female life expectancy
+FIN,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, Statistics Finland"
+FIN,SP.DYN.TFRT.IN,Data sources : Eurostat
+FIN,SP.POP.AG00.FE.IN,Including Åland Islands.
+FIN,SP.POP.AG00.MA.IN,Including Åland Islands.
+FIN,SP.POP.AG01.FE.IN,Including Åland Islands.
+FIN,SP.POP.AG01.MA.IN,Including Åland Islands.
+FIN,SP.POP.AG02.FE.IN,Including Åland Islands.
+FIN,SP.POP.AG02.MA.IN,Including Åland Islands.
+FIN,SP.POP.AG03.FE.IN,Including Åland Islands.
+FIN,SP.POP.AG03.MA.IN,Including Åland Islands.
+FIN,SP.POP.AG04.FE.IN,Including Åland Islands.
+FIN,SP.POP.AG04.MA.IN,Including Åland Islands.
+FIN,SP.POP.AG05.FE.IN,Including Åland Islands.
+FIN,SP.POP.AG05.MA.IN,Including Åland Islands.
+FIN,SP.POP.BRTH.MF,Including Åland Islands.
+FIN,SP.POP.TOTL,Data sources : Eurostat
+FJI,SG.OBT.IDCD.MR,There is no national identity card.
+FJI,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+FJI,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+FJI,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+FJI,SP.DYN.LE00.IN,Derived using male and female life expectancy
+FJI,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+FJI,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+FJI,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+FRA,SG.NOD.CONS,There is no nondiscrimination provision.
+FRA,SP.DYN.CBRT.IN,"Data sources and note : Eurostat, United Nations World Population Prospects. Including the French overseas departments of French Guiana, Guadeloupe, Martinique, Réunion."
+FRA,SP.DYN.CDRT.IN,"Data sources and note : Eurostat, United Nations World Population Prospects. Including the French overseas departments of French Guiana, Guadeloupe, Martinique, Réunion."
+FRA,SP.DYN.LE00.FE.IN,"Data sources and note : Eurostat, United Nations World Population Prospects. Including the French overseas departments of French Guiana, Guadeloupe, Martinique, Réunion."
+FRA,SP.DYN.LE00.IN,Derived using male and female life expectancy
+FRA,SP.DYN.LE00.MA.IN,"Data sources and note : Eurostat, United Nations World Population Prospects. Including the French overseas departments of French Guiana, Guadeloupe, Martinique, Réunion."
+FRA,SP.DYN.TFRT.IN,"Data sources and note : Eurostat, United Nations World Population Prospects. Including the French overseas departments of French Guiana, Guadeloupe, Martinique, Réunion."
+FRA,SP.POP.0014.TO.ZS,"Including the four French overseas departments (French Guyana, Guadeloupe, Martinique and Réunion)"
+FRA,SP.POP.1564.TO.ZS,"Including the four French overseas departments (French Guyana, Guadeloupe, Martinique and Réunion)"
+FRA,SP.POP.65UP.TO.ZS,"Including the four French overseas departments (French Guyana, Guadeloupe, Martinique and Réunion)"
+FRA,SP.POP.TOTL,"Data sources : Eurostat, United Nations World Population Prospects. Including the French overseas departments of French Guiana, Guadeloupe, Martinique, Mayotte, and Réunion."
+FRA,SP.POP.TOTL.FE.ZS,"Including the four French overseas departments (French Guyana, Guadeloupe, Martinique and Réunion)"
+FRO,SP.DYN.CBRT.IN,Data sources : Statistics Faroe Islands
+FRO,SP.DYN.CDRT.IN,Data sources : Statistics Faroe Islands
+FRO,SP.DYN.LE00.FE.IN,Data sources : Statistics Faroe Islands
+FRO,SP.DYN.LE00.IN,Derived using male and female life expectancy
+FRO,SP.DYN.LE00.MA.IN,Data sources : Statistics Faroe Islands
+FRO,SP.DYN.TFRT.IN,Data sources : Statistics Faroe Islands
+FRO,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+FSM,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+FSM,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+FSM,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+FSM,SP.DYN.LE00.IN,Derived using male and female life expectancy
+FSM,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+FSM,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+FSM,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+GAB,SG.NOD.CONS,There is no nondiscrimination provision.
+GAB,SH.XPD.PCAP.PP.KD,Some estimates should be viewed with caution as these are derived from scarce data.
+GAB,SH.XPD.PUBL.ZS,Some estimates should be viewed with caution as these are derived from scarce data.
+GAB,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+GAB,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+GAB,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+GAB,SP.DYN.LE00.IN,Derived using male and female life expectancy
+GAB,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+GAB,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+GAB,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+GBR,SG.NOD.CONS,There is no nondiscrimination provision.
+GBR,SG.OBT.IDCD.MR,There is no national identity card.
+GBR,SP.DYN.CBRT.IN,Data sources : Eurostat
+GBR,SP.DYN.CDRT.IN,Data sources : Eurostat
+GBR,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, National Statistics"
+GBR,SP.DYN.LE00.IN,Derived using male and female life expectancy
+GBR,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, National Statistics"
+GBR,SP.DYN.TFRT.IN,Data sources : Eurostat
+GBR,SP.POP.TOTL,Data sources : Eurostat
+GEO,NY.GDP.PCAP.CD,Excludes Abkhazia and South Ossetia.
+GEO,NY.GNP.PCAP.CD,Excludes Abkhazia and South Ossetia.
+GEO,NY.GNP.PCAP.PP.CD,Excludes Abkhazia and South Ossetia.
+GEO,SG.GEN.PARL.ZS,"Elections were held in November 2003. However, on 25 November 2003, the election results were annuled by the Supreme Court of Georgia. New elections will be held in March 2004."
+GEO,SG.NOD.CONS,There is no nondiscrimination provision.
+GEO,SG.POP.MIGR.FE.ZS,Includes Abkhazia and South Ossetia.
+GEO,SH.XPD.PCAP.PP.KD," As a result of recent health-care reforms in Georgia, public compulsory insurance has since 2007 been implemented by private insurance companies. The voucher cost of this insurance is treated as general government health expenditure."
+GEO,SH.XPD.PUBL.ZS," As a result of recent health-care reforms in Georgia, public compulsory insurance has since 2007 been implemented by private insurance companies. The voucher cost of this insurance is treated as general government health expenditure."
+GEO,SP.ADO.TFRT,Including Abkhazia and South Ossetia.
+GEO,SP.DYN.CBRT.IN,Data sources and note : United Nations World Population Prospects. Including Abkhazia and South Ossetia.
+GEO,SP.DYN.CDRT.IN,Data sources and note : United Nations World Population Prospects. Including Abkhazia and South Ossetia.
+GEO,SP.DYN.LE00.FE.IN,Data sources and note : United Nations World Population Prospects. Including Abkhazia and South Ossetia.
+GEO,SP.DYN.LE00.IN,Derived using male and female life expectancy
+GEO,SP.DYN.LE00.MA.IN,Data sources and note : United Nations World Population Prospects. Including Abkhazia and South Ossetia.
+GEO,SP.DYN.TFRT.IN,Data sources and note : United Nations World Population Prospects. Including Abkhazia and South Ossetia.
+GEO,SP.POP.0014.FE.IN,Derived using ratio of age group from WPP and World Bank population.
+GEO,SP.POP.0014.TO.ZS,Including Abkhazia and South Ossetia.
+GEO,SP.POP.1564.FE.IN,Derived using ratio of age group from WPP and World Bank population.
+GEO,SP.POP.1564.MA.IN,Derived using ratio of age group from WPP and World Bank population.
+GEO,SP.POP.1564.TO,Derived using ratio of age group from WPP and World Bank population.
+GEO,SP.POP.1564.TO.ZS,Including Abkhazia and South Ossetia.
+GEO,SP.POP.65UP.FE.IN,Derived using ratio of age group from WPP and World Bank population.
+GEO,SP.POP.65UP.TO.ZS,Including Abkhazia and South Ossetia.
+GEO,SP.POP.AG00.FE.IN,Including Abkhazia and South Ossetia.
+GEO,SP.POP.AG00.MA.IN,Including Abkhazia and South Ossetia.
+GEO,SP.POP.AG01.FE.IN,Including Abkhazia and South Ossetia.
+GEO,SP.POP.AG01.MA.IN,Including Abkhazia and South Ossetia.
+GEO,SP.POP.AG02.FE.IN,Including Abkhazia and South Ossetia.
+GEO,SP.POP.AG02.MA.IN,Including Abkhazia and South Ossetia.
+GEO,SP.POP.AG03.FE.IN,Including Abkhazia and South Ossetia.
+GEO,SP.POP.AG03.MA.IN,Including Abkhazia and South Ossetia.
+GEO,SP.POP.AG04.FE.IN,Including Abkhazia and South Ossetia.
+GEO,SP.POP.AG04.MA.IN,Including Abkhazia and South Ossetia.
+GEO,SP.POP.AG05.FE.IN,Including Abkhazia and South Ossetia.
+GEO,SP.POP.AG05.MA.IN,Including Abkhazia and South Ossetia.
+GEO,SP.POP.BRTH.MF,Including Abkhazia and South Ossetia.
+GEO,SP.POP.DPND,Including Abkhazia and South Ossetia.
+GEO,SP.POP.TOTL,Data sources : GeoStats. GeoStats. Adjusted to mid-year population using geometric mean for the years where mid-year population figures are not available. Excluding Abkhazia and South Ossetia.
+GEO,SP.POP.TOTL.FE.ZS,Excluding Abkhazia and South Ossetia.
+GHA,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+GHA,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+GHA,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+GHA,SP.DYN.LE00.IN,Derived using male and female life expectancy
+GHA,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+GHA,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+GHA,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+GIB,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+GIN,SG.GEN.PARL.ZS,The parliament was dissolved following the December 2008 coup
+GIN,SG.NOD.CONS,There is no nondiscrimination provision.
+GIN,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+GIN,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+GIN,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+GIN,SP.DYN.LE00.IN,Derived using male and female life expectancy
+GIN,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+GIN,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+GIN,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+GMB,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+GMB,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+GMB,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+GMB,SP.DYN.LE00.IN,Derived using male and female life expectancy
+GMB,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+GMB,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+GMB,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+GNB,SH.XPD.PCAP.PP.KD,"Some estimates should be viewed with caution as these are derived from scarce data. Government expenditures show fluctuations due to variations in capital investment. Private-sector fluctuations are due to the large share of NGOs, which are linked to external funding."
+GNB,SH.XPD.PUBL.ZS,"Some estimates should be viewed with caution as these are derived from scarce data. Government expenditures show fluctuations due to variations in capital investment. Private-sector fluctuations are due to the large share of NGOs, which are linked to external funding."
+GNB,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+GNB,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+GNB,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+GNB,SP.DYN.LE00.IN,Derived using male and female life expectancy
+GNB,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+GNB,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+GNB,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+GNQ,SH.XPD.PCAP.PP.KD,Some estimates should be viewed with caution as these are derived from scarce data. Increases in government expenditure on health are due to investment in capital expenditures.
+GNQ,SH.XPD.PUBL.ZS,Some estimates should be viewed with caution as these are derived from scarce data. Increases in government expenditure on health are due to investment in capital expenditures.
+GNQ,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+GNQ,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+GNQ,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+GNQ,SP.DYN.LE00.IN,Derived using male and female life expectancy
+GNQ,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+GNQ,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+GNQ,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+GRC,SG.NOD.CONS,There is no nondiscrimination provision.
+GRC,SP.DYN.CBRT.IN,Data sources : Eurostat
+GRC,SP.DYN.CDRT.IN,Data sources : Eurostat
+GRC,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, United Nations World Population Prospects"
+GRC,SP.DYN.LE00.IN,Derived using male and female life expectancy
+GRC,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, United Nations World Population Prospects"
+GRC,SP.DYN.TFRT.IN,Data sources : Eurostat
+GRC,SP.POP.TOTL,Data sources : Eurostat
+GRD,SG.OBT.IDCD.MR,There is no national identity card.
+GRD,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+GRD,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+GRD,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+GRD,SP.DYN.LE00.IN,Derived using male and female life expectancy
+GRD,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+GRD,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+GRD,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+GRL,SP.DYN.CBRT.IN,Data sources : Statistics Greenland
+GRL,SP.DYN.CDRT.IN,Data sources : Statistics Greenland
+GRL,SP.DYN.LE00.FE.IN,"Data sources : Statistics Greenland, United Nations Population and Vital Statistics Report"
+GRL,SP.DYN.LE00.IN,Derived using male and female life expectancy
+GRL,SP.DYN.LE00.MA.IN,"Data sources : Statistics Greenland, United Nations Population and Vital Statistics Report"
+GRL,SP.DYN.TFRT.IN,Data sources : Statistics Greenland
+GRL,SP.POP.TOTL,Data sources : Statistics Greenland
+GTM,SG.NOD.CONS,There is no nondiscrimination provision.
+GTM,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+GTM,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+GTM,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+GTM,SP.DYN.LE00.IN,Derived using male and female life expectancy
+GTM,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+GTM,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+GTM,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+GUM,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+GUM,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+GUM,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+GUM,SP.DYN.LE00.IN,Derived using male and female life expectancy
+GUM,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+GUM,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+GUM,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+GUY,NY.GNP.PCAP.PP.CD,Estimates are based on regression.
+GUY,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+GUY,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+GUY,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+GUY,SP.DYN.LE00.IN,Derived using male and female life expectancy
+GUY,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+GUY,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+GUY,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+HKG,SG.NOD.CONS,There is no nondiscrimination provision.
+HKG,SG.POP.MIGR.FE.ZS,"As of 1 July 1997, Hong Kong became a Special Administrative Region (SAR) of China."
+HKG,SP.DYN.CBRT.IN,Data sources : Census and Statistics Department
+HKG,SP.DYN.CDRT.IN,Data sources : Census and Statistics Department
+HKG,SP.DYN.LE00.FE.IN,"Data sources : Census and Statistics Department, United Nations World Population Prospects"
+HKG,SP.DYN.LE00.IN,Derived using male and female life expectancy
+HKG,SP.DYN.LE00.MA.IN,"Data sources : Census and Statistics Department, United Nations World Population Prospects"
+HKG,SP.DYN.TFRT.IN,"Data sources : Census and Statistics Department, United Nations World Population Prospects"
+HKG,SP.POP.TOTL,Data sources : Census and Statistics Department
+HND,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+HND,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+HND,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+HND,SP.DYN.LE00.IN,Derived using male and female life expectancy
+HND,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+HND,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+HND,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+HRV,SG.NOD.CONS,There is no nondiscrimination provision.
+HRV,SP.DYN.CBRT.IN,Data sources : Eurostat
+HRV,SP.DYN.CDRT.IN,Data sources : Eurostat
+HRV,SP.DYN.LE00.FE.IN,"Data sources : Croatian Bureau of Statistics, Eurostat, United Nations World Population Prospects"
+HRV,SP.DYN.LE00.IN,Derived using male and female life expectancy
+HRV,SP.DYN.LE00.MA.IN,"Data sources : Croatian Bureau of Statistics, Eurostat, United Nations World Population Prospects"
+HRV,SP.DYN.TFRT.IN,"Data sources : Croatian Bureau of Statistics, Eurostat, United Nations World Population Prospects"
+HRV,SP.POP.TOTL,"Data sources : Croatian Bureau of Statistics, Council of Europe"
+HTI,SG.NOD.CONS,There is no nondiscrimination provision.
+HTI,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+HTI,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+HTI,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+HTI,SP.DYN.LE00.IN,Derived using male and female life expectancy
+HTI,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+HTI,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+HTI,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+HUN,SP.DYN.CBRT.IN,Data sources : Eurostat
+HUN,SP.DYN.CDRT.IN,Data sources : Eurostat
+HUN,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, Hungarian Central Statistical Office"
+HUN,SP.DYN.LE00.IN,Derived using male and female life expectancy
+HUN,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, Hungarian Central Statistical Office"
+HUN,SP.DYN.TFRT.IN,Data sources : Eurostat
+HUN,SP.POP.TOTL,Data sources : Eurostat
+IDN,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+IDN,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+IDN,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+IDN,SP.DYN.LE00.IN,Derived using male and female life expectancy
+IDN,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+IDN,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+IDN,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+IMY,SP.DYN.CBRT.IN,Data sources : United Nations Population and Vital Statistics Report
+IMY,SP.DYN.CDRT.IN,Data sources : United Nations Population and Vital Statistics Report
+IMY,SP.DYN.LE00.FE.IN,Data sources : CIA World Fact book
+IMY,SP.DYN.LE00.IN,Derived using male and female life expectancy
+IMY,SP.DYN.LE00.MA.IN,Data sources : CIA World Fact book
+IMY,SP.DYN.TFRT.IN,Data sources : CIA World Fact book
+IMY,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+IND,SG.OBT.IDCD.MR,There is no national identity card.
+IND,SP.DYN.CBRT.IN,"Data sources : United Nations Population and Vital Statistics Report, Sample Registration System, United Nations World Population Prospects"
+IND,SP.DYN.CDRT.IN,"Data sources : United Nations Population and Vital Statistics Report, Sample Registration System, United Nations World Population Prospects"
+IND,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+IND,SP.DYN.LE00.IN,Derived using male and female life expectancy
+IND,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+IND,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+IND,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+IRL,SG.NOD.CONS,There is no nondiscrimination provision.
+IRL,SG.OBT.IDCD.MR,There is no national identity card.
+IRL,SP.DYN.CBRT.IN,Data sources : Eurostat
+IRL,SP.DYN.CDRT.IN,Data sources : Eurostat
+IRL,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, United Nations World Population Prospects"
+IRL,SP.DYN.LE00.IN,Derived using male and female life expectancy
+IRL,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, United Nations World Population Prospects"
+IRL,SP.DYN.TFRT.IN,Data sources : Eurostat
+IRL,SP.POP.TOTL,Data sources : Eurostat
+IRN,SG.NOD.CONS,There is no nondiscrimination provision.
+IRN,SH.XPD.PCAP.PP.KD,Exchange rate changed in 2002 from multiple to a managed floating exchange rate. Inter-bank market rate used prior to 2002.
+IRN,SH.XPD.PUBL.ZS,Exchange rate changed in 2002 from multiple to a managed floating exchange rate. Inter-bank market rate used prior to 2002.
+IRN,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+IRN,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+IRN,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+IRN,SP.DYN.LE00.IN,Derived using male and female life expectancy
+IRN,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+IRN,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+IRN,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+IRQ,SH.XPD.PCAP.PP.KD,Some estimates should be viewed with caution as these are derived from scarce data. The estimates do not include expenditures for Northern Iraq.
+IRQ,SH.XPD.PUBL.ZS,Some estimates should be viewed with caution as these are derived from scarce data. The estimates do not include expenditures for Northern Iraq.
+IRQ,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+IRQ,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+IRQ,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+IRQ,SP.DYN.LE00.IN,Derived using male and female life expectancy
+IRQ,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+IRQ,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+IRQ,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+ISL,SG.NOD.CONS,There is no nondiscrimination provision.
+ISL,SP.DYN.CBRT.IN,Data sources : Eurostat
+ISL,SP.DYN.CDRT.IN,Data sources : Eurostat
+ISL,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, United Nations World Population Prospects"
+ISL,SP.DYN.LE00.IN,Derived using male and female life expectancy
+ISL,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, United Nations World Population Prospects"
+ISL,SP.DYN.TFRT.IN,Data sources : Eurostat
+ISL,SP.POP.TOTL,Data sources : Eurostat
+ISR,SG.NOD.CONS,There is no nondiscrimination provision.
+ISR,SP.DYN.CBRT.IN,Data sources : Central Bureau of Statistics
+ISR,SP.DYN.CDRT.IN,Data sources : Central Bureau of Statistics
+ISR,SP.DYN.LE00.FE.IN,Data sources : Central Bureau of Statistics
+ISR,SP.DYN.LE00.IN,Derived using male and female life expectancy
+ISR,SP.DYN.LE00.MA.IN,Data sources : Central Bureau of Statistics
+ISR,SP.DYN.TFRT.IN,Data sources : Central Bureau of Statistics
+ISR,SP.POP.TOTL,Data sources : Central Bureau of Statistics
+ITA,SG.NOD.CONS,There is no nondiscrimination provision.
+ITA,SP.DYN.CBRT.IN,Data sources : Eurostat
+ITA,SP.DYN.CDRT.IN,Data sources : Eurostat
+ITA,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, INED"
+ITA,SP.DYN.LE00.IN,Derived using male and female life expectancy
+ITA,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, INED"
+ITA,SP.DYN.TFRT.IN,Data sources : Eurostat
+ITA,SP.POP.TOTL,Data sources : Eurostat
+JAM,SG.OBT.IDCD.MR,There is no national identity card.
+JAM,SP.DYN.CBRT.IN,Data sources : Statistical Institute of Jamaica
+JAM,SP.DYN.CDRT.IN,Data sources : Statistical Institute of Jamaica
+JAM,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+JAM,SP.DYN.LE00.IN,Derived using male and female life expectancy
+JAM,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+JAM,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+JAM,SP.POP.TOTL,Data sources : Statistical Institute of Jamaica
+JOR,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+JOR,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+JOR,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+JOR,SP.DYN.LE00.IN,Derived using male and female life expectancy
+JOR,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+JOR,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+JOR,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+JPN,SG.OBT.IDCD.MR,There is no national identity card.
+JPN,SP.DYN.CBRT.IN,"Data sources : Ministry of Internal Affairs and Communications, Statistics Bureau; United Nations Population and Vital Statistics Report"
+JPN,SP.DYN.CDRT.IN,"Data sources : Ministry of Internal Affairs and Communications, Statistics Bureau; United Nations Population and Vital Statistics Report"
+JPN,SP.DYN.LE00.FE.IN,"Data sources : Ministry of Internal Affairs and Communications, Statistics Bureau"
+JPN,SP.DYN.LE00.IN,Derived using male and female life expectancy
+JPN,SP.DYN.LE00.MA.IN,"Data sources : Ministry of Internal Affairs and Communications, Statistics Bureau"
+JPN,SP.DYN.TFRT.IN,"Data sources : Ministry of Internal Affairs and Communications, Statistics Bureau"
+JPN,SP.POP.TOTL,"Data sources : Ministry of Internal Affairs and Communications, Statistics Bureau; United Nations Population and Vital Statistics Report"
+KAZ,SP.DYN.CBRT.IN,"Data sources : Statistical Agency of Kazakhstan, United Nations World Population Prospects"
+KAZ,SP.DYN.CDRT.IN,"Data sources : Statistical Agency of Kazakhstan, United Nations World Population Prospects"
+KAZ,SP.DYN.LE00.FE.IN,"Data sources : Statistical Agency of Kazakhstan, United Nations World Population Prospects"
+KAZ,SP.DYN.LE00.IN,Derived using male and female life expectancy
+KAZ,SP.DYN.LE00.MA.IN,"Data sources : Statistical Agency of Kazakhstan, United Nations World Population Prospects"
+KAZ,SP.DYN.TFRT.IN,"Data sources : Statistical Agency of Kazakhstan, TransMONEE, United Nations World Population Prospects"
+KAZ,SP.POP.TOTL,"Data sources : Statistical Agency of Kazakhstan, 1979 Census, 1989 Census, United Nations World Population Prospects"
+KEN,SG.GEN.PARL.ZS,Situation for 1 January 2008 for directly elected members endorsed by the electoral commission. The additional twelve appointed seats and two ex-officio seats had yet to be filled.
+KEN,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+KEN,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+KEN,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+KEN,SP.DYN.LE00.IN,Derived using male and female life expectancy
+KEN,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+KEN,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+KEN,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+KGZ,SP.DYN.CBRT.IN,"Data sources : National Statistics Committee, United Nations World Population Prospects"
+KGZ,SP.DYN.CDRT.IN,"Data sources : National Statistics Committee, United Nations World Population Prospects"
+KGZ,SP.DYN.LE00.FE.IN,"Data sources : National Statistics Committee, United Nations World Population Prospects"
+KGZ,SP.DYN.LE00.IN,Derived using male and female life expectancy
+KGZ,SP.DYN.LE00.MA.IN,"Data sources : National Statistics Committee, United Nations World Population Prospects"
+KGZ,SP.DYN.TFRT.IN,"Data sources : TransMONEE, United Nations World Population Prospects"
+KGZ,SP.POP.TOTL,"Data sources : National Statistical Committee, United Nations World Population Prospects"
+KHM,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+KHM,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+KHM,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+KHM,SP.DYN.LE00.IN,Derived using male and female life expectancy
+KHM,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+KHM,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+KHM,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+KIR,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+KIR,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+KIR,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+KIR,SP.DYN.LE00.IN,Derived using male and female life expectancy
+KIR,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+KIR,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+KIR,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+KNA,SP.DYN.CBRT.IN,Data sources : United Nations Population and Vital Statistics Report
+KNA,SP.DYN.CDRT.IN,Data sources : United Nations Population and Vital Statistics Report
+KNA,SP.DYN.LE00.FE.IN,Data sources : United Nations Population and Vital Statistics Report
+KNA,SP.DYN.LE00.IN,Derived using male and female life expectancy
+KNA,SP.DYN.LE00.MA.IN,Data sources : United Nations Population and Vital Statistics Report
+KNA,SP.DYN.TFRT.IN,Data sources : United Nations Population and Vital Statistics Report
+KNA,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+KOR,SP.DYN.CBRT.IN,Data sources : Korean Statistical Information Service
+KOR,SP.DYN.CDRT.IN,Data sources : Korean Statistical Information Service
+KOR,SP.DYN.LE00.FE.IN,"Data sources : Korean Statistical Information Service, United Nations World Population Prospects"
+KOR,SP.DYN.LE00.IN,Derived using male and female life expectancy
+KOR,SP.DYN.LE00.MA.IN,"Data sources : Korean Statistical Information Service, United Nations World Population Prospects"
+KOR,SP.DYN.TFRT.IN,"Data sources : Korean Statistical Information Service, United Nations World Population Prospects"
+KOR,SP.POP.TOTL,Data sources : Korean Statistical Information Service
+KSV,NY.GNP.PCAP.PP.CD,Estimates are based on regression.
+KSV,SP.DYN.CBRT.IN,Data sources : U.S. Census Bureau
+KSV,SP.DYN.CDRT.IN,Data sources : U.S. Census Bureau
+KSV,SP.DYN.LE00.FE.IN,Data sources : U.S. Census Bureau
+KSV,SP.DYN.LE00.IN,Derived using male and female life expectancy
+KSV,SP.DYN.LE00.MA.IN,Data sources : U.S. Census Bureau
+KSV,SP.DYN.TFRT.IN,Data sources : U.S. Census Bureau
+KSV,SP.POP.TOTL,"Data sources : Kosovo Agency of Statistics, U.S. Census Bureau"
+KWT,SG.GEN.PARL.ZS,"No woman candidate was elected in the 2006 elections. However, one woman, appointed to the 16-member cabinet, is counted, because cabinet ministers also sit in parliament. In 2008, two women were appointed to the 16-member cabinet sworn in June 2008."
+KWT,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+KWT,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+KWT,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+KWT,SP.DYN.LE00.IN,Derived using male and female life expectancy
+KWT,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+KWT,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+KWT,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+LAO,SG.NOD.CONS,There is no nondiscrimination provision.
+LAO,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+LAO,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+LAO,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+LAO,SP.DYN.LE00.IN,Derived using male and female life expectancy
+LAO,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+LAO,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+LAO,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+LBN,NY.GNP.PCAP.PP.CD,Estimates are based on regression.
+LBN,SG.NOD.CONS,There is no nondiscrimination provision.
+LBN,SH.XPD.PCAP.PP.KD,Social Security expenditures include expenditures by three public schemes (National Social Security Funds; Civil servants co-operative; Mutual funds)
+LBN,SH.XPD.PUBL.ZS,Social Security expenditures include expenditures by three public schemes (National Social Security Funds; Civil servants co-operative; Mutual funds)
+LBN,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+LBN,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+LBN,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+LBN,SP.DYN.LE00.IN,Derived using male and female life expectancy
+LBN,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+LBN,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+LBN,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+LBR,SG.NOD.CONS,There is no nondiscrimination provision.
+LBR,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+LBR,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+LBR,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+LBR,SP.DYN.LE00.IN,Derived using male and female life expectancy
+LBR,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+LBR,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+LBR,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+LBY,NY.GNP.PCAP.PP.CD,Estimates are based on regression.
+LBY,SG.GEN.PARL.ZS,"Following the popular uprising and protracted fighting that eventually ousted Col. Muammar Gaddafi, the General People's Congress - the unicameral parliament of the now defunct Libyan Arab Jamahiriya - has ceased to function. Parliamentary elections are expected to be held in 2012 under the supervision of the National Transitional Council, the interim government of the new Libya."
+LBY,SH.XPD.PCAP.PP.KD,Some estimates should be viewed with caution as these are derived from scarce data.
+LBY,SH.XPD.PUBL.ZS,Some estimates should be viewed with caution as these are derived from scarce data.
+LBY,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+LBY,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+LBY,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+LBY,SP.DYN.LE00.IN,Derived using male and female life expectancy
+LBY,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+LBY,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+LBY,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+LCA,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+LCA,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+LCA,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+LCA,SP.DYN.LE00.IN,Derived using male and female life expectancy
+LCA,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+LCA,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+LCA,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+LIE,SP.DYN.CBRT.IN,Data sources : Eurostat
+LIE,SP.DYN.CDRT.IN,Data sources : Eurostat
+LIE,SP.DYN.LE00.FE.IN,Data sources : Eurostat
+LIE,SP.DYN.LE00.MA.IN,Data sources : Eurostat
+LIE,SP.DYN.TFRT.IN,Data sources : Eurostat
+LIE,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+LKA,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+LKA,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+LKA,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+LKA,SP.DYN.LE00.IN,Derived using male and female life expectancy
+LKA,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+LKA,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+LKA,SP.POP.TOTL,"Data sources : Registrar General's Department, Department of Census and Statistics"
+LSO,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+LSO,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+LSO,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+LSO,SP.DYN.LE00.IN,Derived using male and female life expectancy
+LSO,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+LSO,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+LSO,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+LTU,SG.NOD.CONS,There is no nondiscrimination provision.
+LTU,SP.DYN.CBRT.IN,Data sources : Eurostat
+LTU,SP.DYN.CDRT.IN,Data sources : Eurostat
+LTU,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, Statistics Department"
+LTU,SP.DYN.LE00.IN,Derived using male and female life expectancy
+LTU,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, Statistics Department"
+LTU,SP.DYN.TFRT.IN,"Data sources : Eurostat, Statistics Department"
+LTU,SP.POP.TOTL,Data sources : Eurostat
+LUX,SG.NOD.CONS,There is no nondiscrimination provision.
+LUX,SP.DYN.CBRT.IN,Data sources : Eurostat
+LUX,SP.DYN.CDRT.IN,Data sources : Eurostat
+LUX,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, United Nations World Population Prospects"
+LUX,SP.DYN.LE00.IN,Derived using male and female life expectancy
+LUX,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, United Nations World Population Prospects"
+LUX,SP.DYN.TFRT.IN,"Data sources : Eurostat, Council of Europe"
+LUX,SP.POP.TOTL,Data sources : Eurostat
+LVA,SP.DYN.CBRT.IN,Data sources : Eurostat
+LVA,SP.DYN.CDRT.IN,Data sources : Eurostat
+LVA,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, Council of Europe"
+LVA,SP.DYN.LE00.IN,Derived using male and female life expectancy
+LVA,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, Council of Europe"
+LVA,SP.DYN.TFRT.IN,"Data sources : Eurostat, Council of Europe"
+LVA,SP.POP.TOTL,Data sources : Eurostat
+MAC,SG.POP.MIGR.FE.ZS,"As of 20 December 1999, Macao became a Special Administrative Region (SAR) of China."
+MAC,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+MAC,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+MAC,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+MAC,SP.DYN.LE00.IN,Derived using male and female life expectancy
+MAC,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+MAC,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+MAC,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+MAF,SP.DYN.CBRT.IN,Data sources : U.S. Census Bureau
+MAF,SP.DYN.CDRT.IN,Data sources : U.S. Census Bureau
+MAF,SP.DYN.LE00.FE.IN,Data sources : U.S. Census Bureau
+MAF,SP.DYN.LE00.MA.IN,Data sources : U.S. Census Bureau
+MAF,SP.DYN.TFRT.IN,Data sources : U.S. Census Bureau
+MAF,SP.POP.TOTL,Data sources : U.S. Census Bureau
+MAR,NY.GDP.PCAP.CD,Includes Former Spanish Sahara.
+MAR,NY.GNP.PCAP.CD,Includes Former Spanish Sahara.
+MAR,NY.GNP.PCAP.PP.CD,Includes Former Spanish Sahara.
+MAR,SG.NOD.CONS,There is no nondiscrimination provision.
+MAR,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+MAR,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+MAR,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+MAR,SP.DYN.LE00.IN,Derived using male and female life expectancy
+MAR,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+MAR,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+MAR,SP.POP.0014.TO.ZS,Morocco only. (Excluding former Spanish Sahara)
+MAR,SP.POP.1564.TO.ZS,Morocco only. (Excluding former Spanish Sahara)
+MAR,SP.POP.65UP.TO.ZS,Morocco only. (Excluding former Spanish Sahara)
+MAR,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+MAR,SP.POP.TOTL.FE.ZS,Morocco only. (Excluding former Spanish Sahara)
+MCO,SH.XPD.PCAP.PP.KD,Some estimates should be viewed with caution as these are derived from scarce data.
+MCO,SH.XPD.PUBL.ZS,Some estimates should be viewed with caution as these are derived from scarce data.
+MCO,SP.DYN.CBRT.IN,Data sources : Eurostat
+MCO,SP.DYN.CDRT.IN,Data sources : Eurostat
+MCO,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+MDA,NY.GDP.PCAP.CD,Excludes Transnistria.
+MDA,NY.GNP.PCAP.CD,Excludes Transnistria.
+MDA,NY.GNP.PCAP.PP.CD,Excludes Transnistria.
+MDA,SG.POP.MIGR.FE.ZS,Includes Transnistria.
+MDA,SH.XPD.PCAP.PP.KD,The health expenditure data as well as the population data after 2000 do not include Transdniestria. Data on GDP and private final consumption expenditure exclude Transdniestria from 1995.
+MDA,SH.XPD.PUBL.ZS,The health expenditure data as well as the population data after 2000 do not include Transdniestria. Data on GDP and private final consumption expenditure exclude Transdniestria from 1995.
+MDA,SP.ADO.TFRT,Including Transnistria.
+MDA,SP.DYN.CBRT.IN,Data sources and note : United Nations World Population Prospects. Including Transnistria.
+MDA,SP.DYN.CDRT.IN,Data sources and note : United Nations World Population Prospects. Including Transnistria.
+MDA,SP.DYN.LE00.FE.IN,Data sources and note : United Nations World Population Prospects. Including Transnistria.
+MDA,SP.DYN.LE00.IN,Derived using male and female life expectancy
+MDA,SP.DYN.LE00.MA.IN,Data sources and note : United Nations World Population Prospects. Including Transnistria.
+MDA,SP.DYN.TFRT.IN,Data sources and note : United Nations World Population Prospects. Including Transnistria.
+MDA,SP.POP.0014.FE.IN,Derived using ratio of age group from WPP and World Bank population.
+MDA,SP.POP.0014.TO.ZS,Including Transnistria.
+MDA,SP.POP.1564.FE.IN,Derived using ratio of age group from WPP and World Bank population.
+MDA,SP.POP.1564.MA.IN,Derived using ratio of age group from WPP and World Bank population.
+MDA,SP.POP.1564.TO,Derived using ratio of age group from WPP and World Bank population.
+MDA,SP.POP.1564.TO.ZS,Including Transnistria.
+MDA,SP.POP.65UP.FE.IN,Derived using ratio of age group from WPP and World Bank population.
+MDA,SP.POP.65UP.TO.ZS,Including Transnistria.
+MDA,SP.POP.AG00.FE.IN,Including Transnistria.
+MDA,SP.POP.AG00.MA.IN,Including Transnistria.
+MDA,SP.POP.AG01.FE.IN,Including Transnistria.
+MDA,SP.POP.AG01.MA.IN,Including Transnistria.
+MDA,SP.POP.AG02.FE.IN,Including Transnistria.
+MDA,SP.POP.AG02.MA.IN,Including Transnistria.
+MDA,SP.POP.AG03.FE.IN,Including Transnistria.
+MDA,SP.POP.AG03.MA.IN,Including Transnistria.
+MDA,SP.POP.AG04.FE.IN,Including Transnistria.
+MDA,SP.POP.AG04.MA.IN,Including Transnistria.
+MDA,SP.POP.AG05.FE.IN,Including Transnistria.
+MDA,SP.POP.AG05.MA.IN,Including Transnistria.
+MDA,SP.POP.BRTH.MF,Including Transnistria.
+MDA,SP.POP.DPND,Including Transnistria.
+MDA,SP.POP.TOTL,"Data sources : National Bureau of Statistics. Excluding Transnistria. For 1950-94, World Bank estimates using UN World Population Prospects' growth rates of whole Moldova."
+MDA,SP.POP.TOTL.FE.ZS,Excluding Transnistria.
+MDG,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+MDG,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+MDG,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+MDG,SP.DYN.LE00.IN,Derived using male and female life expectancy
+MDG,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+MDG,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+MDG,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+MDV,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+MDV,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+MDV,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+MDV,SP.DYN.LE00.IN,Derived using male and female life expectancy
+MDV,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+MDV,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+MDV,SP.POP.TOTL,"Data sources : For 1960-1989, United Nations World Population Prospects. For 1990 onwards, 1990, 1995, 2000, 2006, 2014 censuses, and data on expatriate employment from Maldives National Bureau of Statistics. The census data are adjusted for mid-year and for foreign population."
+MEX,SG.OBT.IDCD.MR,There is no national identity card.
+MEX,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+MEX,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+MEX,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+MEX,SP.DYN.LE00.IN,Derived using male and female life expectancy
+MEX,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+MEX,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+MEX,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+MHL,SP.DYN.CBRT.IN,"Data sources : Economic Policy, Planning and Statistics Office; DHS 2007"
+MHL,SP.DYN.CDRT.IN,"Data sources : Economic Policy, Planning and Statistics Office"
+MHL,SP.DYN.LE00.FE.IN,"Data sources : Economic Policy, Planning and Statistics Office; World Health Report 2001; U.S. Census Bureau"
+MHL,SP.DYN.LE00.IN,Derived using male and female life expectancy
+MHL,SP.DYN.LE00.MA.IN,"Data sources : Economic Policy, Planning and Statistics Office; World Health Report 2001; U.S. Census Bureau"
+MHL,SP.DYN.TFRT.IN,"Data sources : DHS 2007; Economic Policy, Planning and Statistics Office; U.S. Census Bureau"
+MHL,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+MKD,SP.ADO.TFRT,The former Yugoslav Republic of Macedonia.
+MKD,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+MKD,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+MKD,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+MKD,SP.DYN.LE00.IN,Derived using male and female life expectancy
+MKD,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+MKD,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+MKD,SP.POP.AG00.FE.IN,The former Yugoslav Republic of Macedonia.
+MKD,SP.POP.AG00.MA.IN,The former Yugoslav Republic of Macedonia.
+MKD,SP.POP.AG01.FE.IN,The former Yugoslav Republic of Macedonia.
+MKD,SP.POP.AG01.MA.IN,The former Yugoslav Republic of Macedonia.
+MKD,SP.POP.AG02.FE.IN,The former Yugoslav Republic of Macedonia.
+MKD,SP.POP.AG02.MA.IN,The former Yugoslav Republic of Macedonia.
+MKD,SP.POP.AG03.FE.IN,The former Yugoslav Republic of Macedonia.
+MKD,SP.POP.AG03.MA.IN,The former Yugoslav Republic of Macedonia.
+MKD,SP.POP.AG04.FE.IN,The former Yugoslav Republic of Macedonia.
+MKD,SP.POP.AG04.MA.IN,The former Yugoslav Republic of Macedonia.
+MKD,SP.POP.AG05.FE.IN,The former Yugoslav Republic of Macedonia.
+MKD,SP.POP.AG05.MA.IN,The former Yugoslav Republic of Macedonia.
+MKD,SP.POP.BRTH.MF,The former Yugoslav Republic of Macedonia.
+MKD,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+MLI,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+MLI,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+MLI,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+MLI,SP.DYN.LE00.IN,Derived using male and female life expectancy
+MLI,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+MLI,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+MLI,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+MLT,SP.DYN.CBRT.IN,Data sources : Eurostat
+MLT,SP.DYN.CDRT.IN,Data sources : Eurostat
+MLT,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, United Nations World Population Prospects"
+MLT,SP.DYN.LE00.IN,Derived using male and female life expectancy
+MLT,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, United Nations World Population Prospects"
+MLT,SP.DYN.TFRT.IN,"Data sources : Eurostat, National Statistics Office"
+MLT,SP.POP.TOTL,Data sources : Eurostat
+MMR,SH.XPD.PCAP.PP.KD,The market exchange rate is used to estimate the per capita figures.
+MMR,SH.XPD.PUBL.ZS,The market exchange rate is used to estimate the per capita figures.
+MMR,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+MMR,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+MMR,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+MMR,SP.DYN.LE00.IN,Derived using male and female life expectancy
+MMR,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+MMR,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+MMR,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+MNE,SH.XPD.PCAP.PP.KD,"After the declaration of independence on 03 June 2006, Serbia and Montenegro are now separate states. Health expenditures for the previous years have been estimated separately for each of the two countries. "
+MNE,SH.XPD.PUBL.ZS,"After the declaration of independence on 03 June 2006, Serbia and Montenegro are now separate states. Health expenditures for the previous years have been estimated separately for each of the two countries. "
+MNE,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+MNE,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+MNE,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+MNE,SP.DYN.LE00.IN,Derived using male and female life expectancy
+MNE,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+MNE,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+MNE,SP.POP.TOTL,"Data sources : For years after 2000, Statistical Office of Montenegro. For years 1960-1999, growth rates of United Nations World Population Prospects were used to estimate backwards."
+MNG,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+MNG,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+MNG,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+MNG,SP.DYN.LE00.IN,Derived using male and female life expectancy
+MNG,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+MNG,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+MNG,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+MNP,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+MOZ,SG.NOD.CONS,There is no nondiscrimination provision.
+MOZ,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+MOZ,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+MOZ,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+MOZ,SP.DYN.LE00.IN,Derived using male and female life expectancy
+MOZ,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+MOZ,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+MOZ,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+MRT,SG.NOD.CONS,There is no nondiscrimination provision.
+MRT,SH.XPD.PCAP.PP.KD,Some estimates should be viewed with caution as these are derived from scarce data.
+MRT,SH.XPD.PUBL.ZS,Some estimates should be viewed with caution as these are derived from scarce data.
+MRT,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+MRT,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+MRT,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+MRT,SP.DYN.LE00.IN,Derived using male and female life expectancy
+MRT,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+MRT,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+MRT,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+MUS,SG.POP.MIGR.FE.ZS,"Includes Agalega, Rodrigues and Saint Brandon."
+MUS,SP.ADO.TFRT,"Including Agalega, Rodrigues and Saint Brandon."
+MUS,SP.DYN.CBRT.IN,Data sources : Statistics Mauritius
+MUS,SP.DYN.CDRT.IN,Data sources : Statistics Mauritius
+MUS,SP.DYN.LE00.FE.IN,"Data sources : Statistics Mauritius, United Nations World Population Prospects"
+MUS,SP.DYN.LE00.IN,Derived using male and female life expectancy
+MUS,SP.DYN.LE00.MA.IN,"Data sources : Statistics Mauritius, United Nations World Population Prospects"
+MUS,SP.DYN.TFRT.IN,"Data sources : Statistics Mauritius, United Nations World Population Prospects"
+MUS,SP.POP.0014.FE.IN,Derived using ratio of age group from WPP and World Bank population.
+MUS,SP.POP.0014.TO.ZS,Including Agalega and St. Brandon.
+MUS,SP.POP.1564.FE.IN,Derived using ratio of age group from WPP and World Bank population.
+MUS,SP.POP.1564.MA.IN,Derived using ratio of age group from WPP and World Bank population.
+MUS,SP.POP.1564.TO,Derived using ratio of age group from WPP and World Bank population.
+MUS,SP.POP.1564.TO.ZS,Including Agalega and St. Brandon.
+MUS,SP.POP.65UP.FE.IN,Derived using ratio of age group from WPP and World Bank population.
+MUS,SP.POP.65UP.TO.ZS,Including Agalega and St. Brandon.
+MUS,SP.POP.AG00.FE.IN,"Including Agalega, Rodrigues and Saint Brandon."
+MUS,SP.POP.AG00.MA.IN,"Including Agalega, Rodrigues and Saint Brandon."
+MUS,SP.POP.AG01.FE.IN,"Including Agalega, Rodrigues and Saint Brandon."
+MUS,SP.POP.AG01.MA.IN,"Including Agalega, Rodrigues and Saint Brandon."
+MUS,SP.POP.AG02.FE.IN,"Including Agalega, Rodrigues and Saint Brandon."
+MUS,SP.POP.AG02.MA.IN,"Including Agalega, Rodrigues and Saint Brandon."
+MUS,SP.POP.AG03.FE.IN,"Including Agalega, Rodrigues and Saint Brandon."
+MUS,SP.POP.AG03.MA.IN,"Including Agalega, Rodrigues and Saint Brandon."
+MUS,SP.POP.AG04.FE.IN,"Including Agalega, Rodrigues and Saint Brandon."
+MUS,SP.POP.AG04.MA.IN,"Including Agalega, Rodrigues and Saint Brandon."
+MUS,SP.POP.AG05.FE.IN,"Including Agalega, Rodrigues and Saint Brandon."
+MUS,SP.POP.AG05.MA.IN,"Including Agalega, Rodrigues and Saint Brandon."
+MUS,SP.POP.BRTH.MF,"Including Agalega, Rodrigues and Saint Brandon."
+MUS,SP.POP.DPND,Including Agalega and St. Brandon.
+MUS,SP.POP.TOTL,"Data sources : Statistics Mauritius, United Nations World Population Prospects"
+MUS,SP.POP.TOTL.FE.ZS,Excluding Agalega and St. Brandon.
+MWI,SG.OBT.IDCD.MR,There is no national identity card.
+MWI,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+MWI,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+MWI,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+MWI,SP.DYN.LE00.IN,Derived using male and female life expectancy
+MWI,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+MWI,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+MWI,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+MYS,SG.POP.MIGR.FE.ZS,Includes Sabah and Sarawak.
+MYS,SP.ADO.TFRT,Including Sabah and Sarawak.
+MYS,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+MYS,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+MYS,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+MYS,SP.DYN.LE00.IN,Derived using male and female life expectancy
+MYS,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+MYS,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+MYS,SP.POP.0014.TO.ZS,Including Sabah and Sarawak.
+MYS,SP.POP.1564.TO.ZS,Including Sabah and Sarawak.
+MYS,SP.POP.65UP.TO.ZS,Including Sabah and Sarawak.
+MYS,SP.POP.AG00.FE.IN,Including Sabah and Sarawak.
+MYS,SP.POP.AG00.MA.IN,Including Sabah and Sarawak.
+MYS,SP.POP.AG01.FE.IN,Including Sabah and Sarawak.
+MYS,SP.POP.AG01.MA.IN,Including Sabah and Sarawak.
+MYS,SP.POP.AG02.FE.IN,Including Sabah and Sarawak.
+MYS,SP.POP.AG02.MA.IN,Including Sabah and Sarawak.
+MYS,SP.POP.AG03.FE.IN,Including Sabah and Sarawak.
+MYS,SP.POP.AG03.MA.IN,Including Sabah and Sarawak.
+MYS,SP.POP.AG04.FE.IN,Including Sabah and Sarawak.
+MYS,SP.POP.AG04.MA.IN,Including Sabah and Sarawak.
+MYS,SP.POP.AG05.FE.IN,Including Sabah and Sarawak.
+MYS,SP.POP.AG05.MA.IN,Including Sabah and Sarawak.
+MYS,SP.POP.BRTH.MF,Including Sabah and Sarawak.
+MYS,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+MYS,SP.POP.TOTL.FE.ZS,Including Sabah and Sarawak.
+NAM,SG.GEN.PARL.ZS,The 6 additional non-voting members will be appointed by the President of the Republic after he will be sworn in on 21 March 2005.
+NAM,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+NAM,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+NAM,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+NAM,SP.DYN.LE00.IN,Derived using male and female life expectancy
+NAM,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+NAM,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+NAM,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+NCL,SP.DYN.CBRT.IN,Data sources : Institute of Statistics and Economic Studies
+NCL,SP.DYN.CDRT.IN,Data sources : Institute of Statistics and Economic Studies
+NCL,SP.DYN.LE00.FE.IN,Data sources : Institute of Statistics and Economic Studies
+NCL,SP.DYN.LE00.IN,Derived using male and female life expectancy
+NCL,SP.DYN.LE00.MA.IN,Data sources : Institute of Statistics and Economic Studies
+NCL,SP.DYN.TFRT.IN,Data sources : Institute of Statistics and Economic Studies
+NCL,SP.POP.TOTL,Data sources : Institute of Statistics and Economic Studies
+NER,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+NER,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+NER,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+NER,SP.DYN.LE00.IN,Derived using male and female life expectancy
+NER,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+NER,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+NER,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+NGA,SH.XPD.PCAP.PP.KD,Some estimates should be viewed with caution as these are derived from scarce data.
+NGA,SH.XPD.PUBL.ZS,Some estimates should be viewed with caution as these are derived from scarce data.
+NGA,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+NGA,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+NGA,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+NGA,SP.DYN.LE00.IN,Derived using male and female life expectancy
+NGA,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+NGA,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+NGA,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+NIC,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+NIC,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+NIC,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+NIC,SP.DYN.LE00.IN,Derived using male and female life expectancy
+NIC,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+NIC,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+NIC,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+NLD,SP.DYN.CBRT.IN,Data sources : Eurostat
+NLD,SP.DYN.CDRT.IN,Data sources : Eurostat
+NLD,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, Statistics Netherlands"
+NLD,SP.DYN.LE00.IN,Derived using male and female life expectancy
+NLD,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, Statistics Netherlands"
+NLD,SP.DYN.TFRT.IN,Data sources : Eurostat
+NLD,SP.POP.TOTL,Data sources : Eurostat
+NOR,SG.MMR.LEVE.EP,No paid or unpaid maternity leave is available.
+NOR,SG.NOD.CONS,There is no nondiscrimination provision.
+NOR,SG.OBT.IDCD.MR,There is no national identity card.
+NOR,SG.POP.MIGR.FE.ZS,Includes Svalbard and Jan Mayen Islands.
+NOR,SH.MMR.LEVE,Paid parental leave is available
+NOR,SH.MMR.WAGE.ZS,Paid parental leave is available
+NOR,SP.ADO.TFRT,Including Svalbard and Jan Mayen Islands.
+NOR,SP.DYN.CBRT.IN,Data sources : Eurostat
+NOR,SP.DYN.CDRT.IN,Data sources : Eurostat
+NOR,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, Statistics Norway"
+NOR,SP.DYN.LE00.IN,Derived using male and female life expectancy
+NOR,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, Statistics Norway"
+NOR,SP.DYN.TFRT.IN,"Data sources : Eurostat, Statistics Norway"
+NOR,SP.POP.AG00.FE.IN,Including Svalbard and Jan Mayen Islands.
+NOR,SP.POP.AG00.MA.IN,Including Svalbard and Jan Mayen Islands.
+NOR,SP.POP.AG01.FE.IN,Including Svalbard and Jan Mayen Islands.
+NOR,SP.POP.AG01.MA.IN,Including Svalbard and Jan Mayen Islands.
+NOR,SP.POP.AG02.FE.IN,Including Svalbard and Jan Mayen Islands.
+NOR,SP.POP.AG02.MA.IN,Including Svalbard and Jan Mayen Islands.
+NOR,SP.POP.AG03.FE.IN,Including Svalbard and Jan Mayen Islands.
+NOR,SP.POP.AG03.MA.IN,Including Svalbard and Jan Mayen Islands.
+NOR,SP.POP.AG04.FE.IN,Including Svalbard and Jan Mayen Islands.
+NOR,SP.POP.AG04.MA.IN,Including Svalbard and Jan Mayen Islands.
+NOR,SP.POP.AG05.FE.IN,Including Svalbard and Jan Mayen Islands.
+NOR,SP.POP.AG05.MA.IN,Including Svalbard and Jan Mayen Islands.
+NOR,SP.POP.BRTH.MF,Including Svalbard and Jan Mayen Islands.
+NOR,SP.POP.TOTL,Data sources : Eurostat
+NPL,SG.OBT.IDCD.MR,There is no national identity card.
+NPL,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+NPL,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+NPL,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+NPL,SP.DYN.LE00.IN,Derived using male and female life expectancy
+NPL,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+NPL,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+NPL,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+NRU,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+NZL,SG.OBT.IDCD.MR,There is no national identity card.
+NZL,SP.DYN.CBRT.IN,Data sources : Statistics New Zealand
+NZL,SP.DYN.CDRT.IN,Data sources : Statistics New Zealand
+NZL,SP.DYN.LE00.FE.IN,"Data sources : Statistics New Zealand, United Nations World Population Prospects"
+NZL,SP.DYN.LE00.IN,Derived using male and female life expectancy
+NZL,SP.DYN.LE00.MA.IN,"Data sources : Statistics New Zealand, United Nations World Population Prospects"
+NZL,SP.DYN.TFRT.IN,"Data sources : Statistics New Zealand, United Nations World Population Prospects"
+NZL,SP.POP.TOTL,Data sources : Statistics New Zealand
+OMN,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+OMN,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+OMN,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+OMN,SP.DYN.LE00.IN,Derived using male and female life expectancy
+OMN,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+OMN,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+OMN,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+PAK,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+PAK,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+PAK,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+PAK,SP.DYN.LE00.IN,Derived using male and female life expectancy
+PAK,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+PAK,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+PAK,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+PAN,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+PAN,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+PAN,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+PAN,SP.DYN.LE00.IN,Derived using male and female life expectancy
+PAN,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+PAN,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+PAN,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+PER,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+PER,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+PER,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+PER,SP.DYN.LE00.IN,Derived using male and female life expectancy
+PER,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+PER,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+PER,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+PHL,SG.NOD.CONS,There is no nondiscrimination provision.
+PHL,SG.OBT.IDCD.MR,There is no national identity card.
+PHL,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+PHL,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+PHL,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+PHL,SP.DYN.LE00.IN,Derived using male and female life expectancy
+PHL,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+PHL,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+PHL,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+PLW,SP.DYN.CBRT.IN,"Data sources : Bureau of Budget and Planning, Office of Planning and Statistics"
+PLW,SP.DYN.CDRT.IN,"Data sources : Bureau of Budget and Planning, Office of Planning and Statistics"
+PLW,SP.DYN.LE00.FE.IN,"Data sources : Bureau of Budget and Planning, Office of Planning and Statistics"
+PLW,SP.DYN.LE00.IN,Derived using male and female life expectancy
+PLW,SP.DYN.LE00.MA.IN,"Data sources : Bureau of Budget and Planning, Office of Planning and Statistics"
+PLW,SP.DYN.TFRT.IN,"Data sources : Bureau of Budget and Planning, Office of Planning and Statistics"
+PLW,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+PNG,SG.NOD.CONS,There is no nondiscrimination provision.
+PNG,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+PNG,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+PNG,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+PNG,SP.DYN.LE00.IN,Derived using male and female life expectancy
+PNG,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+PNG,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+PNG,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+POL,SP.DYN.CBRT.IN,Data sources : Eurostat
+POL,SP.DYN.CDRT.IN,Data sources : Eurostat
+POL,SP.DYN.LE00.FE.IN,Data sources : Eurostat
+POL,SP.DYN.LE00.IN,Derived using male and female life expectancy
+POL,SP.DYN.LE00.MA.IN,Data sources : Eurostat
+POL,SP.DYN.TFRT.IN,"Data sources : Eurostat, Central Statistical Office"
+POL,SP.POP.TOTL,Data sources : Eurostat
+PRI,NY.GNP.PCAP.PP.CD,Estimates are based on regression.
+PRI,SG.OBT.IDCD.MR,There is no national identity card.
+PRI,SP.DYN.CBRT.IN,"Data sources : U.S. Census Bureau, Centers for Disease Control and Prevention"
+PRI,SP.DYN.CDRT.IN,"Data sources : U.S. Census Bureau, Centers for Disease Control and Prevention"
+PRI,SP.DYN.LE00.FE.IN,"Data sources : U.S. Census Bureau, United Nations World Population Prospects"
+PRI,SP.DYN.LE00.IN,Derived using male and female life expectancy
+PRI,SP.DYN.LE00.MA.IN,"Data sources : U.S. Census Bureau, United Nations World Population Prospects"
+PRI,SP.DYN.TFRT.IN,"Data sources : U.S. Census Bureau, United Nations World Population Prospects"
+PRI,SP.POP.TOTL,"Data sources : U.S. Census Bureau, 1990 Census"
+PRK,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+PRK,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+PRK,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+PRK,SP.DYN.LE00.IN,Derived using male and female life expectancy
+PRK,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+PRK,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+PRK,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+PRT,SG.MMR.LEVE.EP,No paid or unpaid maternity leave is available.
+PRT,SH.MMR.LEVE,Paid parental leave is available
+PRT,SH.MMR.WAGE.ZS,Paid parental leave is available
+PRT,SP.DYN.CBRT.IN,Data sources : Eurostat
+PRT,SP.DYN.CDRT.IN,Data sources : Eurostat
+PRT,SP.DYN.LE00.FE.IN,Data sources : Eurostat
+PRT,SP.DYN.LE00.IN,Derived using male and female life expectancy
+PRT,SP.DYN.LE00.MA.IN,Data sources : Eurostat
+PRT,SP.DYN.TFRT.IN,Data sources : Eurostat
+PRT,SP.POP.TOTL,Data sources : Eurostat
+PRY,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+PRY,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+PRY,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+PRY,SP.DYN.LE00.IN,Derived using male and female life expectancy
+PRY,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+PRY,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+PRY,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+PYF,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+PYF,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+PYF,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+PYF,SP.DYN.LE00.IN,Derived using male and female life expectancy
+PYF,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+PYF,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+PYF,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+QAT,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+QAT,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+QAT,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+QAT,SP.DYN.LE00.IN,Derived using male and female life expectancy
+QAT,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+QAT,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+QAT,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+ROM,SP.DYN.CBRT.IN,Data sources : Eurostat
+ROM,SP.DYN.CDRT.IN,Data sources : Eurostat
+ROM,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, Uninted Nations World Population Prospects, National Institute of Statistics"
+ROM,SP.DYN.LE00.IN,Derived using male and female life expectancy
+ROM,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, Uninted Nations World Population Prospects, National Institute of Statistics"
+ROM,SP.DYN.TFRT.IN,"Data sources : Eurostat, National Institute of Statistics"
+ROM,SP.POP.TOTL,Data sources : Eurostat
+RUS,SG.NOD.CONS,There is no nondiscrimination provision.
+RUS,SP.DYN.CBRT.IN,"Data sources : Russian Federation Federal State Statistics Service, United Nations World Population Prospects"
+RUS,SP.DYN.CDRT.IN,"Data sources : Russian Federation Federal State Statistics Service, United Nations World Population Prospects"
+RUS,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, Russian Federation Federal State Statistics Service, United Nations World Population Prospects, TransMonEE"
+RUS,SP.DYN.LE00.IN,Derived using male and female life expectancy
+RUS,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, Russian Federation Federal State Statistics Service, United Nations World Population Prospects, TransMonEE"
+RUS,SP.DYN.TFRT.IN,"Data sources : Eurostat, Russian Federation Federal State Statistics Service, TransMonEE"
+RUS,SP.POP.TOTL,"Data sources : Russian Federation Federal State Statistics Service (its January 1st populations were adjusted to mid-year populations by using geometric mean), 1979 Census, 1989 Census."
+RWA,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+RWA,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+RWA,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+RWA,SP.DYN.LE00.IN,Derived using male and female life expectancy
+RWA,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+RWA,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+RWA,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+SAU,SG.NOD.CONS,There is no nondiscrimination provision.
+SAU,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+SAU,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+SAU,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+SAU,SP.DYN.LE00.IN,Derived using male and female life expectancy
+SAU,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+SAU,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+SAU,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+SDN,SE.ADT.1524.LT.FE.ZS,Excludes South Sudan
+SDN,SE.ADT.1524.LT.FM.ZS,Excludes South Sudan
+SDN,SE.ADT.1524.LT.MA.ZS,Excludes South Sudan
+SDN,SE.ADT.LITR.FE.ZS,Excludes South Sudan
+SDN,SE.ADT.LITR.MA.ZS,Excludes South Sudan
+SDN,SE.ENR.PRIM.FM.ZS,Excludes South Sudan
+SDN,SE.ENR.PRSC.FM.ZS,Excludes South Sudan
+SDN,SE.ENR.SECO.FM.ZS,Excludes South Sudan
+SDN,SE.ENR.TERT.FM.ZS,Excludes South Sudan
+SDN,SE.PRM.CMPL.FE.ZS,Excludes South Sudan
+SDN,SE.PRM.CMPL.MA.ZS,Excludes South Sudan
+SDN,SE.PRM.CMPL.ZS,Excludes South Sudan
+SDN,SE.PRM.CMPT.FE.ZS,Excludes South Sudan
+SDN,SE.PRM.CMPT.MA.ZS,Excludes South Sudan
+SDN,SE.PRM.ENRL.FE.ZS,Excludes South Sudan
+SDN,SE.PRM.ENRR.FE,Excludes South Sudan
+SDN,SE.PRM.ENRR.MA,Excludes South Sudan
+SDN,SE.PRM.NENR.FE,Excludes South Sudan
+SDN,SE.PRM.NENR.MA,Excludes South Sudan
+SDN,SE.PRM.PRS5.FE.ZS,Excludes South Sudan
+SDN,SE.PRM.PRS5.MA.ZS,Excludes South Sudan
+SDN,SE.PRM.TCHR.FE.ZS,Excludes South Sudan
+SDN,SE.PRM.TENR.FE,Excludes South Sudan
+SDN,SE.PRM.TENR.MA,Excludes South Sudan
+SDN,SE.PRM.UNER.FE,Excludes South Sudan
+SDN,SE.PRM.UNER.MA,Excludes South Sudan
+SDN,SE.SCH.LIFE.FE,Excludes South Sudan
+SDN,SE.SCH.LIFE.MA,Excludes South Sudan
+SDN,SE.SEC.CMPT.LO.FE.ZS,Excludes South Sudan
+SDN,SE.SEC.CMPT.LO.MA.ZS,Excludes South Sudan
+SDN,SE.SEC.CMPT.LO.ZS,Excludes South Sudan
+SDN,SE.SEC.ENRL.FE.ZS,Excludes South Sudan
+SDN,SE.SEC.ENRR.FE,Excludes South Sudan
+SDN,SE.SEC.ENRR.MA,Excludes South Sudan
+SDN,SE.SEC.PROG.FE.ZS,Excludes South Sudan
+SDN,SE.SEC.PROG.MA.ZS,Excludes South Sudan
+SDN,SE.SEC.TCHR.FE.ZS,Excludes South Sudan
+SDN,SE.TER.CMPL.FE.ZS,Excludes South Sudan
+SDN,SE.TER.CMPL.MA.ZS,Excludes South Sudan
+SDN,SE.TER.ENRR.FE,Excludes South Sudan
+SDN,SE.TER.ENRR.MA,Excludes South Sudan
+SDN,SE.TER.GRAD.FE.AG.ZS,Excludes South Sudan
+SDN,SE.TER.GRAD.FE.ED.ZS,Excludes South Sudan
+SDN,SE.TER.GRAD.FE.EN.ZS,Excludes South Sudan
+SDN,SE.TER.GRAD.FE.HL.ZS,Excludes South Sudan
+SDN,SE.TER.GRAD.FE.HU.ZS,Excludes South Sudan
+SDN,SE.TER.GRAD.FE.OT.ZS,Excludes South Sudan
+SDN,SE.TER.GRAD.FE.SC.ZS,Excludes South Sudan
+SDN,SE.TER.GRAD.FE.SS.ZS,Excludes South Sudan
+SDN,SE.TER.GRAD.FE.SV.ZS,Excludes South Sudan
+SDN,SE.TER.TCHR.FE.ZS,Excludes South Sudan
+SDN,SE.XPD.TOTL.GD.ZS,Excludes South Sudan
+SDN,SG.POP.MIGR.FE.ZS,The estimates for 1990 to 2005 refer to Sudan and South Sudan.
+SDN,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects. Estimates are for Sudan excluding South Sudan.
+SDN,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects. Estimates are for Sudan excluding South Sudan.
+SDN,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects. Estimates are for Sudan excluding South Sudan.
+SDN,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects. Estimates are for Sudan excluding South Sudan.
+SDN,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects. Estimates are for Sudan excluding South Sudan.
+SDN,SP.POP.TOTL,Data sources : United Nations World Population Prospects. Estimates are for Sudan excluding South Sudan.
+SEN,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+SEN,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+SEN,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+SEN,SP.DYN.LE00.IN,Derived using male and female life expectancy
+SEN,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+SEN,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+SEN,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+SGP,SG.GEN.PARL.ZS,The parliament convened on 2 November 2006 following the elections held in May. Nine members are yet to be appointed to the parliament.
+SGP,SP.DYN.CBRT.IN,Data sources : Department of Statistics Singapore
+SGP,SP.DYN.CDRT.IN,Data sources : Department of Statistics Singapore
+SGP,SP.DYN.LE00.FE.IN,"Data sources : Department of Statistics Singapore, United Nations World Population Prospects"
+SGP,SP.DYN.LE00.IN,Derived using male and female life expectancy
+SGP,SP.DYN.LE00.MA.IN,"Data sources : Department of Statistics Singapore, United Nations World Population Prospects"
+SGP,SP.DYN.TFRT.IN,Data sources : Department of Statistics Singapore
+SGP,SP.POP.TOTL,Data sources : Department of Statistics Singapore
+SLB,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+SLB,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+SLB,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+SLB,SP.DYN.LE00.IN,Derived using male and female life expectancy
+SLB,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+SLB,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+SLB,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+SLE,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+SLE,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+SLE,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+SLE,SP.DYN.LE00.IN,Derived using male and female life expectancy
+SLE,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+SLE,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+SLE,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+SLV,SG.NOD.CONS,There is no nondiscrimination provision.
+SLV,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+SLV,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+SLV,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+SLV,SP.DYN.LE00.IN,Derived using male and female life expectancy
+SLV,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+SLV,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+SLV,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+SMR,NY.GNP.PCAP.PP.CD,Estimates are based on regression.
+SMR,SP.DYN.CBRT.IN,Data sources : Eurostat
+SMR,SP.DYN.CDRT.IN,Data sources : Eurostat
+SMR,SP.DYN.LE00.FE.IN,Data sources : Eurostat
+SMR,SP.DYN.LE00.IN,Derived using male and female life expectancy
+SMR,SP.DYN.LE00.MA.IN,Data sources : Eurostat
+SMR,SP.DYN.TFRT.IN,Data sources : Eurostat
+SMR,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+SOM,NY.GNP.PCAP.PP.CD,Estimates are based on regression.
+SOM,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+SOM,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+SOM,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+SOM,SP.DYN.LE00.IN,Derived using male and female life expectancy
+SOM,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+SOM,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+SOM,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+SRB,SG.POP.MIGR.FE.ZS,Includes Kosovo. The estimates for 1990 and 2000 refer to Serbia and Montenegro.
+SRB,SH.XPD.PCAP.PP.KD," The estimates do not include the expenditures of the provinces of Kosovo and Metohia, which are under the administration of the United Nations. After the declaration of independence on 03 June 2006, Serbia and Montenegro are now separate states. Health expenditures for the previous years have been estimated separately for each of the two countries.  "
+SRB,SH.XPD.PUBL.ZS," The estimates do not include the expenditures of the provinces of Kosovo and Metohia, which are under the administration of the United Nations. After the declaration of independence on 03 June 2006, Serbia and Montenegro are now separate states. Health expenditures for the previous years have been estimated separately for each of the two countries.  "
+SRB,SP.ADO.TFRT,Including Kosovo.
+SRB,SP.DYN.CBRT.IN,Data sources : Eurostat
+SRB,SP.DYN.CDRT.IN,Data sources : Eurostat
+SRB,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, Council of Europe, INED"
+SRB,SP.DYN.LE00.IN,Derived using male and female life expectancy
+SRB,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, Council of Europe, INED"
+SRB,SP.DYN.TFRT.IN,"Data sources : Eurostat, Council of Europe, INED"
+SRB,SP.POP.0014.FE.IN,Derived using ratio of age group from WPP and World Bank population.
+SRB,SP.POP.0014.TO.ZS,Including Kosovo.
+SRB,SP.POP.1564.FE.IN,Derived using ratio of age group from WPP and World Bank population.
+SRB,SP.POP.1564.MA.IN,Derived using ratio of age group from WPP and World Bank population.
+SRB,SP.POP.1564.TO,Derived using ratio of age group from WPP and World Bank population.
+SRB,SP.POP.1564.TO.ZS,Including Kosovo.
+SRB,SP.POP.65UP.FE.IN,Derived using ratio of age group from WPP and World Bank population.
+SRB,SP.POP.65UP.TO.ZS,Including Kosovo.
+SRB,SP.POP.AG00.FE.IN,Including Kosovo.
+SRB,SP.POP.AG00.MA.IN,Including Kosovo.
+SRB,SP.POP.AG01.FE.IN,Including Kosovo.
+SRB,SP.POP.AG01.MA.IN,Including Kosovo.
+SRB,SP.POP.AG02.FE.IN,Including Kosovo.
+SRB,SP.POP.AG02.MA.IN,Including Kosovo.
+SRB,SP.POP.AG03.FE.IN,Including Kosovo.
+SRB,SP.POP.AG03.MA.IN,Including Kosovo.
+SRB,SP.POP.AG04.FE.IN,Including Kosovo.
+SRB,SP.POP.AG04.MA.IN,Including Kosovo.
+SRB,SP.POP.AG05.FE.IN,Including Kosovo.
+SRB,SP.POP.AG05.MA.IN,Including Kosovo.
+SRB,SP.POP.BRTH.MF,Including Kosovo.
+SRB,SP.POP.DPND,Including Kosovo.
+SRB,SP.POP.TOTL,"Data sources : Statistical Office of the Republic of Serbia, Eurostat, TransMONEE, Council of Europe. Note : Excluding Kosovo."
+SRB,SP.POP.TOTL.FE.ZS,Excluding Kosovo.
+SSD,NY.GNP.PCAP.PP.CD,Estimates are based on regression.
+SSD,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+SSD,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+SSD,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+SSD,SP.DYN.LE00.IN,Derived using male and female life expectancy
+SSD,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+SSD,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+SSD,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+STP,SG.NOD.CONS,There is no nondiscrimination provision.
+STP,SG.OBT.IDCD.MR,There is no national identity card.
+STP,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+STP,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+STP,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+STP,SP.DYN.LE00.IN,Derived using male and female life expectancy
+STP,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+STP,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+STP,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+SUR,SG.MMR.LEVE.EP,No paid or unpaid maternity leave is available.
+SUR,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+SUR,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+SUR,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+SUR,SP.DYN.LE00.IN,Derived using male and female life expectancy
+SUR,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+SUR,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+SUR,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+SVK,SP.DYN.CBRT.IN,Data sources : Eurostat
+SVK,SP.DYN.CDRT.IN,Data sources : Eurostat
+SVK,SP.DYN.LE00.FE.IN,"Data sources : Eurostat, United Nations World Population Prospects, Council of Europe"
+SVK,SP.DYN.LE00.IN,Derived using male and female life expectancy
+SVK,SP.DYN.LE00.MA.IN,"Data sources : Eurostat, United Nations World Population Prospects, Council of Europe"
+SVK,SP.DYN.TFRT.IN,Data sources : Eurostat
+SVK,SP.POP.TOTL,Data sources : Eurostat
+SVN,SG.NOD.CONS,There is no nondiscrimination provision.
+SVN,SP.DYN.CBRT.IN,Data sources : Eurostat
+SVN,SP.DYN.CDRT.IN,Data sources : Eurostat
+SVN,SP.DYN.LE00.FE.IN,Data sources : Eurostat
+SVN,SP.DYN.LE00.IN,Derived using male and female life expectancy
+SVN,SP.DYN.LE00.MA.IN,Data sources : Eurostat
+SVN,SP.DYN.TFRT.IN,"Data sources : Eurostat, United Nations World Population Prospects"
+SVN,SP.POP.TOTL,Data sources : Eurostat
+SWE,SG.NOD.CONS,There is no nondiscrimination provision.
+SWE,SH.MMR.LEVE,Paid parental leave is available
+SWE,SH.MMR.WAGE.ZS,Paid parental leave is available
+SWE,SP.DYN.CBRT.IN,Data sources : Eurostat
+SWE,SP.DYN.CDRT.IN,Data sources : Eurostat
+SWE,SP.DYN.LE00.FE.IN,"Data sources : Eurostat; Statistics Sweden; INED; Human Mortality Database by University of California, Berkeley, and Max Planck Institute for Demographic Research"
+SWE,SP.DYN.LE00.IN,Derived using male and female life expectancy
+SWE,SP.DYN.LE00.MA.IN,"Data sources : Eurostat; Statistics Sweden; INED; Human Mortality Database by University of California, Berkeley, and Max Planck Institute for Demographic Research"
+SWE,SP.DYN.TFRT.IN,"Data sources : Eurostat, Statistics Sweden"
+SWE,SP.POP.TOTL,Data sources : Eurostat
+SWZ,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+SWZ,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+SWZ,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+SWZ,SP.DYN.LE00.IN,Derived using male and female life expectancy
+SWZ,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+SWZ,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+SWZ,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+SXM,SP.DYN.CBRT.IN,"Data sources : Department of Statistics, St. Maarten; United Nations Population and Vital Statistics Report"
+SXM,SP.DYN.CDRT.IN,"Data sources : Department of Statistics, St. Maarten; United Nations Population and Vital Statistics Report"
+SXM,SP.DYN.LE00.FE.IN,"Data sources : Department of Statistics, St. Maarten; Central bureau of Statistics Netherlands Antilles"
+SXM,SP.DYN.LE00.IN,Derived using male and female life expectancy
+SXM,SP.DYN.LE00.MA.IN,"Data sources : Department of Statistics, St. Maarten; Central bureau of Statistics Netherlands Antilles"
+SXM,SP.DYN.TFRT.IN,"Data sources : Department of Statistics, St. Maarten; Central bureau of Statistics Netherlands Antilles"
+SXM,SP.POP.TOTL,"Data sources : Department of Statistics, St. Maarten; US census bureau"
+SYC,SP.DYN.CBRT.IN,Data sources : National Bureau of Statistics
+SYC,SP.DYN.CDRT.IN,Data sources : National Bureau of Statistics
+SYC,SP.DYN.LE00.FE.IN,Data sources : National Bureau of Statistics
+SYC,SP.DYN.LE00.IN,Derived using male and female life expectancy
+SYC,SP.DYN.LE00.MA.IN,Data sources : National Bureau of Statistics
+SYC,SP.DYN.TFRT.IN,Data sources : National Bureau of Statistics
+SYC,SP.POP.TOTL,Data sources : National Bureau of Statistics
+SYR,NY.GNP.PCAP.PP.CD,Estimates are based on regression.
+SYR,SH.XPD.PCAP.PP.KD, The exchange rate used for the Syrian Arab Republic is the rate for non-commercial transactions from the Central Bank of Syria.
+SYR,SH.XPD.PUBL.ZS, The exchange rate used for the Syrian Arab Republic is the rate for non-commercial transactions from the Central Bank of Syria.
+SYR,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+SYR,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+SYR,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+SYR,SP.DYN.LE00.IN,Derived using male and female life expectancy
+SYR,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+SYR,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+SYR,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+TCA,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+TCD,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+TCD,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+TCD,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+TCD,SP.DYN.LE00.IN,Derived using male and female life expectancy
+TCD,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+TCD,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+TCD,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+TGO,SG.NOD.CONS,There is no nondiscrimination provision.
+TGO,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+TGO,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+TGO,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+TGO,SP.DYN.LE00.IN,Derived using male and female life expectancy
+TGO,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+TGO,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+TGO,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+THA,SG.NOD.CONS,There is no nondiscrimination provision.
+THA,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+THA,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+THA,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+THA,SP.DYN.LE00.IN,Derived using male and female life expectancy
+THA,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+THA,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+THA,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+TJK,SG.NOD.CONS,There is no nondiscrimination provision.
+TJK,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+TJK,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+TJK,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+TJK,SP.DYN.LE00.IN,Derived using male and female life expectancy
+TJK,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+TJK,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+TJK,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+TKM,NY.GNP.PCAP.PP.CD,Estimates are based on regression.
+TKM,SH.XPD.PCAP.PP.KD,Some estimates should be viewed with caution as these are derived from scarce data. On 01 January 2009 Turkmenistan introduced the new manat ISO code TMT. The exchange rate between the old and the new currency is 1 TMT = 5000 TMM. The entire health expenditure series has been adjusted.
+TKM,SH.XPD.PUBL.ZS,Some estimates should be viewed with caution as these are derived from scarce data. On 01 January 2009 Turkmenistan introduced the new manat ISO code TMT. The exchange rate between the old and the new currency is 1 TMT = 5000 TMM. The entire health expenditure series has been adjusted.
+TKM,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+TKM,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+TKM,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+TKM,SP.DYN.LE00.IN,Derived using male and female life expectancy
+TKM,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+TKM,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+TKM,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+TMP,NY.GNP.PCAP.PP.CD,Estimates are based on regression.
+TMP,SE.XPD.TOTL.GD.ZS,GDP does not include the income from petroleum.
+TMP,SG.GEN.PARL.ZS,"The purpose of elections held on 30 August 2001 was to elect members of the Constituent Assembly of Timor-Leste. This body became the National Parliament on 20 May 2002, the date on which the country became independent, without any new elections"
+TMP,SH.XPD.PCAP.PP.KD,Oil GDP (includes the income from petroleum) is being used for denominators. The country became independent in 2002. However NHA estimates have been produced for previous years based on the available macro data. Until 2007 the fiscal year ended in June. There was then a transition period in the second quarter of 2007 to make the fiscal year equal to the calendar year. Expenditure data have been allocated exceptionally to the previous calendar year (i.e. 2000 data covers the fiscal year 1999-2000).
+TMP,SH.XPD.PUBL.ZS,Oil GDP (includes the income from petroleum) is being used for denominators. The country became independent in 2002. However NHA estimates have been produced for previous years based on the available macro data. Until 2007 the fiscal year ended in June. There was then a transition period in the second quarter of 2007 to make the fiscal year equal to the calendar year. Expenditure data have been allocated exceptionally to the previous calendar year (i.e. 2000 data covers the fiscal year 1999-2000).
+TMP,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+TMP,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+TMP,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+TMP,SP.DYN.LE00.IN,Derived using male and female life expectancy
+TMP,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+TMP,SP.DYN.TFRT.IN,"Data sources : United Nations World Population Prospects, DHS 2009"
+TMP,SP.POP.TOTL,"Data sources : National Statistics Directorate, United Nations World Population Prospects"
+TON,SG.GEN.PARL.ZS,"No women were elected in 2008, however one woman was appointed to the Cabinet. As cabinet ministers also sit in parliament, there is one woman out of a total of 32 members."
+TON,SG.MMR.LEVE.EP,No paid or unpaid maternity leave is available.
+TON,SG.NOD.CONS,There is no nondiscrimination provision.
+TON,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+TON,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+TON,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+TON,SP.DYN.LE00.IN,Derived using male and female life expectancy
+TON,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+TON,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+TON,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+TTO,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+TTO,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+TTO,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+TTO,SP.DYN.LE00.IN,Derived using male and female life expectancy
+TTO,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+TTO,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+TTO,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+TUN,SP.DYN.CBRT.IN,"Data sources : National Bureau of Statistics, United Nations World Population Prospects"
+TUN,SP.DYN.CDRT.IN,"Data sources : National Bureau of Statistics, United Nations World Population Prospects"
+TUN,SP.DYN.LE00.FE.IN,"Data sources : National Bureau of Statistics, United Nations World Population Prospects"
+TUN,SP.DYN.LE00.IN,Derived using male and female life expectancy
+TUN,SP.DYN.LE00.MA.IN,"Data sources : National Bureau of Statistics, United Nations World Population Prospects"
+TUN,SP.DYN.TFRT.IN,"Data sources : National Bureau of Statistics, United Nations World Population Prospects"
+TUN,SP.POP.TOTL,"Data sources : National Bureau of Statistics, 1994 Census"
+TUR,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+TUR,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+TUR,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+TUR,SP.DYN.LE00.IN,Derived using male and female life expectancy
+TUR,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+TUR,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+TUR,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+TUV,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+TZA,NY.GDP.PCAP.CD,Covers mainland Tanzania only.
+TZA,NY.GNP.PCAP.CD,Covers mainland Tanzania only.
+TZA,NY.GNP.PCAP.PP.CD,Covers mainland Tanzania only.
+TZA,SG.OBT.IDCD.MR,There is no national identity card.
+TZA,SG.POP.MIGR.FE.ZS,Includes Zanzibar.
+TZA,SP.ADO.TFRT,Including Zanzibar.
+TZA,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+TZA,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+TZA,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+TZA,SP.DYN.LE00.IN,Derived using male and female life expectancy
+TZA,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+TZA,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+TZA,SP.POP.0014.TO.ZS,Including Zanzibar.
+TZA,SP.POP.1564.TO.ZS,Including Zanzibar.
+TZA,SP.POP.65UP.TO.ZS,Including Zanzibar.
+TZA,SP.POP.AG00.FE.IN,Including Zanzibar.
+TZA,SP.POP.AG00.MA.IN,Including Zanzibar.
+TZA,SP.POP.AG01.FE.IN,Including Zanzibar.
+TZA,SP.POP.AG01.MA.IN,Including Zanzibar.
+TZA,SP.POP.AG02.FE.IN,Including Zanzibar.
+TZA,SP.POP.AG02.MA.IN,Including Zanzibar.
+TZA,SP.POP.AG03.FE.IN,Including Zanzibar.
+TZA,SP.POP.AG03.MA.IN,Including Zanzibar.
+TZA,SP.POP.AG04.FE.IN,Including Zanzibar.
+TZA,SP.POP.AG04.MA.IN,Including Zanzibar.
+TZA,SP.POP.AG05.FE.IN,Including Zanzibar.
+TZA,SP.POP.AG05.MA.IN,Including Zanzibar.
+TZA,SP.POP.BRTH.MF,Including Zanzibar.
+TZA,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+TZA,SP.POP.TOTL.FE.ZS,Including Zanzibar.
+UGA,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+UGA,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+UGA,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+UGA,SP.DYN.LE00.IN,Derived using male and female life expectancy
+UGA,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+UGA,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+UGA,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+UKR,SG.NOD.CONS,There is no nondiscrimination provision.
+UKR,SP.DYN.CBRT.IN,"Data sources : State Statistics Committee of Ukraine, United Nations World Population Prospects"
+UKR,SP.DYN.CDRT.IN,"Data sources : State Statistics Committee of Ukraine, United Nations World Population Prospects"
+UKR,SP.DYN.LE00.FE.IN,"Data sources : State Statistics Committee of Ukraine, United Nations World Population Prospects"
+UKR,SP.DYN.LE00.IN,Derived using male and female life expectancy
+UKR,SP.DYN.LE00.MA.IN,"Data sources : State Statistics Committee of Ukraine, United Nations World Population Prospects"
+UKR,SP.DYN.TFRT.IN,Data sources : State Statistics Committee of Ukraine
+UKR,SP.POP.TOTL,"Data sources : State Statistics Committee of Ukraine, United Nations World Population Prospects, Council of Europe, United Nations Population and Vital Statistics Report"
+URY,SG.NOD.CONS,There is no nondiscrimination provision.
+URY,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+URY,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+URY,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+URY,SP.DYN.LE00.IN,Derived using male and female life expectancy
+URY,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+URY,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+URY,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+USA,SG.GEN.PARL.ZS,The total refers to all voting members of the House.
+USA,SG.MMR.LEVE.EP,No paid or unpaid maternity leave is available.
+USA,SG.NOD.CONS,There is no nondiscrimination provision.
+USA,SG.OBT.IDCD.MR,There is no national identity card.
+USA,SH.MMR.LEVE,Unpaid parental leave is available.
+USA,SH.MMR.WAGE.ZS,Unpaid parental leave is available.
+USA,SP.DYN.CBRT.IN,"Data sources : National Center for Health Statistics, U.S. Census Bureau"
+USA,SP.DYN.CDRT.IN,"Data sources : National Center for Health Statistics, U.S. Census Bureau"
+USA,SP.DYN.LE00.FE.IN,Data sources : National Center for Health Statistics
+USA,SP.DYN.LE00.IN,Derived using male and female life expectancy
+USA,SP.DYN.LE00.MA.IN,Data sources : National Center for Health Statistics
+USA,SP.DYN.TFRT.IN,Data sources : National Center for Health Statistics
+USA,SP.POP.TOTL,Data sources : U.S. Census Bureau
+UZB,NY.GNP.PCAP.PP.CD,Estimates are based on regression.
+UZB,SG.OBT.IDCD.MR,There is no national identity card.
+UZB,SP.DYN.CBRT.IN,"Data sources : TransMONEE, United Nations World Population Prospects"
+UZB,SP.DYN.CDRT.IN,"Data sources : TransMONEE, United Nations World Population Prospects"
+UZB,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+UZB,SP.DYN.LE00.IN,Derived using male and female life expectancy
+UZB,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+UZB,SP.DYN.TFRT.IN,"Data sources : TransMONEE, United Nations World Population Prospects"
+UZB,SP.POP.TOTL,"Data sources : Ministry of Statistics, United Nations World Population Prospects"
+VCT,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+VCT,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+VCT,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+VCT,SP.DYN.LE00.IN,Derived using male and female life expectancy
+VCT,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+VCT,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+VCT,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+VEN,NY.GNP.PCAP.CD,Based on official exchange rates.
+VEN,SG.GEN.PARL.ZS,"On 25 August 1999, the Constituent Assembly elected on 25 July adopted a dercree putting the bicameral Congress on indefinite recess"
+VEN,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+VEN,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+VEN,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+VEN,SP.DYN.LE00.IN,Derived using male and female life expectancy
+VEN,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+VEN,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+VEN,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+VGB,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+VIR,SP.DYN.CBRT.IN,Data sources : U.S. Census Bureau
+VIR,SP.DYN.CDRT.IN,Data sources : U.S. Census Bureau
+VIR,SP.DYN.LE00.FE.IN,"Data sources : U.S. Census Bureau, United Nations World Population Prospects"
+VIR,SP.DYN.LE00.IN,Derived using male and female life expectancy
+VIR,SP.DYN.LE00.MA.IN,"Data sources : U.S. Census Bureau, United Nations World Population Prospects"
+VIR,SP.DYN.TFRT.IN,"Data sources : U.S. Census Bureau, United Nations World Population Prospects"
+VIR,SP.POP.TOTL,"Data sources : U.S. Census Bureau, United Nations Population and Vital Statistics Report"
+VNM,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+VNM,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+VNM,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+VNM,SP.DYN.LE00.IN,Derived using male and female life expectancy
+VNM,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+VNM,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+VNM,SP.POP.TOTL,Data sources : General Statistics Office of Vietnam
+VUT,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+VUT,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+VUT,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+VUT,SP.DYN.LE00.IN,Derived using male and female life expectancy
+VUT,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+VUT,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+VUT,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+WBG,SG.POP.MIGR.FE.ZS,Includes East Jerusalem. Refugees are not part of the foreign-born migrant stock in the State of Palestine.
+WBG,SP.ADO.TFRT,Including East Jerusalem.
+WBG,SP.DYN.CBRT.IN,"Data sources and note : Palestinian Central Bureau of Statistics, United Nations World Population Prospects (for State of Palestine)"
+WBG,SP.DYN.CDRT.IN,"Data sources and note : Palestinian Central Bureau of Statistics, United Nations World Population Prospects (for State of Palestine)"
+WBG,SP.DYN.LE00.FE.IN,Data sources and note : United Nations World Population Prospects (for State of Palestine)
+WBG,SP.DYN.LE00.IN,Derived using male and female life expectancy
+WBG,SP.DYN.LE00.MA.IN,Data sources and note : United Nations World Population Prospects (for State of Palestine)
+WBG,SP.DYN.TFRT.IN,Data sources and note : United Nations World Population Prospects (for State of Palestine)
+WBG,SP.POP.0014.TO.ZS,Excluding East Jerusalem.
+WBG,SP.POP.1564.TO.ZS,Excluding East Jerusalem.
+WBG,SP.POP.65UP.TO.ZS,Excluding East Jerusalem.
+WBG,SP.POP.AG00.FE.IN,Including East Jerusalem.
+WBG,SP.POP.AG00.MA.IN,Including East Jerusalem.
+WBG,SP.POP.AG01.FE.IN,Including East Jerusalem.
+WBG,SP.POP.AG01.MA.IN,Including East Jerusalem.
+WBG,SP.POP.AG02.FE.IN,Including East Jerusalem.
+WBG,SP.POP.AG02.MA.IN,Including East Jerusalem.
+WBG,SP.POP.AG03.FE.IN,Including East Jerusalem.
+WBG,SP.POP.AG03.MA.IN,Including East Jerusalem.
+WBG,SP.POP.AG04.FE.IN,Including East Jerusalem.
+WBG,SP.POP.AG04.MA.IN,Including East Jerusalem.
+WBG,SP.POP.AG05.FE.IN,Including East Jerusalem.
+WBG,SP.POP.AG05.MA.IN,Including East Jerusalem.
+WBG,SP.POP.BRTH.MF,Including East Jerusalem.
+WBG,SP.POP.TOTL,"Data sources : World Bank estimates based on data from Palestinian Central Bureau of Statistics, excluding E. Jerusalem."
+WBG,SP.POP.TOTL.FE.ZS,Excluding East Jerusalem.
+WSM,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+WSM,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+WSM,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+WSM,SP.DYN.LE00.IN,Derived using male and female life expectancy
+WSM,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+WSM,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+WSM,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+YEM,SG.NOD.CONS,There is no nondiscrimination provision.
+YEM,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+YEM,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+YEM,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+YEM,SP.DYN.LE00.IN,Derived using male and female life expectancy
+YEM,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+YEM,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+YEM,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+ZAF,SG.GEN.PARL.ZS,"The figures for 1999-2016 on the distribution of seats do not include the 36 special rotating delegates appointed on an ad hoc basis, and all percentages given are therefore calculated on the basis of the 54 permanent seats."
+ZAF,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+ZAF,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+ZAF,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+ZAF,SP.DYN.LE00.IN,Derived using male and female life expectancy
+ZAF,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+ZAF,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+ZAF,SP.POP.TOTL,"Data sources : Statistics South Africa, 1996 Census"
+ZAR,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+ZAR,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+ZAR,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+ZAR,SP.DYN.LE00.IN,Derived using male and female life expectancy
+ZAR,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+ZAR,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+ZAR,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+ZMB,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+ZMB,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+ZMB,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+ZMB,SP.DYN.LE00.IN,Derived using male and female life expectancy
+ZMB,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+ZMB,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+ZMB,SP.POP.TOTL,Data sources : United Nations World Population Prospects
+ZWE,SH.XPD.PCAP.PP.KD,Health expenditures are difficult to interpret as a series beyond 2001  because of hyperinflation and its implications on the exchange rate. 
+ZWE,SH.XPD.PUBL.ZS,Health expenditures are difficult to interpret as a series beyond 2001  because of hyperinflation and its implications on the exchange rate. 
+ZWE,SP.DYN.CBRT.IN,Data sources : United Nations World Population Prospects
+ZWE,SP.DYN.CDRT.IN,Data sources : United Nations World Population Prospects
+ZWE,SP.DYN.LE00.FE.IN,Data sources : United Nations World Population Prospects
+ZWE,SP.DYN.LE00.IN,Derived using male and female life expectancy
+ZWE,SP.DYN.LE00.MA.IN,Data sources : United Nations World Population Prospects
+ZWE,SP.DYN.TFRT.IN,Data sources : United Nations World Population Prospects
+ZWE,SP.POP.TOTL,Data sources : United Nations World Population Prospects
