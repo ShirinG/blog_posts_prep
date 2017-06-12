@@ -1,0 +1,1429 @@
+---
+title: "GoT"
+author: "Dr. Shirin Glander"
+date: "May 3, 2017"
+output: html_document
+---
+
+```{r warning=FALSE, message=FALSE}
+library(tidyverse)
+library(ggthemes)
+```
+
+https://www.kaggle.com/mylesoneill/game-of-thrones
+
+https://cran.r-project.org/web/packages/circlize/vignettes/circlize.pdf
+
+```{r}
+battles <- read.csv("battles.csv")
+```
+
+```{r}
+deaths <- read.csv("character-deaths.csv")
+```
+
+```{r}
+predictions <- read.csv("character-predictions.csv")
+predictions[predictions == ""] <- NA
+predictions$name <- as.character(predictions$name)
+predictions$house <- as.character(predictions$house)
+predictions$mother <- as.character(predictions$mother)
+predictions$father <- as.character(predictions$father)
+predictions$spouse <- as.character(predictions$spouse)
+
+predictions$house <- ifelse(is.na(predictions$house) & grepl("Targaryen", predictions$name), "House Targaryen", predictions$house)
+predictions$house <- ifelse(is.na(predictions$house) & grepl("Stark", predictions$name), "House Stark", predictions$house)
+
+predictions$name <- gsub("[[:punct:]]", "", predictions$name)
+```
+
+```{r}
+child_of <- data.frame(name = predictions$name[grepl("son of | daughter of", predictions$name)],
+                     stringsAsFactors = FALSE)
+child_of$child_of <- ifelse(grepl("daughter", child_of$name), paste(gsub("(.* daughter of )(.*)", "\\2", child_of$name), 
+  gsub("(.* )(.*)( daughter of.*)", "\\2", child_of$name)), paste(gsub("(.* son of )(.*)", "\\2", child_of$name), 
+  gsub("(.* )(.*)( son of.*)", "\\2", child_of$name)))
+
+child_of[child_of$name == "Ulf son of Umar", "child_of"] <- "Umar"
+```
+
+```{r}
+predictions <- left_join(predictions, child_of, by = "name")
+
+predictions[predictions$name == "Arya Stark", "mother"] <- "Catelyn Stark"
+predictions[predictions$name == "Arya Stark", "father"] <- "Eddard Stark"
+
+predictions[predictions$name == "Bran Stark", "mother"] <- "Catelyn Stark"
+predictions[predictions$name == "Bran Stark", "father"] <- "Eddard Stark"
+
+predictions[predictions$name == "Sansa Stark", "mother"] <- "Catelyn Stark"
+predictions[predictions$name == "Sansa Stark", "father"] <- "Eddard Stark"
+
+predictions[predictions$name == "Rickon Stark", "mother"] <- "Catelyn Stark"
+predictions[predictions$name == "Rickon Stark", "father"] <- "Eddard Stark"
+
+predictions[predictions$name == "Jon Snow", "mother"] <- "Lyanna Stark"
+predictions[predictions$name == "Jon Snow", "father"] <- "Eddard Stark"
+predictions[predictions$name == "Jon Snow", "child_of"] <- "Rhaegar Targaryen"
+
+predictions[predictions$name == "Theon Greyjoy", "mother"] <- "Alannys Harlaw"
+predictions[predictions$name == "Theon Greyjoy", "father"] <- "Balon Greyjoy"
+
+predictions[predictions$name == "Asha Greyjoy", "mother"] <- "Alannys Harlaw"
+predictions[predictions$name == "Asha Greyjoy", "father"] <- "Balon Greyjoy"
+
+predictions[predictions$name == "Tommen Baratheon", "house"] <- "House Baratheon/Lannister"
+predictions[predictions$name == "Balon Greyjoy", "house"] <- "House Greyjoy"
+
+predictions[predictions$name == "Balon Greyjoy", "mother"] <- "Lady of House Sunderly"
+
+predictions[predictions$name == "Victarion Greyjoy", "mother"] <- "Lady of House Sunderly"
+predictions[predictions$name == "Victarion Greyjoy", "father"] <- "Quellon Greyjoy"
+
+predictions[predictions$name == "Ramsay Snow", "father"] <- "Roose Bolton"
+
+predictions[predictions$name == "Myrcella Baratheon", "mother"] <- "Cersei Lannister"
+predictions[predictions$name == "Myrcella Baratheon", "father"] <- "Robert Baratheon"
+
+predictions[predictions$name == "Shireen Baratheon", "mother"] <- "Selyse Florent"
+predictions[predictions$name == "Shireen Baratheon", "father"] <- "Stannis Baratheon"
+
+predictions[predictions$name == "Renly Baratheon", "mother"] <- "Cassana Baratheon"
+predictions[predictions$name == "Renly Baratheon", "father"] <- "Steffon Baratheon"
+
+predictions[predictions$name == "Stannis Baratheon", "mother"] <- "Cassana Baratheon"
+
+add <- predictions[1, ]
+add[1, ] <- NA
+add$name <- "Robert Baratheon"
+add$mother <- "Cassana Baratheon"
+add$father <- "Steffon Baratheon"
+add$spouse <- "Cersei Lannister"
+predictions <- rbind(predictions, add)
+
+predictions[predictions$name == "Catelyn Stark", "mother"] <- "Minisa Whent"
+predictions[predictions$name == "Catelyn Stark", "father"] <- "Hoster Tully"
+
+predictions[predictions$name == "Edmure Tully", "mother"] <- "Minisa Whent"
+predictions[predictions$name == "Edmure Tully", "father"] <- "Hoster Tully"
+
+predictions[predictions$name == "Lysa Arryn", "mother"] <- "Minisa Whent"
+predictions[predictions$name == "Lysa Arryn", "father"] <- "Hoster Tully"
+
+predictions[predictions$name == "Robert Arryn", "mother"] <- "Lysa Arryn"
+predictions[predictions$name == "Robert Arryn", "father"] <- "Jon Arryn"
+
+predictions[predictions$name == "Lyanna Stark", "father"] <- "Rickard Stark"
+predictions[predictions$name == "Eddard Stark", "father"] <- "Rickard Stark"
+predictions[predictions$name == "Brandon Stark", "father"] <- "Rickard Stark"
+predictions[predictions$name == "Benjen Stark", "father"] <- "Rickard Stark"
+
+predictions[predictions$name == "Rickard Stark", "mother"] <- "Marna Locke"
+predictions[predictions$name == "Rickard Stark", "father"] <- "Edwyle Stark"
+
+predictions[predictions$name == "Willam Stark", "mother"] <- "Lorra Royce"
+predictions[predictions$name == "Willam Stark", "father"] <- "Beron Stark"
+
+predictions[predictions$name == "Rodrik Stark son of Beron", "mother"] <- "Lorra Royce"
+predictions[predictions$name == "Rodrik Stark son of Beron", "father"] <- "Beron Stark"
+predictions[predictions$name == "Rodrik Stark son of Beron", "child_of"] <- NA
+
+add <- predictions[1, ]
+add[1, ] <- NA
+add$name <- "Lyarra Stark"
+add$mother <- "Arya Flint"
+add$father <- "Rodrik Stark"
+add$spouse <- "Rickard Stark"
+predictions <- rbind(predictions, add)
+
+predictions[predictions$name == "Artos Stark", "mother"] <- "Lorra Royce"
+predictions[predictions$name == "Artos Stark", "father"] <- "Beron Stark"
+
+predictions[predictions$name == "Rodwell Stark", "mother"] <- "Alys Karstark"
+predictions[predictions$name == "Rodwell Stark", "father"] <- "Brandon Stark son of Cregan"
+
+predictions[predictions$name == "Beron Stark", "mother"] <- "Alys Karstark"
+predictions[predictions$name == "Beron Stark", "father"] <- "Brandon Stark son of Cregan"
+
+predictions[predictions$name == "Brandon Stark son of Cregan", "mother"] <- "Lynara Stark"
+predictions[predictions$name == "Brandon Stark son of Cregan", "father"] <- "Cregan Stark"
+
+predictions[predictions$name == "Cregan Stark", "mother"] <- "Gilliane Glover"
+predictions[predictions$name == "Cregan Stark", "father"] <- "Rickon Stark son of Benjen"
+
+predictions[predictions$name == "Cersei Lannister", "mother"] <- "Joanna Lannister"
+predictions[predictions$name == "Cersei Lannister", "father"] <- "Tywin Lannister"
+
+predictions[predictions$name == "Jaime Lannister", "mother"] <- "Joanna Lannister"
+predictions[predictions$name == "Jaime Lannister", "father"] <- "Tywin Lannister"
+
+predictions[predictions$name == "Tyrion Lannister", "mother"] <- "Joanna Lannister"
+predictions[predictions$name == "Tyrion Lannister", "father"] <- "Tywin Lannister"
+
+predictions[predictions$name == "Joffrey Baratheon", "child_of"] <- "Jaime Lannister"
+predictions[predictions$name == "Myrcella Baratheon", "child_of"] <- "Jaime Lannister"
+predictions[predictions$name == "Tommen Baratheon", "child_of"] <- "Jaime Lannister"
+
+predictions[predictions$name == "Jonnel Stark", "father"] <- "Cregan Stark"
+predictions[predictions$name == "Jonnel Stark", "mother"] <- "Lynara Stark"
+
+predictions[predictions$name == "Brendan Stark son of Cregan", "father"] <- "Cregan Stark"
+predictions[predictions$name == "Brendan Stark son of Cregan", "child_of"] <- NA
+
+predictions[predictions$name == "Eddard Stark", "mother"] <- "Lyarra Stark"
+predictions[predictions$name == "Benjen Stark", "mother"] <- "Lyarra Stark"
+predictions[predictions$name == "Brandon Stark", "mother"] <- "Lyarra Stark"
+predictions[predictions$name == "Lyanna Stark", "mother"] <- "Lyarra Stark"
+
+predictions[predictions$name == "Edwyle Stark", "mother"] <- "Melantha Blackwood"
+predictions[predictions$name == "Edwyle Stark", "father"] <- "Willam Stark"
+
+predictions[predictions$name == "Cerenna Lannister", "mother"] <- "Myranda Lefford"
+predictions[predictions$name == "Myrielle Lannister", "mother"] <- "Myranda Lefford"
+predictions[predictions$name == "Daven Lannister", "mother"] <- "Myranda Lefford"
+
+predictions[predictions$name == "Cerenna Lannister", "father"] <- "Stafford Lannister"
+predictions[predictions$name == "Myrielle Lannister", "father"] <- "Stafford Lannister"
+predictions[predictions$name == "Daven Lannister", "father"] <- "Stafford Lannister"
+
+predictions[predictions$name == "Joanna Lannister", "father"] <- "Jason Lannister"
+predictions[predictions$name == "Joanna Lannister", "mother"] <- "Marla Prester"
+
+predictions[predictions$name == "Stafford Lannister", "father"] <- "Jason Lannister"
+predictions[predictions$name == "Stafford Lannister", "mother"] <- "Marla Prester"
+
+predictions[predictions$name == "Tywin Lannister", "father"] <- "Tytos Lannister"
+predictions[predictions$name == "Kevan Lannister", "father"] <- "Tytos Lannister"
+predictions[predictions$name == "Genna Lannister", "father"] <- "Tytos Lannister"
+
+predictions[predictions$name == "Lancel Lannister", "father"] <- "Kevan Lannister"
+predictions[predictions$name == "Lancel Lannister", "mother"] <- "Dorna Swyft"
+
+predictions[predictions$name == "Willem Lannister", "father"] <- "Kevan Lannister"
+predictions[predictions$name == "Willem Lannister", "mother"] <- "Dorna Swyft"
+
+predictions[predictions$name == "Brandon Stark son of Cregan", "child_of"] <- NA
+
+predictions[predictions$name == "Lanna Lannister", "father"] <- "Damion Lannister"
+predictions[predictions$name == "Lanna Lannister", "mother"] <- "Shiera Crakehall"
+
+predictions[predictions$name == "Lucion Lannister", "father"] <- "Damion Lannister"
+predictions[predictions$name == "Lucion Lannister", "mother"] <- "Shiera Crakehall"
+
+predictions[predictions$name == "Damion Lannister", "father"] <- "Damon Lannister son of Jason"
+predictions[predictions$name == "Damion Lannister", "mother"] <- "Ella Lannister"
+
+predictions[predictions$name == "Damon Lannister son of Jason", "father"] <- "Jason Lannister"
+predictions[predictions$name == "Damon Lannister son of Jason", "child_of"] <- NA
+predictions[predictions$name == "Damon Lannister son of Jason", "mother"] <- "Alys Stackspear"
+
+predictions[predictions$name == "Jason Lannister", "father"] <- "Gerold Lannister"
+predictions[predictions$name == "Jason Lannister", "mother"] <- "Rohanne Webber"
+
+predictions[predictions$name == "Damon Lannister lord", "name"] <- "Damon Lannister"
+predictions[predictions$name == "Tybolt Lannister", "father"] <- "Damon Lannister"
+predictions[predictions$name == "Tybolt Lannister", "mother"] <- "Cerissa Brax"
+
+predictions[predictions$name == "Gerold Lannister", "father"] <- "Damon Lannister"
+predictions[predictions$name == "Gerold Lannister", "mother"] <- "Cerissa Brax"
+
+predictions[predictions$name == "Tygett Lannister", "father"] <- "Tytos Lannister"
+predictions[predictions$name == "Tygett Lannister", "mother"] <- "Jeyne Marbrand"
+predictions[predictions$name == "Tywin Lannister", "mother"] <- "Jeyne Marbrand"
+predictions[predictions$name == "Kevan Lannister", "mother"] <- "Jeyne Marbrand"
+predictions[predictions$name == "Genna Lannister", "mother"] <- "Jeyne Marbrand"
+
+predictions[predictions$name == "Gerion Lannister", "father"] <- "Tytos Lannister"
+predictions[predictions$name == "Gerion Lannister", "mother"] <- "Jeyne Marbrand"
+
+predictions[predictions$name == "Tyrek Lannister", "father"] <- "Tygett Lannister"
+predictions[predictions$name == "Tyrek Lannister", "mother"] <- "Darlessa Marbrand"
+
+predictions[predictions$name == "Steffon Baratheon", "father"] <- "Ormund Baratheon"
+predictions[predictions$name == "Steffon Baratheon", "mother"] <- "Rhaelle Targaryen"
+
+predictions[predictions$name == "Daenerys Targaryen", "father"] <- "Aerys II Targaryen"
+predictions[predictions$name == "Daenerys Targaryen", "mother"] <- "Rhaella Targaryen"
+
+predictions[predictions$name == "Viserys Targaryen", "father"] <- "Aerys II Targaryen"
+predictions[predictions$name == "Viserys Targaryen", "mother"] <- "Rhaella Targaryen"
+
+predictions[predictions$name == "Rhaegar Targaryen", "father"] <- "Aerys II Targaryen"
+predictions[predictions$name == "Rhaegar Targaryen", "mother"] <- "Rhaella Targaryen"
+
+predictions[predictions$name == "Rhaella Targaryen", "father"] <- "Jaehaerys II Targaryen"
+predictions[predictions$name == "Rhaella Targaryen", "mother"] <- "Shaera Targaryen"
+
+predictions[predictions$name == "Rhaenys Targaryen daughter of Rhaegar", "father"] <- "Rhaegar Targaryen"
+predictions[predictions$name == "Rhaenys Targaryen daughter of Rhaegar", "mother"] <- "Elia Martell"
+predictions[predictions$name == "Rhaenys Targaryen daughter of Rhaegar", "child_of"] <- NA
+
+predictions[predictions$name == "Aegon Targaryen daughter of Rhaegar", "father"] <- "Rhaegar Targaryen"
+predictions[predictions$name == "Aegon Targaryen daughter of Rhaegar", "mother"] <- "Elia Martell"
+predictions[predictions$name == "Aegon Targaryen daughter of Rhaegar", "child_of"] <- NA
+
+predictions[predictions$name == "Aegon IV Targaryen", "father"] <- "Aerys II Targaryen"
+predictions[predictions$name == "Aegon IV Targaryen", "mother"] <- "Rhaella Targaryen"
+
+add <- predictions[predictions$name == "Jaehaerys II Targaryen", ]
+add[, "name"] <- "Shaera Targaryen"
+predictions <- rbind(predictions, add)
+
+predictions[predictions$name == "Duncan Targaryen", "father"] <- "Aegon V Targaryen"
+predictions[predictions$name == "Duncan Targaryen", "mother"] <- "Betha Blackwood"
+
+predictions[predictions$name == "Rhaelle Targaryen", "father"] <- "Aegon V Targaryen"
+predictions[predictions$name == "Rhaelle Targaryen", "mother"] <- "Betha Blackwood"
+
+predictions[predictions$name == "Theodore Tyrell", "father"] <- "Luthor Tyrell son of Moryn"
+predictions[predictions$name == "Theodore Tyrell", "mother"] <- "Elyn Norridge"
+
+predictions[predictions$name == "Mace Tyrell", "father"] <- "Luthor Tyrell"
+predictions[predictions$name == "Mace Tyrell", "mother"] <- "Olenna Redwyne"
+
+predictions[predictions$name == "Luthor Tyrell", "father"] <- "Unknown father Tyrell"
+predictions[predictions$name == "Luthor Tyrell", "mother"] <- "Unknown mother Tyrell"
+
+predictions[predictions$name == "Moryn Tyrell", "father"] <- "Unknown father Tyrell"
+predictions[predictions$name == "Moryn Tyrell", "mother"] <- "Unknown mother Tyrell"
+
+predictions[predictions$name == "Luthor Tyrell son of Moryn", "father"] <- "Moryn Tyrell"
+predictions[predictions$name == "Luthor Tyrell son of Moryn", "child_of"] <- NA
+
+predictions[predictions$name == "Garlan Tyrell", "father"] <- "Mace Tyrell"
+predictions[predictions$name == "Garlan Tyrell", "mother"] <- "Alerie Hightower"
+
+predictions[predictions$name == "Willas Tyrell", "father"] <- "Mace Tyrell"
+predictions[predictions$name == "Willas Tyrell", "mother"] <- "Alerie Hightower"
+
+predictions[predictions$name == "Loras Tyrell", "father"] <- "Mace Tyrell"
+predictions[predictions$name == "Loras Tyrell", "mother"] <- "Alerie Hightower"
+
+predictions[predictions$name == "Margaery Tyrell", "father"] <- "Mace Tyrell"
+predictions[predictions$name == "Margaery Tyrell", "mother"] <- "Alerie Hightower"
+
+predictions[predictions$name == "Mina Tyrell", "father"] <- "Luthor Tyrell"
+predictions[predictions$name == "Mina Tyrell", "mother"] <- "Olenna Redwyne"
+
+predictions[predictions$name == "Hobber Redwyne", "mother"] <- "Mina Tyrell"
+predictions[predictions$name == "Hobber Redwyne", "father"] <- "Paxter Redwyne"
+
+predictions[predictions$name == "Horas Redwyne", "mother"] <- "Mina Tyrell"
+predictions[predictions$name == "Horas Redwyne", "father"] <- "Paxter Redwyne"
+
+predictions[predictions$name == "Olene Tyrell", "mother"] <- "Elyn Norridge"
+predictions[predictions$name == "Olene Tyrell", "father"] <- "Luthor Tyrell son of Moryn"
+
+predictions[predictions$name == "Medwick Tyrell", "mother"] <- "Elyn Norridge"
+predictions[predictions$name == "Medwick Tyrell", "father"] <- "Luthor Tyrell son of Moryn"
+
+predictions[predictions$name == "Elinor Tyrell", "mother"] <- "Lia Serry"
+predictions[predictions$name == "Elinor Tyrell", "father"] <- "Theodore Tyrell"
+
+predictions[predictions$name == "Luthor Tyrell son of Theodore", "mother"] <- "Lia Serry"
+predictions[predictions$name == "Luthor Tyrell son of Theodore", "father"] <- "Theodore Tyrell"
+predictions[predictions$name == "Luthor Tyrell son of Theodore", "child_of"] <- NA
+
+predictions[predictions$name == "Oberyn Martell", "mother"] <- "Princess of Dorne"
+predictions[predictions$name == "Doran Martell", "mother"] <- "Princess of Dorne"
+predictions[predictions$name == "Mors Martell brother of Doran", "mother"] <- "Princess of Dorne"
+predictions[predictions$name == "Elia Martell", "mother"] <- "Princess of Dorne"
+
+predictions[predictions$name == "Doran Martell", "house"] <- "House Martell"
+
+predictions[predictions$name == "Obara Sand", "father"] <- "Oberyn Martell"
+predictions[predictions$name == "Nymeria Sand", "father"] <- "Oberyn Martell"
+predictions[predictions$name == "Tyene Sand", "father"] <- "Oberyn Martell"
+predictions[predictions$name == "Sarella Sand", "father"] <- "Oberyn Martell"
+
+predictions[predictions$name == "Elia Sand", "father"] <- "Oberyn Martell"
+predictions[predictions$name == "Elia Sand", "mother"] <- "Ellaria Sand"
+
+predictions[predictions$name == "Obella Sand", "father"] <- "Oberyn Martell"
+predictions[predictions$name == "Obella Sand", "mother"] <- "Ellaria Sand"
+
+predictions[predictions$name == "Dorea Sand", "father"] <- "Oberyn Martell"
+predictions[predictions$name == "Obella Sand", "mother"] <- "Ellaria Sand"
+
+predictions[predictions$name == "Loreza Sand", "father"] <- "Oberyn Martell"
+predictions[predictions$name == "Loreza Sand", "mother"] <- "Ellaria Sand"
+
+predictions[predictions$name == "Aegon Targaryen son of Rhaegar", "father"] <- "Rhaegar Targaryen"
+predictions[predictions$name == "Aegon Targaryen son of Rhaegar", "mother"] <- "Elia Martell"
+predictions[predictions$name == "Aegon Targaryen son of Rhaegar", "child_of"] <- NA
+
+predictions[predictions$name == "Jon Arryn", "father"] <- "Jasper Arryn"
+predictions[predictions$name == "Alys Arryn", "father"] <- "Jasper Arryn"
+
+predictions[predictions$name == "Stevron Frey", "father"] <- "Walder Frey"
+predictions[predictions$name == "Stevron Frey", "mother"] <- "Perra Royce"
+
+predictions[predictions$name == "Emmon Frey", "father"] <- "Walder Frey"
+predictions[predictions$name == "Emmon Frey", "mother"] <- "Perra Royce"
+
+predictions[predictions$name == "Aenys Frey", "father"] <- "Walder Frey"
+predictions[predictions$name == "Aenys Frey", "mother"] <- "Perra Royce"
+
+predictions[predictions$name == "Ryman Frey", "father"] <- "Stevron Frey"
+predictions[predictions$name == "Ryman Arryn", "mother"] <- "Corenna Swan"
+
+predictions[predictions$name == "Edwyn Frey", "father"] <- "Ryman Frey"
+predictions[predictions$name == "Petyr Frey", "father"] <- "Ryman Frey"
+
+predictions[predictions$name == "Walda Frey", "father"] <- "Edwyn Frey"
+predictions[predictions$name == "Walda Frey", "mother"] <- "Janyce Hunter"
+
+predictions[predictions$name == "Perra Frey", "father"] <- "Petyr Frey"
+predictions[predictions$name == "Perra Frey", "mother"] <- "Mylenda Caron"
+
+predictions[predictions$name == "Maegelle Frey", "father"] <- "Stevron Frey"
+predictions[predictions$name == "Maegelle Frey", "mother"] <- "Jeyne Lydden"
+
+predictions[predictions$name == "Marianne Vance", "father"] <- "Dafyn Vance"
+predictions[predictions$name == "Marianne Vance", "mother"] <- "Maegelle Frey"
+
+predictions[predictions$name == "Walder Vance", "father"] <- "Dafyn Vance"
+predictions[predictions$name == "Walder Vance", "mother"] <- "Maegelle Frey"
+
+predictions[predictions$name == "Patrek Vance", "father"] <- "Dafyn Vance"
+predictions[predictions$name == "Patrek Vance", "mother"] <- "Maegelle Frey"
+
+predictions[predictions$name == "Walton Frey", "father"] <- "Stevron Frey"
+predictions[predictions$name == "Walton Frey", "mother"] <- "Marsella Weynwood"
+
+predictions[predictions$name == "Steffon Frey", "father"] <- "Walton Frey"
+predictions[predictions$name == "Steffon Frey", "mother"] <- "Deana Hardyng"
+
+predictions[predictions$name == "Bryan Frey", "father"] <- "Walton Frey"
+predictions[predictions$name == "Bryan Frey", "mother"] <- "Deana Hardyng"
+
+predictions[predictions$name == "Walda Frey daughter of Walton", "father"] <- "Walton Frey"
+predictions[predictions$name == "Walda Frey daughter of Walton", "mother"] <- "Deana Hardyng"
+
+predictions[predictions$name == "Harlon Greyjoy", "father"] <- "Quellon Greyjoy"
+predictions[predictions$name == "Harlon Greyjoy", "mother"] <- "Lady of House Stonetree"
+
+predictions[predictions$name == "Quenton Greyjoy", "father"] <- "Quellon Greyjoy"
+predictions[predictions$name == "Quenton Greyjoy", "mother"] <- "Lady of House Stonetree"
+
+predictions[predictions$name == "Donel Greyjoy", "father"] <- "Quellon Greyjoy"
+predictions[predictions$name == "Donel Greyjoy", "mother"] <- "Lady of House Stonetree"
+
+predictions[predictions$name == "Rodrik Greyjoy", "father"] <- "Balon Greyjoy"
+predictions[predictions$name == "Rodrik Greyjoy", "mother"] <- "Alannys Harlaw"
+
+predictions[predictions$name == "Maron Greyjoy", "father"] <- "Balon Greyjoy"
+predictions[predictions$name == "Maron Greyjoy", "mother"] <- "Alannys Harlaw"
+
+predictions[predictions$name == "Urrigon Greyjoy", "father"] <- "Quellon Greyjoy"
+predictions[predictions$name == "Urrigon Greyjoy", "mother"] <- "Lady of House Sunderly"
+
+predictions[predictions$name == "Aeron Greyjoy", "father"] <- "Quellon Greyjoy"
+predictions[predictions$name == "Aeron Greyjoy", "mother"] <- "Lady of House Sunderly"
+
+predictions[predictions$name == "Robin Greyjoy", "father"] <- "Quellon Greyjoy"
+predictions[predictions$name == "Robin Greyjoy", "mother"] <- "Lady of House Piper"
+
+predictions[predictions$name == "Ryman Frey", "mother"] <- "Corenna Swann"
+
+predictions[predictions$name == "Walda Frey daughter of Edwyn", "father"] <- "Edwyn Frey"
+predictions[predictions$name == "Walda Frey daughter of Edwyn", "mother"] <- "Janyce Hunter"
+
+predictions[predictions$name == "Aegon Frey son of Stevron", "father"] <- "Stevron Frey"
+predictions[predictions$name == "Aegon Frey son of Stevron", "mother"] <- "Jeyne Lydden"
+
+predictions[predictions$name == "Cleos Frey", "father"] <- "Emmon Frey"
+predictions[predictions$name == "Cleos Frey", "mother"] <- "Genna Lannister"
+
+predictions[predictions$name == "Tywin Frey", "father"] <- "Cleos Frey"
+predictions[predictions$name == "Tywin Frey", "mother"] <- "Jeyne Darry"
+
+predictions[predictions$name == "Willem Frey", "father"] <- "Cleos Frey"
+predictions[predictions$name == "Willem Frey", "mother"] <- "Jeyne Darry"
+
+predictions[predictions$name == "Lyonel Frey", "father"] <- "Emmon Frey"
+predictions[predictions$name == "Lyonel Frey", "mother"] <- "Genna Lannister"
+
+predictions[predictions$name == "Tion Frey", "father"] <- "Emmon Frey"
+predictions[predictions$name == "Tion Frey", "mother"] <- "Genna Lannister"
+
+predictions[predictions$name == "Walder Frey son of Emmon", "father"] <- "Emmon Frey"
+predictions[predictions$name == "Walder Frey son of Emmon", "mother"] <- "Genna Lannister"
+
+predictions[predictions$name == "Amerei Frey", "father"] <- "Merrett Frey"
+predictions[predictions$name == "Amerei Frey", "mother"] <- "Mariya Darry"
+
+predictions[predictions$name == "Walda Frey daughter of Merrett", "father"] <- "Merrett Frey"
+predictions[predictions$name == "Walda Frey daughter of Merrett", "mother"] <- "Mariya Darry"
+
+predictions[predictions$name == "Walder Frey son of Merrett", "father"] <- "Merrett Frey"
+predictions[predictions$name == "Walder Frey son of Merrett", "mother"] <- "Mariya Darry"
+
+predictions[predictions$name == "Marissa Frey", "father"] <- "Merrett Frey"
+predictions[predictions$name == "Marissa Frey", "mother"] <- "Mariya Darry"
+
+predictions[predictions$name == "Merrett Frey", "father"] <- "Walder Frey"
+predictions[predictions$name == "Merrett Frey", "mother"] <- "Amarei Crakehall"
+
+predictions[predictions$name == "Roslin Frey", "father"] <- "Walder Frey"
+predictions[predictions$name == "Roslin Frey", "mother"] <- "Bethany Rosby"
+
+predictions[predictions$name == "Olyvar Frey", "father"] <- "Walder Frey"
+predictions[predictions$name == "Olyvar Frey", "mother"] <- "Bethany Rosby"
+
+predictions[predictions$name == "Willamen Frey", "father"] <- "Walder Frey"
+predictions[predictions$name == "Willamen Frey", "mother"] <- "Bethany Rosby"
+
+predictions[predictions$name == "Benfrey Frey", "father"] <- "Walder Frey"
+predictions[predictions$name == "Benfrey Frey", "mother"] <- "Bethany Rosby"
+
+predictions[predictions$name == "Perwyn Frey", "father"] <- "Walder Frey"
+predictions[predictions$name == "Perwyn Frey", "mother"] <- "Bethany Rosby"
+
+predictions[, c(6, 12:13, 15, 34)] %>% arrange(name)
+predictions[grep("Perwyn", predictions$name), c(6, 12:13, 15, 34)] %>% arrange(name)
+```
+
+```{r}
+add <- predictions[predictions$name == "Willam Stark", ]
+add[, "spouse"] <- "Lyanna Glover"
+predictions <- rbind(predictions, add)
+
+add <- predictions[predictions$name == "Sansa Stark", ]
+add[, "spouse"] <- "Ramsay Snow"
+predictions <- rbind(predictions, add)
+
+add <- predictions[predictions$name == "Cregan Stark", ]
+add[, "spouse"] <- "Lynara Stark"
+predictions <- rbind(predictions, add)
+
+predictions[predictions$name == "Steffon Baratheon", "spouse"] <- "Cassana Baratheon"
+predictions[predictions$name == "Tommen Baratheon", "spouse"] <- "Margaery Tyrell"
+predictions[predictions$name == "Joffrey Baratheon", "spouse"] <- "Margaery Tyrell"
+
+predictions[predictions$name == "Jason Lannister", "spouse"] <- "Alys Stackspear"
+
+add <- predictions[predictions$name == "Jason Lannister", ]
+add[, "spouse"] <- "Marla Prester"
+predictions <- rbind(predictions, add)
+
+add <- predictions[predictions$name == "Gerold Lannister", ]
+add[, "spouse"] <- "Rohanne Webber"
+predictions <- rbind(predictions, add)
+
+predictions[predictions$name == "Aerys II Targaryen", "spouse"] <- "Rhaella Targaryen"
+
+add <- predictions[predictions$name == "Daenerys Targaryen", ]
+add[, "spouse"] <- "Hizdahr zo Loraq"
+predictions <- rbind(predictions, add)
+
+predictions[predictions$name == "Hizdahr zo Loraq", "spouse"] <- "Daenerys Targaryen"
+
+add <- predictions[predictions$name == "Margaery Tyrell", ]
+add[, "spouse"] <- "Joffrey Baratheon"
+predictions <- rbind(predictions, add)
+
+add <- predictions[predictions$name == "Margaery Tyrell", ]
+add[, "spouse"] <- "Tommen Baratheon"
+predictions <- rbind(predictions, add)
+
+predictions[predictions$name == "Elyn Norridge", "spouse"] <- "Luthor Tyrell son of Moryn"
+
+add <- predictions[predictions$name == "Jon Arryn", ]
+add[, "spouse"] <- "Lysa Arryn"
+predictions <- rbind(predictions, add)
+
+add <- predictions[predictions$name == "Jon Arryn", ]
+add[, "spouse"] <- "Rowena Arryn"
+predictions <- rbind(predictions, add)
+
+add <- predictions[predictions$name == "Stevron Frey", ]
+add[, "spouse"] <- "Marsella Waynwood"
+predictions <- rbind(predictions, add)
+
+add <- predictions[predictions$name == "Stevron Frey", ]
+add[, "spouse"] <- "Jeyne Lydden"
+predictions <- rbind(predictions, add)
+
+add <- predictions[predictions$name == "Lysa Arryn", ]
+add[, "spouse"] <- "Petyr Baelish"
+predictions <- rbind(predictions, add)
+
+predictions[predictions$name == "Quellon Greyjoy", "spouse"] <- "Lady of House Stonetree"
+
+add <- predictions[predictions$name == "Quellon Greyjoy", ]
+add[, "spouse"] <- "Lady of House Sunderly"
+predictions <- rbind(predictions, add)
+
+add <- predictions[predictions$name == "Quellon Greyjoy", ]
+add[, "spouse"] <- "Lady of House Piper"
+predictions <- rbind(predictions, add)
+
+predictions[, c(6, 15:16)] %>% arrange(name)
+predictions[grep("Bethany", predictions$name), c(6, 15:16)] %>% arrange(name)
+```
+
+```{r}
+predictions_2a <- predictions[, c(6, 12)] %>%
+  na.omit()
+predictions_2b <- predictions[, c(6, 13)] %>%
+  na.omit()
+
+predictions_3 <- predictions[, c(6, 34)] %>%
+  na.omit()
+
+predictions_4 <- predictions[, c(6, 16)] %>%
+  na.omit()
+
+net1 <- data.frame(source = c(predictions_2a$mother, predictions_2b$father, predictions_3$child_of, predictions_4$name),
+                  target = c(predictions_2a$name, predictions_2b$name, predictions_3$name, predictions_4$spouse),
+                  type = c(rep("mother", nrow(predictions_2a)), rep("father", nrow(predictions_2b)), rep("father/mother", nrow(predictions_3)), rep("spouse", nrow(predictions_4))))
+```
+
+```{r eval=FALSE}
+library(rvest)
+
+url <- "http://gameofthrones.wikia.com/wiki/Category:Major_Characters?display=page&sort=mostvisited"
+main.page <- read_html(url)
+
+names <- main.page %>% # feed `main.page` to the next step
+  html_nodes(".mw-content-ltr") %>%
+  .[3] %>%
+  html_text()
+
+names <- strsplit(names, split = "\n")[[1]] %>%
+  .[-c(1, 10, 19)]
+names <- gsub("[[:upper:]]$", "", names)
+names <- gsub(" ", "_", names)
+
+
+library(RCurl)
+
+for (name in names) {
+  url <- paste0("http://gameofthrones.wikia.com/wiki/", name)
+
+  web_page <- readLines(url)
+  left <- web_page[grep("pi-data-label pi-secondary-font", web_page)]
+  left <- gsub("\t\t<h3 class=\"pi-data-label pi-secondary-font\">|</h3>", "", left)
+  right <- web_page[grep("pi-data-value pi-font", web_page)]
+  right <- gsub("(.*title=\")(.*)(\">.*)", "\\2", right)
+  
+  df <- data.frame(name = name, attr = right, type = left)
+  
+  if (name == names[1]) {
+    df_final <- df
+  } else {
+    df_final <- rbind(df_final, df)
+  }
+}
+
+df_final_major <- df_final
+```
+
+```{r eval=FALSE}
+url <- "http://gameofthrones.wikia.com/wiki/Category:Minor_Characters?display=page&sort=mostvisited"
+main.page <- read_html(url)
+
+names <- main.page %>% # feed `main.page` to the next step
+  html_nodes(".mw-content-ltr") %>%
+  .[2] %>%
+  html_text()
+
+names <- strsplit(names, split = "\n")[[1]] %>%
+  .[-c(1, 10, 19)]
+names <- gsub("[[:upper:]]$", "", names)
+names <- gsub(" ", "_", names)
+names <- names[!grepl("_cont\\.", names)]
+
+for (name in names) {
+  url <- paste0("http://gameofthrones.wikia.com/wiki/", name)
+
+  web_page <- readLines(url)
+  left <- web_page[grep("pi-data-label pi-secondary-font", web_page)]
+  left <- gsub("\t\t<h3 class=\"pi-data-label pi-secondary-font\">|</h3>", "", left)
+  right <- web_page[grep("pi-data-value pi-font", web_page)]
+  right <- gsub("(.*title=\")(.*)(\">.*)", "\\2", right)
+  
+  if (length(right) > 0) {
+    df <- data.frame(name = name, attr = right, type = left)
+  } else {
+    df <- data.frame(name = name, attr = NA, type = NA)
+  }
+  
+  if (name == names[1]) {
+    df_final <- df
+  } else {
+    df_final <- rbind(df_final, df)
+  }
+}
+
+df_final_minor_1 <- df_final
+```
+
+```{r eval=FALSE}
+url <- "http://gameofthrones.wikia.com/wiki/Category:Minor_Characters?display=page&sort=mostvisited&pagefrom=Mully#mw-pages"
+main.page <- read_html(url)
+
+names <- main.page %>% # feed `main.page` to the next step
+  html_nodes(".mw-content-ltr") %>%
+  .[2] %>%
+  html_text()
+
+names <- strsplit(names, split = "\n")[[1]] %>%
+  .[-c(1, 10, 19)]
+names <- gsub("[[:upper:]]$", "", names)
+names <- gsub(" ", "_", names)
+names <- names[!grepl("_cont\\.", names)]
+
+for (name in names) {
+  url <- paste0("http://gameofthrones.wikia.com/wiki/", name)
+
+  web_page <- readLines(url)
+  left <- web_page[grep("pi-data-label pi-secondary-font", web_page)]
+  left <- gsub("\t\t<h3 class=\"pi-data-label pi-secondary-font\">|</h3>", "", left)
+  right <- web_page[grep("pi-data-value pi-font", web_page)]
+  right <- gsub("(.*title=\")(.*)(\">.*)", "\\2", right)
+  
+  if (length(right) > 0) {
+    df <- data.frame(name = name, attr = right, type = left)
+  } else {
+    df <- data.frame(name = name, attr = NA, type = NA)
+  }
+  
+  if (name == names[1]) {
+    df_final <- df
+  } else {
+    df_final <- rbind(df_final, df)
+  }
+}
+
+df_final_minor_2 <- df_final
+```
+
+```{r eval=FALSE}
+df_final <- rbind(df_final_major,
+                  df_final_minor_1,
+                  df_final_minor_2)
+```
+
+```{r echo=FALSE, eval=FALSE}
+save(df_final, file = "df_final.RData")
+```
+
+```{r echo=FALSE}
+load("df_final.RData")
+```
+
+```{r}
+df_final$type <- as.character(df_final$type)
+fathers <- filter(df_final, type == "Father") %>%
+  mutate(name = gsub("_", " ", name))
+mothers <- filter(df_final, type == "Mother") %>%
+  mutate(attr = gsub("\t<div class=\"pi-data-value pi-font\">|</div>|\" class=\"mw-redirect", "", attr),
+         name = gsub("_", " ", name))
+
+net2 <- data.frame(source = c(mothers$attr, as.character(fathers$attr)),
+                  target = c(mothers$name, fathers$name),
+                  type = c(rep("mother", nrow(mothers)), rep("father", nrow(fathers))))
+```
+
+```{r}
+net <- rbind(net1, net2)
+
+net$source <- as.character(net$source)
+net$target <- as.character(net$target)
+net$type <- as.character(net$type)
+
+net[net == "Cassana Estermont"] <- "Cassana Baratheon"
+net[net == "Catelyn Tully"] <- "Catelyn Stark"
+net[net == "Ramsay Snow"] <- "Ramsay Bolton"
+
+net <- net[!duplicated(net), ]
+net <- rbind(net, c("Talisa Stark", "Robb Stark", "spouse"))
+net[net$target == "Aegon IV Targaryen" & net$type == "mother", "source"] <- "Viserys II Targaryen"
+net[net$target == "Aegon IV Targaryen" & net$type == "father", "source"] <- "Larra Rogare"
+net[net$target == "Maron Martell", "target"] <- "Maron Martell I"
+```
+
+```{r}
+predictions$name <- as.character(predictions$name)
+characters <- data.frame(name = unique(c(as.character(net$source), as.character(net$target)))) %>%
+  mutate(name = as.character(name)) %>%
+  left_join(predictions[, c(6, 8, 9, 15, 32:34)], by = "name")
+
+characters[characters == ""] <- NA
+characters$popularity[is.na(characters$popularity)] <- 0
+characters <- characters[!duplicated(characters), ]
+```
+
+```{r}
+characters[characters$name == "Tya Lannister", "male"] <- 0
+characters[grep("Aegon", characters$name), "male"] <- 1
+characters[grep("Aerys", characters$name), "male"] <- 1
+characters[grep("Baelon", characters$name), "male"] <- 1
+  
+for (i in 1:nrow(characters)) {
+  
+    name <- characters[i, "name"]
+    value <- ifelse(name %in% net$source & any(net[net$source == name, "type"] == "mother"), 0, 
+                    ifelse(name %in% net$source & any(net[net$source == name, "type"] == "father"), 1, characters[i, "male"]))
+    
+    characters[i, "male"] <- value
+}
+
+characters[characters$name == "Ramsay Bolton", "male"] <- 1
+characters[characters$name == "Arya Stark", "male"] <- 0
+characters[characters$name == "Sansa Stark", "male"] <- 0
+characters[characters$name == "Robb Stark", "male"] <- 1
+characters[characters$name == "Rickon Stark", "male"] <- 1
+characters[characters$name == "Bran Stark", "male"] <- 1
+characters[characters$name == "Jon Snow", "male"] <- 1
+
+for (i in 1:nrow(characters)) {
+  value <- characters[i, "male"]
+  
+  if (is.na(value)) {
+    name <- characters[i, "name"]
+        type <- net[which(net$source == name | net$target == name), "type"]
+        
+        if (any(type == "spouse")) {
+          net2 <- net[which(net$source == name | net$target == name), ] %>%
+            filter(type == "spouse")
+          
+          if (nrow(net2) > 1) {
+            sp <- c(net2[, "source"], net2[, "target"])
+            sp <- sp[which(sp != name)]
+            
+            for (j in length(sp)) {
+              spouse <- sp[j]
+              value[j] <- ifelse(characters[characters$name == spouse, "male"] == 1, 0, 
+                          ifelse(characters[characters$name == spouse, "male"] == 0, 1, NA))
+            }
+            
+            value <- na.omit(value)[1]
+          } else {
+            sp1 <- net2[, "source"]
+            sp2 <- net2[, "target"]
+            
+            spouse <- ifelse(sp1 == name, sp2, sp1)
+            value <- ifelse(characters[characters$name == spouse, "male"] == 1, 0, 
+                            ifelse(characters[characters$name == spouse, "male"] == 0, 1, NA))
+          }
+          
+          characters[i, "male"] <- value
+        }
+  }
+}
+```
+
+```{r}
+for (i in 1:nrow(characters)) {
+  
+  if (!is.na(characters[i, "male"])) {
+    
+    if (characters[i, "male"] == 1 & is.na(characters[i, "house"])) {
+    
+      name <- gsub(" son of .*", "", characters[i, "name"])
+      characters[i, "house"] <- paste("House", gsub("(.* )(.*$)", "\\2", name))
+    }
+    
+    if (characters[i, "male"] == 0) {
+      
+      name <- characters[i, "name"]
+      father <- net[which(net$target == name & net$type == "father"), ]
+      
+      if (nrow(father) > 0) {
+        
+        characters[i, "house"] <- paste("House", gsub("(.* )(.*$)", "\\2", father$source))
+      } else {
+        
+        characters[i, "house"] <- paste("House", gsub("(.* )(.*$)", "\\2", characters[i, "name"]))
+      }
+  }
+  } else {
+    
+    characters[i, "house"] <- paste("House", gsub("(.* )(.*$)", "\\2", characters[i, "name"]))
+  }
+}
+
+characters[grep("Baratheon", characters$house), "house"] <- "House Baratheon"
+characters[grep("Bolton", characters$house), "house"] <- "House Bolton"
+characters[grep("Fossoway", characters$house), "house"] <- "House Fossoway"
+characters[grep("Frey", characters$house), "house"] <- "House Frey"
+characters[grep("Lannister", characters$house), "house"] <- "House Lannister"
+characters[grep("Tyrell", characters$house), "house"] <- "House Tyrell"
+characters[grep("Stark", characters$house), "house"] <- "House Stark"
+characters[grep("Targaryen", characters$house), "house"] <- "House Targaryen"
+
+characters[characters$name == "Rickon Stark son of Benjen", "house"] <- "House Stark"
+characters[characters$name == "Drogo", "house"] <- "Dothraki"
+
+characters$house2 <- ifelse(characters$house %in% c("House Targaryen", "House Stark", "House Tully", "House Lannister", "House Baratheon", "House Tyrell", "House Martell", "House Frey", "House Greyjoy"), characters$house, NA)
+```
+
+```{r warning=FALSE, message=FALSE}
+net[net$source == "Rhaegar Targaryen" & net$target == "Aegon Targaryen son of Rhaegar", "type"] <- "father"
+
+characters[characters$name == "Aegon II", "name"] <- "Aegon II Targaryen"
+characters[characters$name == "Aegon II Targaryen", "house"] <- "House Targaryen"
+characters[characters$name == "Aegon Targaryen son of Jaehaerys I", "house"] <- "House Targaryen"
+characters[characters$name == "Marsella Weynwood", "name"] <- "Marsella Waynwood"
+
+library(RColorBrewer)
+colors_edges <- with(net,
+                     data.frame(type = levels(as.factor(type)),
+                                color = I(brewer.pal(nlevels(as.factor(type)), name = 'Dark2'))))
+
+net <- left_join(net, colors_edges, by = "type")
+
+color_vertices <- with(characters,
+                       data.frame(house2 = levels(as.factor(house2)),
+                                  color = I(brewer.pal(nlevels(as.factor(house2)), name = 'Set1'))))
+
+characters <- left_join(characters, color_vertices, by = "house2")
+
+characters$shape <- ifelse(characters$male == 1, "square",
+                                 ifelse(characters$male == 0, "circle", "triangle"))
+characters$shape[is.na(characters$shape)] <- "none"
+```
+
+```{r warning=FALSE, message=FALSE}
+library(igraph)
+```
+
+```{r fig.width=20, fig.height=10}
+characters_Frey <- characters %>%
+  filter(name %in% c("Emmon Frey", "Cleos Frey", "Tywin Frey", "Willem Frey", "Lyonel Frey", "Tion Frey", "Walder Frey son of Emmon", "Amerei Frey", "Lancel Lannister", "Merrett Frey", "Walda Frey daughter of Merrett", "Walder Frey son of Merrett", "Marissa Frey", "Roslin Frey", "Olyvar Frey", "Willamen Frey", "Benfrey Frey", "Perwyn Frey"))
+
+net_Frey <- net %>%
+  filter(source %in% characters_Frey$name | target %in% characters_Frey$name)
+
+net_Frey$lty <- "solid"
+net_Frey$arrow <- ifelse(net_Frey$type == "spouse", 3, 2)
+
+net_Frey <- net_Frey[net_Frey$type != "father/mother", ]
+net_Frey <- rbind(net_Frey,
+                  c("Perra Royce", "Walder Frey", "spouse", "#E7298A", "solid", 3),
+                  c("Amarei Crakehall", "Walder Frey", "spouse", "#E7298A", "solid", 3),
+                  c("Bethany Rosby", "Walder Frey", "spouse", "#E7298A", "solid", 3))
+
+characters_Frey <- characters %>%
+  filter(name %in% net_Frey$source | name %in% net_Frey$target) %>%
+  arrange(name)
+
+graph_Frey <- graph_from_data_frame(net_Frey, directed = TRUE, vertices = characters_Frey)
+```
+
+```{r fig.width=20, fig.height=10}
+pdf("family_tree_Frey.pdf", width = 20, height = 15)
+plot(graph_Frey,
+     layout = layout_with_lgl,
+     vertex.label = gsub(" ", "\n", V(graph_Frey)$name),
+     vertex.shape = V(graph_Frey)$shape,
+     vertex.color = V(graph_Frey)$color, 
+     vertex.size = (V(graph_Frey)$popularity + 0.5) * 5, 
+     vertex.frame.color = "gray", 
+     vertex.label.color = "black", 
+     vertex.label.cex = 0.8,
+     edge.arrow.mode = E(graph_Frey)$arrow,
+     edge.arrow.size = 0.5,
+     edge.color = E(graph_Frey)$color,
+     edge.lty = E(graph_Frey)$lty)
+legend("topleft", legend = c(as.character(color_vertices$house), as.character(colors_edges$type)), pch = 19,
+       col = c(color_vertices$color, colors_edges$color), pt.cex = 2, cex = 1, bty = "n", ncol = 1)
+dev.off()
+```
+
+```{r fig.width=20, fig.height=10}
+characters_Stark <- characters %>%
+  filter(house == "House Stark")
+
+net_Stark <- net %>%
+  filter(source %in% characters_Stark$name | target %in% characters_Stark$name)
+
+net_Stark <- net_Stark[net_Stark$source != "Unnamed mother", ]
+
+net_Stark$lty <- ifelse(net_Stark$source == "Lyanna Stark" & net_Stark$target == "Jon Snow", "dotted", "solid")
+net_Stark$lty <- ifelse(net_Stark$source == "Sansa Stark" & net_Stark$target == "Ramsay Bolton", "dotted", net_Stark$lty)
+net_Stark$lty <- ifelse(net_Stark$source == "Rhaegar Targaryen" & net_Stark$target == "Jon Snow", "dotted", net_Stark$lty)
+net_Stark$lty <- ifelse(net_Stark$source == "Talisa Stark" & net_Stark$target == "Robb Stark", "dotted", net_Stark$lty)
+
+net_Stark$arrow <- ifelse(net_Stark$type == "spouse", 3, 2)
+
+characters_Stark <- characters %>%
+  filter(name %in% net_Stark$source | name %in% net_Stark$target) %>%
+  arrange(name)
+
+graph_Stark <- graph_from_data_frame(net_Stark, directed = TRUE, vertices = characters_Stark)
+```
+
+```{r fig.width=20, fig.height=10}
+pdf("family_tree_Stark.pdf", width = 20, height = 15)
+plot(graph_Stark,
+     layout = layout_with_lgl,
+     vertex.label = gsub(" ", "\n", V(graph_Stark)$name),
+     vertex.shape = V(graph_Stark)$shape,
+     vertex.color = V(graph_Stark)$color, 
+     vertex.size = (V(graph_Stark)$popularity + 0.5) * 5, 
+     vertex.frame.color = "gray", 
+     vertex.label.color = "black", 
+     vertex.label.cex = 0.8,
+     edge.arrow.mode = E(graph_Stark)$arrow,
+     edge.arrow.size = 0.5,
+     edge.color = E(graph_Stark)$color,
+     edge.lty = E(graph_Stark)$lty)
+legend("topleft", legend = c(as.character(color_vertices$house), as.character(colors_edges$type)), pch = 19,
+       col = c(color_vertices$color, colors_edges$color), pt.cex = 2, cex = 1, bty = "n", ncol = 1)
+dev.off()
+```
+
+```{r fig.width=20, fig.height=10}
+characters_Lannister <- characters %>%
+  filter(house == "House Lannister") %>%
+  filter(!name %in% c("Margot Lannister", "Tya Lannister"))
+
+net_Lannister <- net %>%
+  filter(source %in% characters_Lannister$name | target %in% characters_Lannister$name)
+
+net_Lannister$lty <- ifelse(net_Lannister$source == "Jaime Lannister" & net_Lannister$type == "father/mother", "dotted", "solid")
+net_Lannister$type <- ifelse(net_Lannister$source == "Jaime Lannister" & net_Lannister$type == "father/mother", "father", net_Lannister$type)
+net_Lannister[net_Lannister$source == "Jaime Lannister" & net_Lannister$type == "father", "color"] <- "#1B9E77"
+
+net_Lannister$arrow <- ifelse(net_Lannister$type == "spouse", 3, 2)
+
+characters_Lannister <- characters %>%
+  filter(name %in% net_Lannister$source | name %in% net_Lannister$target) %>%
+  arrange(name)
+
+graph_Lannister <- graph_from_data_frame(net_Lannister, directed = TRUE, vertices = characters_Lannister)
+```
+
+```{r fig.width=20, fig.height=10}
+pdf("family_tree_Lannister.pdf", width = 20, height = 15)
+plot(graph_Lannister,
+     layout = layout_with_lgl,
+     vertex.label = gsub(" ", "\n", V(graph_Lannister)$name),
+     vertex.shape = V(graph_Lannister)$shape,
+     vertex.color = V(graph_Lannister)$color, 
+     vertex.size = (V(graph_Lannister)$popularity + 0.5) * 5, 
+     vertex.frame.color = "gray", 
+     vertex.label.color = "black", 
+     vertex.label.cex = 0.8,
+     edge.arrow.mode = E(graph_Lannister)$arrow,
+     edge.arrow.size = 0.5,
+     edge.color = E(graph_Lannister)$color,
+     edge.lty = E(graph_Lannister)$lty)
+legend("topleft", legend = c(as.character(color_vertices$house), as.character(colors_edges$type)), pch = 19,
+       col = c(color_vertices$color, colors_edges$color), pt.cex = 2, cex = 1, bty = "n", ncol = 1)
+dev.off()
+```
+
+```{r fig.width=20, fig.height=10}
+characters_Baratheon <- characters %>%
+  filter(house == "House Baratheon") %>%
+  filter(!name %in% c("Orys Baratheon", "Gowen Baratheon"))
+
+net_Baratheon <- net %>%
+  filter(source %in% characters_Baratheon$name | target %in% characters_Baratheon$name)
+
+net_Baratheon$lty <- ifelse(net_Baratheon$source == "Jaime Lannister" & net_Baratheon$type == "father/mother", "dotted", "solid")
+net_Baratheon$type <- ifelse(net_Baratheon$source == "Jaime Lannister" & net_Baratheon$type == "father/mother", "father", net_Baratheon$type)
+net_Baratheon[net_Baratheon$source == "Jaime Lannister" & net_Baratheon$type == "father", "color"] <- "#1B9E77"
+
+net_Baratheon$arrow <- ifelse(net_Baratheon$type == "spouse", 3, 2)
+
+characters_Baratheon <- characters %>%
+  filter(name %in% net_Baratheon$source | name %in% net_Baratheon$target) %>%
+  arrange(name)
+
+graph_Baratheon <- graph_from_data_frame(net_Baratheon, directed = TRUE, vertices = characters_Baratheon)
+```
+
+```{r fig.width=20, fig.height=10}
+pdf("family_tree_Baratheon.pdf", width = 20, height = 15)
+plot(graph_Baratheon,
+     layout = layout_with_lgl,
+     vertex.label = gsub(" ", "\n", V(graph_Baratheon)$name),
+     vertex.shape = V(graph_Baratheon)$shape,
+     vertex.color = V(graph_Baratheon)$color, 
+     vertex.size = (V(graph_Baratheon)$popularity + 0.5) * 5, 
+     vertex.frame.color = "gray", 
+     vertex.label.color = "black", 
+     vertex.label.cex = 0.8,
+     edge.arrow.mode = E(graph_Baratheon)$arrow,
+     edge.arrow.size = 0.5,
+     edge.color = E(graph_Baratheon)$color,
+     edge.lty = E(graph_Baratheon)$lty)
+legend("topleft", legend = c(as.character(color_vertices$house), as.character(colors_edges$type)), pch = 19,
+       col = c(color_vertices$color, colors_edges$color), pt.cex = 2, cex = 1, bty = "n", ncol = 1)
+dev.off()
+```
+
+```{r fig.width=20, fig.height=10}
+characters_Targaryen <- characters %>%
+  #filter(house == "House Targaryen")
+  filter(name %in% c("Daenerys Targaryen", "Rhaegar Targaryen", "Viserys Targaryen", "Aerys II Targaryen", "Jaehaerys II Targaryen", "Aegon V Targaryen", "Duncan Targaryen", "Rhaelle Targaryen"))
+
+net_Targaryen <- net %>%
+  filter(source %in% characters_Targaryen$name | target %in% characters_Targaryen$name)
+
+net_Targaryen$lty <- ifelse(net_Targaryen$source == "Maron Martell" & net_Targaryen$target == "Daenerys Targaryen", "dotted", "solid")
+net_Targaryen$lty <- ifelse(net_Targaryen$source == "Rhaegar Targaryen" & net_Targaryen$target == "Jon Snow", "dotted", net_Targaryen$lty)
+net_Targaryen$arrow <- ifelse(net_Targaryen$type == "spouse", 3, 2)
+
+characters_Targaryen <- characters %>%
+  filter(name %in% net_Targaryen$source | name %in% net_Targaryen$target) %>%
+  arrange(name)
+
+graph_Targaryen <- graph_from_data_frame(net_Targaryen, directed = TRUE, vertices = characters_Targaryen)
+```
+
+```{r fig.width=20, fig.height=10}
+pdf("family_tree_Targaryen.pdf", width = 20, height = 15)
+plot(graph_Targaryen,
+     layout = layout_with_lgl,
+     vertex.label = gsub(" ", "\n", V(graph_Targaryen)$name),
+     vertex.shape = V(graph_Targaryen)$shape,
+     vertex.color = V(graph_Targaryen)$color, 
+     vertex.size = (V(graph_Targaryen)$popularity + 0.5) * 5, 
+     vertex.frame.color = "gray", 
+     vertex.label.color = "black", 
+     vertex.label.cex = 0.8,
+     edge.arrow.mode = E(graph_Targaryen)$arrow,
+     edge.arrow.size = 0.5,
+     edge.color = E(graph_Targaryen)$color,
+     edge.lty = E(graph_Targaryen)$lty)
+legend("topleft", legend = c(as.character(color_vertices$house), as.character(colors_edges$type)), pch = 19,
+       col = c(color_vertices$color, colors_edges$color), pt.cex = 2, cex = 1, bty = "n", ncol = 1)
+dev.off()
+```
+
+```{r fig.width=20, fig.height=10}
+characters_Tyrell <- characters %>%
+  #filter(house == "House Tyrell")
+  filter(name %in% c("Luthor Tyrell", "Mace Tyrell", "Garlan Tyrell", "Margaery Tyrell", "Loras Tyrell", "Willas Tyrell", "Mina Tyrell", "Horas Redwyne", "Hobber Redwyne", "Moryn Tyrell", "Luthor Tyrell son of Moryn", "Theodore Tyrell", "Luthor Tyrell son of Theodore", "Elinor Tyrell", "Olene Tyrell", "Medwick Tyrell"))
+
+net_Tyrell <- net %>%
+  filter(source %in% characters_Tyrell$name | target %in% characters_Tyrell$name)
+
+net_Tyrell$lty <- "solid"
+net_Tyrell$arrow <- ifelse(net_Tyrell$type == "spouse", 3, 2)
+
+characters_Tyrell <- characters %>%
+  filter(name %in% net_Tyrell$source | name %in% net_Tyrell$target) %>%
+  arrange(name)
+
+graph_Tyrell <- graph_from_data_frame(net_Tyrell, directed = TRUE, vertices = characters_Tyrell)
+```
+
+```{r fig.width=20, fig.height=10}
+pdf("family_tree_Tyrell.pdf", width = 20, height = 15)
+plot(graph_Tyrell,
+     layout = layout_with_lgl,
+     vertex.label = gsub(" ", "\n", V(graph_Tyrell)$name),
+     vertex.shape = V(graph_Tyrell)$shape,
+     vertex.color = V(graph_Tyrell)$color, 
+     vertex.size = (V(graph_Tyrell)$popularity + 0.5) * 5, 
+     vertex.frame.color = "gray", 
+     vertex.label.color = "black", 
+     vertex.label.cex = 0.8,
+     edge.arrow.mode = E(graph_Tyrell)$arrow,
+     edge.arrow.size = 0.5,
+     edge.color = E(graph_Tyrell)$color,
+     edge.lty = E(graph_Tyrell)$lty)
+legend("topleft", legend = c(as.character(color_vertices$house), as.character(colors_edges$type)), pch = 19,
+       col = c(color_vertices$color, colors_edges$color), pt.cex = 2, cex = 1, bty = "n", ncol = 1)
+dev.off()
+```
+
+```{r fig.width=20, fig.height=10}
+characters_Martell <- characters %>%
+  filter(house == "House Martell")
+
+characters_Martell <- characters_Martell[characters_Martell$name != "Mors Martell", ]
+characters_Martell <- characters_Martell[characters_Martell$name != "Maron Martell", ]
+characters_Martell <- characters_Martell[characters_Martell$name != "Mariah Martell", ]
+
+net_Martell <- net %>%
+  filter(source %in% characters_Martell$name | target %in% characters_Martell$name)
+
+net_Martell$lty <- "solid"
+net_Martell$arrow <- ifelse(net_Martell$type == "spouse", 3, 2)
+
+characters_Martell <- characters %>%
+  filter(name %in% net_Martell$source | name %in% net_Martell$target) %>%
+  arrange(name)
+
+graph_Martell <- graph_from_data_frame(net_Martell, directed = TRUE, vertices = characters_Martell)
+```
+
+```{r fig.width=20, fig.height=10}
+pdf("family_tree_Martell.pdf", width = 20, height = 15)
+plot(graph_Martell,
+     layout = layout_with_lgl,
+     vertex.label = gsub(" ", "\n", V(graph_Martell)$name),
+     vertex.shape = V(graph_Martell)$shape,
+     vertex.color = V(graph_Martell)$color, 
+     vertex.size = (V(graph_Martell)$popularity + 0.5) * 5, 
+     vertex.frame.color = "gray", 
+     vertex.label.color = "black", 
+     vertex.label.cex = 0.8,
+     edge.arrow.mode = E(graph_Martell)$arrow,
+     edge.arrow.size = 0.5,
+     edge.color = E(graph_Martell)$color,
+     edge.lty = E(graph_Martell)$lty)
+legend("topleft", legend = c(as.character(color_vertices$house), as.character(colors_edges$type)), pch = 19,
+       col = c(color_vertices$color, colors_edges$color), pt.cex = 2, cex = 1, bty = "n", ncol = 1)
+dev.off()
+```
+
+```{r fig.width=20, fig.height=10}
+characters_Tully <- characters %>%
+  filter(house == "House Tully")
+
+net_Tully <- net %>%
+  filter(source %in% characters_Tully$name | target %in% characters_Tully$name)
+
+net_Tully <- net_Tully[-which(net_Tully$source == "Edmure Tully" & net_Tully$type == "father"), ]
+net_Tully <- net_Tully[-which(net_Tully$source == "Roslin Tully"), ]
+
+net_Tully$lty <- "solid"
+net_Tully$arrow <- ifelse(net_Tully$type == "spouse", 3, 2)
+
+characters_Tully <- characters %>%
+  filter(name %in% net_Tully$source | name %in% net_Tully$target) %>%
+  arrange(name)
+
+graph_Tully <- graph_from_data_frame(net_Tully, directed = TRUE, vertices = characters_Tully)
+```
+
+```{r fig.width=20, fig.height=10}
+pdf("family_tree_Tully.pdf", width = 20, height = 15)
+plot(graph_Tully,
+     layout = layout_with_lgl,
+     vertex.label = gsub(" ", "\n", V(graph_Tully)$name),
+     vertex.shape = V(graph_Tully)$shape,
+     vertex.color = V(graph_Tully)$color, 
+     vertex.size = (V(graph_Tully)$popularity + 0.5) * 5, 
+     vertex.frame.color = "gray", 
+     vertex.label.color = "black", 
+     vertex.label.cex = 0.8,
+     edge.arrow.mode = E(graph_Tully)$arrow,
+     edge.arrow.size = 0.5,
+     edge.color = E(graph_Tully)$color,
+     edge.lty = E(graph_Tully)$lty)
+legend("topleft", legend = c(as.character(color_vertices$house), as.character(colors_edges$type)), pch = 19,
+       col = c(color_vertices$color, colors_edges$color), pt.cex = 2, cex = 1, bty = "n", ncol = 1)
+dev.off()
+```
+
+```{r fig.width=20, fig.height=10}
+characters_Arryn <- characters %>%
+  filter(house == "House Arryn")
+
+characters_Arryn <- characters_Arryn[characters_Arryn$name != "Aemma Arryn", ]
+characters_Arryn <- characters_Arryn[characters_Arryn$name != "Rodrik Arryn", ]
+
+net_Arryn <- net %>%
+  filter(source %in% characters_Arryn$name | target %in% characters_Arryn$name)
+
+net_Arryn <- net_Arryn[-which(net_Arryn$target == "Alys Arryn" & net_Arryn$source == "Rhaegel Targaryen"), ]
+
+net_Arryn$lty <- "solid"
+net_Arryn$arrow <- ifelse(net_Arryn$type == "spouse", 3, 2)
+
+characters_Arryn <- characters %>%
+  filter(name %in% net_Arryn$source | name %in% net_Arryn$target) %>%
+  arrange(name)
+
+graph_Arryn <- graph_from_data_frame(net_Arryn, directed = TRUE, vertices = characters_Arryn)
+```
+
+```{r fig.width=20, fig.height=10}
+pdf("family_tree_Arryn.pdf", width = 20, height = 15)
+plot(graph_Arryn,
+     layout = layout_with_lgl,
+     vertex.label = gsub(" ", "\n", V(graph_Arryn)$name),
+     vertex.shape = V(graph_Arryn)$shape,
+     vertex.color = V(graph_Arryn)$color, 
+     vertex.size = (V(graph_Arryn)$popularity + 0.5) * 5, 
+     vertex.frame.color = "gray", 
+     vertex.label.color = "black", 
+     vertex.label.cex = 0.8,
+     edge.arrow.mode = E(graph_Arryn)$arrow,
+     edge.arrow.size = 0.5,
+     edge.color = E(graph_Arryn)$color,
+     edge.lty = E(graph_Arryn)$lty)
+legend("topleft", legend = c(as.character(color_vertices$house), as.character(colors_edges$type)), pch = 19,
+       col = c(color_vertices$color, colors_edges$color), pt.cex = 2, cex = 1, bty = "n", ncol = 1)
+dev.off()
+```
+
+```{r fig.width=20, fig.height=10}
+characters_Greyjoy <- characters %>%
+  filter(house == "House Greyjoy")
+
+net_Greyjoy <- net %>%
+  filter(source %in% characters_Greyjoy$name | target %in% characters_Greyjoy$name)
+
+net_Greyjoy$lty <- ifelse(net_Greyjoy$target == "Erik Ironmaker" | net_Greyjoy$source == "Erik Ironmaker", "dotted", "solid")
+net_Greyjoy$arrow <- ifelse(net_Greyjoy$type == "spouse", 3, 2)
+
+characters_Greyjoy <- characters %>%
+  filter(name %in% net_Greyjoy$source | name %in% net_Greyjoy$target) %>%
+  arrange(name)
+
+characters_Greyjoy[characters_Greyjoy$name == "Asha Greyjoy", "name"] <- "Asha (Yara) Greyjoy"
+net_Greyjoy[net_Greyjoy == "Asha Greyjoy"] <- "Asha (Yara) Greyjoy"
+
+graph_Greyjoy <- graph_from_data_frame(net_Greyjoy, directed = TRUE, vertices = characters_Greyjoy)
+```
+
+```{r fig.width=20, fig.height=10}
+pdf("family_tree_Greyjoy.pdf", width = 20, height = 15)
+plot(graph_Greyjoy,
+     layout = layout_with_lgl,
+     vertex.label = gsub(" ", "\n", V(graph_Greyjoy)$name),
+     vertex.shape = V(graph_Greyjoy)$shape,
+     vertex.color = V(graph_Greyjoy)$color, 
+     vertex.size = (V(graph_Greyjoy)$popularity + 0.5) * 5, 
+     vertex.frame.color = "gray", 
+     vertex.label.color = "black", 
+     vertex.label.cex = 0.8,
+     edge.arrow.mode = E(graph_Greyjoy)$arrow,
+     edge.arrow.size = 0.5,
+     edge.color = E(graph_Greyjoy)$color,
+     edge.lty = E(graph_Greyjoy)$lty)
+legend("topleft", legend = c(as.character(color_vertices$house), as.character(colors_edges$type)), pch = 19,
+       col = c(color_vertices$color, colors_edges$color), pt.cex = 2, cex = 1, bty = "n", ncol = 1)
+dev.off()
+```
+
+
+
+```{r}
+union_edges <- rbind(net_Arryn, 
+                     net_Baratheon,
+                     net_Frey,
+                     net_Greyjoy,
+                     net_Lannister,
+                     net_Martell,
+                     net_Stark,
+                     net_Targaryen,
+                     net_Tully,
+                     net_Tyrell) %>%
+  .[!duplicated(.), ]
+
+union_edges <- rbind(union_edges,
+                     c("Roose Bolton", "Ramsay Bolton", "father",	"#1B9E77", "solid",	2))
+
+union_edges1 <- union_edges[union_edges$type == "spouse", ]
+union_edges1$target <- union_edges[union_edges$type == "spouse", "source"]
+union_edges1$source <- union_edges[union_edges$type == "spouse", "target"]
+
+union_edges2 <- rbind(union_edges[union_edges$type != "spouse", ],
+                      union_edges[union_edges$type == "spouse", ],
+                      union_edges1)
+
+union_edges <- union_edges2 %>%
+  .[!duplicated(.), ]
+
+union_edges <- union_edges[, -ncol(union_edges)]
+
+union_characters <- rbind(characters_Arryn, 
+                          characters_Baratheon,
+                          characters_Frey,
+                          characters_Greyjoy,
+                          characters_Lannister,
+                          characters_Martell,
+                          characters_Stark,
+                          characters_Targaryen,
+                          characters_Tully,
+                          characters_Tyrell) %>%
+  .[!duplicated(.), ] 
+
+union_characters <- union_characters[, -c(6, 7)]
+
+save(union_edges, file = "union_edges.RData")
+save(union_characters, file = "union_characters.RData")
+```
+
+```{r fig.width=20, fig.height=10, echo=FALSE, eval=FALSE}
+library(ggraph)
+
+ggraph(graph_stark, layout = 'gem') + 
+  geom_node_point(aes(size = popularity, color = house)) + 
+  geom_edge_link(aes(color = type), arrow = arrow(angle = 10, length = unit(4, 'mm'), type = "closed")) + 
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  theme_map() +
+  theme(legend.position = "top")
+
+ggsave("family_tree_Stark.pdf", dpi = 500, limitsize = FALSE)
+```
+
+```{r fig.width=20, fig.height=10, echo=FALSE, eval=FALSE}
+ggraph(graph_Lannister, layout = 'gem') + 
+  geom_node_point(aes(size = popularity, color = house)) + 
+  geom_edge_link(aes(color = type), arrow = arrow(angle = 10, length = unit(4, 'mm'), type = "closed")) + 
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  theme_map() +
+  theme(legend.position = "top")
+
+ggsave("family_tree_Lannister.pdf", dpi = 500, limitsize = FALSE)
+```
+
+```{r fig.width=20, fig.height=10, echo=FALSE, eval=FALSE}
+ggraph(graph_Baratheon, layout = 'gem') + 
+  geom_node_point(aes(size = popularity, color = house)) + 
+  geom_edge_link(aes(color = type), arrow = arrow(angle = 10, length = unit(4, 'mm'), type = "closed")) + 
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  theme_map() +
+  theme(legend.position = "top")
+
+ggsave("family_tree_Baratheon.pdf", dpi = 500, limitsize = FALSE)
+```
+
+```{r fig.width=20, fig.height=10, echo=FALSE, eval=FALSE}
+ggraph(graph_Tyrell, layout = 'gem') + 
+  geom_node_point(aes(size = popularity, color = house)) + 
+  geom_edge_link(aes(color = type), arrow = arrow(angle = 10, length = unit(4, 'mm'), type = "closed")) + 
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  theme_map() +
+  theme(legend.position = "top")
+
+ggsave("family_tree_Tyrell.pdf", dpi = 500, limitsize = FALSE)
+```
+
+```{r fig.width=20, fig.height=10, echo=FALSE, eval=FALSE}
+ggraph(graph_Targaryen, layout = 'gem') + 
+  geom_node_point(aes(size = popularity, color = house)) + 
+  geom_edge_link(aes(color = type), arrow = arrow(angle = 10, length = unit(4, 'mm'), type = "closed")) + 
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  theme_map() +
+  theme(legend.position = "top")
+
+ggsave("family_tree_Targaryen.pdf", dpi = 500, limitsize = FALSE)
+```
+
+```{r fig.width=20, fig.height=10, echo=FALSE, eval=FALSE}
+ggraph(graph_Martell, layout = 'gem') + 
+  geom_node_point(aes(size = popularity, color = house)) + 
+  geom_edge_link(aes(color = type), arrow = arrow(angle = 10, length = unit(4, 'mm'), type = "closed")) + 
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  theme_map() +
+  theme(legend.position = "top")
+
+ggsave("family_tree_Martell.pdf", dpi = 500, limitsize = FALSE)
+```
+
+------------------
+
+<br>
+
+```{r }
+sessionInfo()
+```
+
+
+
+
