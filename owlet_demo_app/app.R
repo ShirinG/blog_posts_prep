@@ -67,16 +67,18 @@ ui <- fluidPage(theme = shinytheme("paper"),
              windowTitle = "Data Science Demo - Owlet"
              ),
 
+  p("Analysis of Twitter followers can characterize and define customer target groups."),
+
   tabsetPanel(
     tabPanel("Languages", fluidRow(
 
       br(),
 
       column(3,
-             h4("Followers' language explorer"),
+             h4("Follower language explorer"),
              sliderInput('n_lang', 'Number of followers bigger than',
-                         min=min(dataset$n), max=max(dataset$n), value=max(dataset$n),
-                         step=10, round=0)),
+                         min=min(dataset$n), max=20, value=20,
+                         step=1, round=0)),
 
       column(9,
               plotOutput("plot_lang"))
@@ -88,6 +90,9 @@ ui <- fluidPage(theme = shinytheme("paper"),
 
       column(3,
              h4("Follower network explorer"),
+
+             p("Followers who have many followers themselves (2nd degree followers) and who tweet regularly are likely most influential among your network and most important for spreading information/advertisement."),
+
              sliderInput('n_fol', 'Number of 2nd degree followers bigger than',
                          min=min(filter(friends_followers, group != "friend")$followersCount),
                          max=max(filter(friends_followers, group != "friend")$followersCount), value=1000,
@@ -106,22 +111,25 @@ ui <- fluidPage(theme = shinytheme("paper"),
 
       column(3,
              h4("Common words explorer"),
+
+             p("Frequent words and word pairs in your followers' descriptions indicate interests of your target customers."),
+
              sliderInput('n_com_bi', 'Word pair count bigger than',
                          min=min(bigram_counts$n),
-                         max=max(bigram_counts$n)-1, value=2,
-                         step=10, round=0),
+                         max=max(bigram_counts$n)-1, value=1,
+                         step=1, round=0),
              br(),
              sliderInput('n_com', 'Wordstem count bigger than',
                          min=min(count(tidy_descr, word_stem, sort = TRUE)$n),
-                         max=max(count(tidy_descr, word_stem, sort = TRUE)$n)-1, value=20,
-                         step=10, round=0)),
+                         max=max(count(tidy_descr, word_stem, sort = TRUE)$n)-1, value=2,
+                         step=1, round=0)),
 
       column(9,
              plotOutput("plot_common_bigram")),
 
-      br(),
-
       column(7,
+             br(),
+
              plotOutput("plot_common_bar")),
 
       column(5,
@@ -133,15 +141,18 @@ ui <- fluidPage(theme = shinytheme("paper"),
 
       br(),
 
+      column(12,
+             p("Sentiment analysis of your followers' descriptions further characterizes your target customers.")),
+
       column(8,
              sliderInput('n_sent', 'Sentiment count bigger than',
                          min=min(tidy_descr_sentiment_count$n),
                          max=max(tidy_descr_sentiment_count$n)-1, value=min(tidy_descr_sentiment_count$n),
-                         step=10, round=0)),
+                         step=1, round=0)),
       column(4,
              sliderInput('maxwords', 'Max. number of words to display in wordcloud:',
-                         min=10,
-                         max=500, value=100,
+                         min=1,
+                         max=500, value=500,
                          step=10, round=0)),
       br(),
 
@@ -160,14 +171,17 @@ ui <- fluidPage(theme = shinytheme("paper"),
 
       br(),
 
+      column(12,
+             p("Topic modeling uses algorithms to group followers according to topics covered in their descriptions. Beta values (upper plot) describe how characteristic different words are for each topic (higher beta == higher specficity). Gamme values (lower plot) describe followers are with strongest topic affiliations (higher gamma == stronger affiliation).")),
+
       column(6,
-             sliderInput('n_top_words', 'Number of words with highest beta:',
+             sliderInput('n_top_words', 'Number of words with highest beta (~ occurrence in topics 1-5):',
                          min=1,
                          max=10, value=4,
                          step=1, round=0)),
 
       column(6,
-             sliderInput('n_top_fol', 'Number of followers with highest gamma:',
+             sliderInput('n_top_fol', 'Number of followers with highest gamma (~ affiliation with topics 1-5):',
                          min=5,
                          max=15, value=15,
                          step=1, round=0)),
@@ -205,7 +219,7 @@ server <- function(input, output, session) {
       labs(x = "language ISO 639-1 code",
            y = "number of followers",
            title = "What languages do your followers speak?",
-           subtitle = paste0("English is the most predominant language of your ", length(unique(friends_followers$screenName)), " followers."),
+           subtitle = paste0("Predominant languages of your ", length(unique(friends_followers$screenName)), " followers."),
            caption = "Data: Twitter followers of @SchrederGroup (June 12th 2017)")
   })
 
@@ -235,7 +249,7 @@ server <- function(input, output, session) {
       labs(x = "number of tweets per day",
            y = "density",
            title = "How active are your most influential followers?",
-           subtitle = "The majority of your followers with > 1000 followers tweets up to 50x per day.",
+           subtitle = paste0("Number of tweets per day of your followers with > ", input$n_fol, " followers."),
            caption = paste("Data: Tweets by", nrow(filter(friends_followers, group != "friend" & followersCount > input$n_fol)), "followers with >", input$n_fol, "followers of @SchrederGroup (June 12th 2017)"))
   })
 
@@ -250,7 +264,6 @@ server <- function(input, output, session) {
       labs(x = "",
            y = "count of word stem in all followers' descriptions",
            title = "What are the most commonly used words in your followers' descriptions?",
-           subtitle = "Frequent words in your followers' descriptions indicate interests of your target customers.",
            caption = paste("Data: Twitter follower descriptions (btw.", summary(count(tidy_descr, screenName, sort = TRUE)$n)[1], "and", summary(count(tidy_descr, screenName, sort = TRUE)$n)[6], "words) of @SchrederGroup (June 12th 2017)"))
   })
 
@@ -280,7 +293,6 @@ server <- function(input, output, session) {
       geom_node_text(aes(label = name), vjust = 1, hjust = 1) +
       theme_void() +
       labs(title = "Most commonly used word pairs in followers' descriptions",
-           subtitle = "Frequent word pairs in your followers' descriptions indicate interests of your target customers.",
            caption = paste("Data: Twitter follower descriptions (btw.", summary(count(tidy_descr, screenName, sort = TRUE)$n)[1], "and", summary(count(tidy_descr, screenName, sort = TRUE)$n)[6], "words) of @SchrederGroup (June 12th 2017)"))
   })
 
