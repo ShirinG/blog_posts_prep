@@ -1,0 +1,112 @@
+<style>
+.box {
+    color: black;
+    background: #E8E8E8;
+    position: fixed;
+    top: 30%;
+    text-align:center;
+    width:100%;
+}
+.midcenter {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+}
+</style>
+
+Network analysis of Game of Thrones family ties
+========================================================
+author: Shirin Glander
+date: June 6th, 2017
+width: 1200
+height: 800
+transition: rotate
+
+
+What can network analysis tell us?
+========================================================
+
+A network is a graph of interconnected nodes/vertices.
+
+Network analysis can e.g. be used to explore relationships in social or professional networks.
+
+These can give us a lot of information about the patterns of how people interact.
+
+
+The Game of Thrones character network
+========================================================
+left: 35%
+
+<br>
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+R.Version()$version.string
+```
+
+```{r warning=FALSE, message=FALSE}
+library(tidyverse)
+library(igraph)
+library(statnet)
+```
+
+<div class="midcenter" style="margin-left:-480px; margin-top:100px;width: 20%;">
+<img src="figures_post/family_tree_GoT_legend.png"></img>
+</div>
+***
+<div class="midcenter" style="margin-left:-200px; margin-top:-350px;width: 65%;">
+<img src="figures_post/unnamed-chunk-9-1.png"></img>
+</div>
+
+
+The Game of Thrones character network
+========================================================
+left: 33%
+
+<br>
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+R.Version()$version.string
+```
+
+```{r warning=FALSE, message=FALSE}
+library(tidyverse)
+library(igraph)
+library(statnet)
+```
+
+<div class="midcenter" style="margin-left:-480px; margin-top:100px;width: 20%;">
+<img src="figures_post/family_tree_GoT_legend.png"></img>
+</div>
+***
+<div class="midcenter" style="margin-left:-200px; margin-top:-350px;width: 70%;">
+<img src="figures_post/unnamed-chunk-9-1_2.png"></img>
+</div>
+
+
+Who are the most important characters?
+========================================================
+
+<div class="midcenter" style="margin-left:-420px; margin-top:-350px;width: 65%;">
+<img src="figures_post/unnamed-chunk-21-1.png"></img>
+</div>
+
+Who are the most important characters?
+========================================================
+
+<div class="midcenter" style="margin-left:-420px; margin-top:-350px;width: 65%;">
+<img src="figures_post/unnamed-chunk-21-1_2.png"></img>
+</div>
+
+
+Thank you!
+========================================================
+
+<div class="box" style="margin-top:-120px;"><SPAN STYLE="font-size:100%">Full code with explanations and bigger pictures at <a href="https://shiring.github.io/networks/2017/05/15/got_final">https://shiring.github.io/networks/2017/05/15/got_final</a></SPAN></div>
+
+<div class="box" style="margin-top:0px;"><SPAN STYLE="font-size:100%">You can find the full code for how I generated the network at <a href="https://github.com/ShirinG/blog_posts_prep/blob/master/GoT/got.Rmd">https://github.com/ShirinG/blog_posts_prep/blob/master/GoT/got.Rmd</a></SPAN></div>
+
+<div class="midcenter" style="margin-left:-420px;margin.top:1200;">
+<img src="map.png"></img>
+</div>
+
+<div class="box" style="margin-top:500px;"><SPAN STYLE="font-size:95%"> MünsteR User Group at <a href="https://www.meetup.com/Munster-R-Users-Group">https://www.meetup.com/Munster-R-Users-Group</a></SPAN></div>

@@ -15,8 +15,6 @@ In this post, I am exploring network analysis techniques in a family network of 
 
 Not surprisingly, we learn that House Stark (specifically Ned and Sansa) and House Lannister (especially Tyrion) are the most important family connections in Game of Thrones; they also connect many of the storylines and are central parts of the narrative.
 
-
-
 <br>
 
 ## What is a network?

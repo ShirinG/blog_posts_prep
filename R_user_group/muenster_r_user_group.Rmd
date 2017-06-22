@@ -32,4 +32,5 @@ ggmap(munster) +
   annotate("text", x=7.565, y=51.96, label= "MünsteR", size = 8) +
   annotate("text", x=7.685, y=51.945, label= "R Users Group", size = 5) +
   theme_map()
+ggsave("r_user_group_logo.pdf")
 ```
