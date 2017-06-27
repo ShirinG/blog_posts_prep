@@ -335,6 +335,39 @@ legend("topleft", legend = c("Node color:", as.character(color_vertices$house), 
 
 Ned Stark is the character with highest betweenness. This makes sense, as he and his children (specifically Sansa and her arranged marriage to Tyrion) connect to other houses and are the central points from which the story unfolds. However, we have to keep in mind here, that my choice of who is important enough to include in the network (e.g. the Stark ancestors) and who not (e.g. the whole complicated mess that is the Targaryen and Frey family tree) makes this result somewhat biased.
 
+
+```{r echo=FALSE, eval=FALSE}
+library(networkD3)
+library(htmlwidgets)
+
+wc <- cluster_walktrap(union_graph_undir)
+members <- membership(wc)
+
+net_d3 <- igraph_to_networkD3(union_graph_undir, group = members)
+```
+
+```{r echo=FALSE, eval=FALSE}
+# Create force directed network plot
+nw <- forceNetwork(Links = net_d3$links, 
+             Nodes = net_d3$nodes,
+             #Nodesize = "proportion_human_genes",
+             radiusCalculation = JS(" Math.sqrt(d.nodesize)*15"),
+             linkDistance = 100,
+             zoom = TRUE, 
+             opacity = 0.9,
+             Source = 'source', 
+             Target = 'target',
+             linkWidth = networkD3::JS("function(d) { return d.value/5; }"),
+             bounded = FALSE, 
+             colourScale = JS("d3.scale.category10()"),
+             NodeID = 'name', 
+             Group = 'group', 
+             fontSize = 10, 
+             charge = -200,
+             opacityNoHover = 0.7)
+saveWidget(nw, 'network_test.html')
+```
+
 <br>
 
 ### Diameter
