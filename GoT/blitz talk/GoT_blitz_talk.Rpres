@@ -17,7 +17,7 @@
 Network analysis of Game of Thrones family ties
 ========================================================
 author: Shirin Glander
-date: June 6th, 2017
+date: July 6th, 2017
 width: 1200
 height: 800
 transition: rotate
@@ -31,6 +31,10 @@ A network is a graph of interconnected nodes/vertices.
 Network analysis can e.g. be used to explore relationships in social or professional networks.
 
 These can give us a lot of information about the patterns of how people interact.
+
+# Disclaimer
+
+Beware of spoilers for Game of Thrones Season 6!
 
 
 The Game of Thrones character network
