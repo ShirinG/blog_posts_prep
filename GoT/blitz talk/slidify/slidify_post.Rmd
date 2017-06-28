@@ -1,7 +1,10 @@
 ---
-title: "Creating presentations with solidify"
+title: "Creating presentations with slidify (code for my blitz talk about Game of Thrones character network)"
 author: "Shirin Glander"
 date: "6/28/2017"
 output: html_document
 ---
 
+There are several ways to generate presentations directly with a and RStudio. The most widely used are to use [LaTeX's beamer class with RMarkdown](http://rmarkdown.rstudio.com/beamer_presentation_format.html) (produces a pdf with slides) or use [R presentations](https://support.rstudio.com/hc/en-us/articles/200486468-Authoring-R-Presentations) as it comes with RStudio.
+
+[my post about network analysis of Game of Thrones family ties](https://shiring.github.io/networks/2017/05/15/got_final)
