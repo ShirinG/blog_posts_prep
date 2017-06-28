@@ -1,107 +1,125 @@
 ---
-title: "Data Science Demo"
-author: "Dr. Shirin Glander"
-date: "June 7, 2017"
-output: html_document
+title: "Characterising Twitter followers with tidytext"
+author: "Shirin Glander"
+date: "`r Sys.Date()`"
+output:
+  md_document:
+    variant: markdown_github
 ---
 
+Resources I found useful for this analysis were [http://www.rdatamining.com/docs/twitter-analysis-with-r](http://www.rdatamining.com/docs/twitter-analysis-with-r) and [http://tidytextmining.com/tidytext.html](http://tidytextmining.com/tidytext.html)
 
-## Twitter analysis
+## Retrieving Twitter data
 
-- **Twitter data from me on June 7th 2017**
+I am using **twitteR** to retrieve data from Twitter.
 
-```{r eval=FALSE, echo=FALSE}
-# http://www.rdatamining.com/docs/twitter-analysis-with-r
-# http://tidytextmining.com/tidytext.html
+```{r}
+library(twitteR)
+```
 
+Btw: I have also tried **rtweet** but for some reason, my API key, secret and token (that worked with **twitteR**) resulted in a "failed to authorize" error with **rtweet**'s functions.
+
+<br>
+
+Once we have [set up our Twitter REST API](https://dev.twitter.com/rest/public), we get the necessary information to authenticate our access.
+
+```{r eval=FALSE}
 consumerKey = "INSERT KEY HERE"
 consumerSecret = "INSERT SECRET KEY HERE"
 accessToken = "INSERT TOKEN HERE"
 accessSecret = "INSERT SECRET TOKEN HERE"
 ```
 
-```{r message=FALSE, echo=FALSE}
-library(gridExtra)
-library(grid)
-library(twitteR)
-library(tidyverse)
-library(tidyquant)
-library(tidytext)
-library(tm)
-library(reshape2)
-library(wordcloud)
-library(SnowballC)
-library(hunspell)
-library(igraph)
-library(ggraph)
-library(topicmodels)
-library(widyr)
+```{r eval=FALSE}
+options(httr_oauth_cache = TRUE)
+
+setup_twitter_oauth(consumer_key = consumerKey, 
+                    consumer_secret = consumerSecret, 
+                    access_token = accessToken, 
+                    access_secret = accessSecret)
 ```
 
-```{r eval=FALSE, echo=FALSE}
-options(httr_oauth_cache=TRUE)
+Now, we can access information from Twitter, like timeline tweets, user timelines, mentions, tweets & retweets, followers, etc.
 
-setup_twitter_oauth(consumer_key = consumerKey, consumer_secret = consumerSecret, access_token = accessToken, access_secret = accessSecret)
+All the following datasets were retrieved on June 7th 2017, converted to a dataframe for tidy analysis and saved for later use:
+
+```{r eval=FALSE, echo=FALSE}
+me <- homeTimeline(n = 3200)
 ```
 
-```{r eval=FALSE, echo=FALSE}
-me <- homeTimeline(n=3200)
-```
+- the last 3200 tweets on my timeline
 
-```{r eval=FALSE, echo=FALSE}
+```{r eval=FALSE}
 my_name <- userTimeline("ShirinGlander", n = 3200, includeRts=TRUE)
 my_name_df <- twListToDF(my_name)
 save(my_name_df, file = "my_name.RData")
 ```
 
-```{r eval=FALSE, echo=FALSE}
-my_mentions <- mentions(n=3200)
+- my last 3200 mentions and retweets
+
+```{r eval=FALSE}
+my_mentions <- mentions(n = 3200)
 my_mentions_df <- twListToDF(my_mentions)
 save(my_mentions_df, file = "my_mentions.RData")
 
-my_retweets <- retweetsOfMe(n=3200)
+my_retweets <- retweetsOfMe(n = 3200)
 my_retweets_df <- twListToDF(my_retweets)
 save(my_retweets_df, file = "my_retweets.RData")
 ```
 
-```{r eval=FALSE, echo=FALSE}
-tweetstome <- searchTwitter("@ShirinGlander", n=3200)
+- the last 3200 tweets to me
+
+```{r eval=FALSE}
+tweetstome <- searchTwitter("@ShirinGlander", n = 3200)
 tweetstome_df <- twListToDF(tweetstome)
 save(tweetstome_df, file = "tweetstome.RData")
 ```
 
-### Friends and Followers
+- my friends and followers
 
-```{r eval=FALSE, echo=FALSE}
+```{r eval=FALSE}
 user <- getUser("ShirinGlander")
 
-user$toDataFrame()
-
-friends <- user$getFriends() # who this user follows
+friends <- user$getFriends() # who I follow
 friends_df <- twListToDF(friends)
 save(friends_df, file = "my_friends.RData")
 
-followers <- user$getFollowers() # this user's followers
+followers <- user$getFollowers() # my followers
 followers_df <- twListToDF(followers)
 save(followers_df, file = "my_followers.RData")
+```
 
-followers2 <- followers[[1]]$getFollowers() # a follower's followers
+```{r eval=FALSE, echo=FALSE}
+followers2 <- followers[[1]]$getFollowers() # my first follower's followers
 followers2_df <- twListToDF(followers2)
 save(followers2_df, file = "my_followers2.RData")
 ```
 
-```{r echo=FALSE}
+<br>
+
+## Analysing my friends and followers
+
+For today, I will characterise my friends and followers.
+
+```{r }
 load("my_friends.RData")
 load("my_followers.RData")
 ```
 
-- Friends (who me follows on Twitter): `r length(unique(friends_df$screenName))`
+I am goint to use packages from the **tidyverse** (**tidyquant** for plotting).
 
-- Followers (who follow me on Twitter): `r length(unique(followers_df$screenName))`
+```{r message=FALSE}
+library(tidyverse)
+library(tidyquant)
+```
 
-- Friends who are also followers: `r length(which(unique(friends_df$screenName) %in% unique(followers_df$screenName)))`
+- Number of friends (who I follow on Twitter): `r length(unique(friends_df$screenName))`
 
-```{r echo=FALSE}
+- Number of followers (who follows me on Twitter): `r length(unique(followers_df$screenName))`
+
+- Number of friends who are also followers: `r length(which(unique(friends_df$screenName) %in% unique(followers_df$screenName)))`
+
+```{r echo=FALSE, eval=FALSE}
 fr_fol <- friends_df$screenName[which(unique(friends_df$screenName) %in% unique(followers_df$screenName))]
 fr_only <- friends_df$screenName[which(!unique(friends_df$screenName) %in% unique(followers_df$screenName))]
 
@@ -120,9 +138,13 @@ save(friendships, file = "friendships.RData")
 
 <br>
 
-```{r fig.width=8, fig.height=4, echo=FALSE}
-friends_followers %>%
-  filter(group != "friend") %>%
+### What languages do my followers speak?
+
+One of the columns describing my followers is which language they have set for their Twitter account.
+Not surprisingly, English is by far the most predominant language of my followers, followed by German, Spanish and French.
+
+```{r fig.width=8, fig.height=4}
+followers_df %>%
   count(lang) %>%
   droplevels() %>%
   ggplot(aes(x = reorder(lang, desc(n)), y = n)) +
@@ -130,15 +152,11 @@ friends_followers %>%
     theme_tq() +
     theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
     labs(x = "language ISO 639-1 code",
-         y = "number of followers",
-         title = "What languages do your followers speak?",
-         subtitle = "English is by far the most predominant language of your followers.",
-         caption = "Data: Twitter followers of @ShirinGlander (June 5th 2017)")
+         y = "number of followers")
 ```
 
-```{r fig.width=8, fig.height=4, echo=FALSE}
-friends_followers %>%
-  filter(group != "friend") %>%
+```{r fig.width=8, fig.height=4, echo=FALSE, eval=FALSE}
+followers_df %>%
   count(lang) %>%
   filter(n < 200) %>%
   droplevels() %>%
@@ -148,31 +166,94 @@ friends_followers %>%
     theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
     labs(x = "language ISO 639-1 code",
          y = "number of followers",
-         title = "What languages other than English do your followers speak?",
-         subtitle = "Your second biggest group of followers is Spanish-speaking.",
-         caption = "Data: Twitter followers of @ShirinGlander (June 5th 2017)")
+         caption = "Data: Twitter followers of @ShirinGlander on June 7th 2017")
 ```
 
 <br>
 
-- Who are your most "influential" followers (i.e. followers with the biggest network)?
+### Who are my most "influential" followers (i.e. followers with the biggest network)?
 
-```{r warning=FALSE, echo=FALSE}
-friends_followers %>%
-  filter(group != "friend") %>%
+I also have information about the number of followers that each of my followers have (2nd degree followers)
+Most of my followers is followed by up to ~ 1000 people, while only a few have a very large network.
+
+```{r warning=FALSE, fig.width=4, fig.height=3}
+followers_df %>%
   ggplot(aes(x = log2(followersCount))) +
     geom_density(color = palette_light()[1], fill = palette_light()[1], alpha = 0.8) +
     theme_tq() +
     labs(x = "log2 of number of followers",
-         y = "density",
-         title = "How far does your network of followers reach?",
-         subtitle = "The majority of your followers is followed by up to ~ 1000 people.",
-         caption = "Data: Twitter 2nd degree followers of @ShirinGlander (June 5th 2017)")
+         y = "density")
 ```
 
-```{r echo=FALSE}
-friends_followers %>%
-  filter(group != "friend" & followersCount > 1000) %>%
+<br>
+
+### How active are my followers (i.e. how often do they tweet)
+
+The followers dataframe also tells me how many statuses [(i.e. tweets)](https://dev.twitter.com/rest/reference/get/statuses/user_timeline) each of followers have. To make the numbers comparable, I am normalising them by the number of days that they have had their accounts to calculate the average number of tweets per day.
+
+```{r warning=FALSE, fig.width=4, fig.height=3}
+followers_df %>%
+  mutate(date = as.Date(created, format = "%Y-%m-%d"),
+         today = as.Date("2017-06-07", format = "%Y-%m-%d"),
+         days = as.numeric(today - date),
+         statusesCount_pDay = statusesCount / days) %>%
+  ggplot(aes(x = log2(statusesCount_pDay))) +
+    geom_density(color = palette_light()[1], fill = palette_light()[1], alpha = 0.8) +
+    theme_tq() +
+    labs(x = "log2 of average nr. of tweets per day")
+```
+
+<br>
+
+Who are my followers with the biggest network and who tweet the most?
+
+```{r message=FALSE}
+followers_df %>%
+  mutate(date = as.Date(created, format = "%Y-%m-%d"),
+         today = as.Date("2017-06-07", format = "%Y-%m-%d"),
+         days = as.numeric(today - date),
+         statusesCount_pDay = statusesCount / days) %>%
+  select(screenName, followersCount, statusesCount_pDay) %>%
+  arrange(desc(followersCount)) %>%
+  top_n(10)
+```
+
+```{r message=FALSE}
+followers_df %>%
+  mutate(date = as.Date(created, format = "%Y-%m-%d"),
+         today = as.Date("2017-06-07", format = "%Y-%m-%d"),
+         days = as.numeric(today - date),
+         statusesCount_pDay = statusesCount / days) %>%
+  select(screenName, followersCount, statusesCount_pDay) %>%
+  arrange(desc(statusesCount_pDay)) %>%
+  top_n(10)
+```
+
+<br>
+
+Is there a correlation between number of followers and number of tweets?
+
+Indeed, there seems to be a slight correlation (albeit not supported by too many data points) that users with many followers also tend to tweet more often.
+
+```{r warning=FALSE, fig.width=8, fig.height=4}
+followers_df %>%
+  mutate(date = as.Date(created, format = "%Y-%m-%d"),
+         today = as.Date("2017-06-07", format = "%Y-%m-%d"),
+         days = as.numeric(today - date),
+         statusesCount_pDay = statusesCount / days) %>%
+  ggplot(aes(x = log2(followersCount), y = log2(statusesCount_pDay), color = days)) +
+    geom_smooth(method = "lm") +
+    geom_point() +
+    scale_color_continuous(low = palette_light()[1], high = palette_light()[2]) +
+    theme_tq() +
+    labs(x = "log2 of number of followers",
+         y = "log2 average nr. of tweets per day",
+         color = "nr. of days account is in existence")
+```
+
+```{r eval=FALSE, echo=FALSE}
+followers_df %>%
+  filter(followersCount > 1000) %>%
   mutate(date = as.Date(created, format = "%Y-%m-%d"),
          today = as.Date("2017-06-05", format = "%Y-%m-%d"),
          days = as.numeric(today - date),
@@ -184,14 +265,18 @@ friends_followers %>%
          y = "density",
          title = "How active are your most influential followers?",
          subtitle = "The majority of your followers with > 1000 followers tweets up to 20x per day.",
-         caption = paste("Data: Tweets by", nrow(filter(friends_followers, group != "friend" & followersCount > 1000)), "followers with > 1 mio followers of @ShirinGlander (June 5th 2017)"))
+         caption = paste("Data: Tweets by", nrow(filter(followers_df, followersCount > 1000)), "followers with > 1 mio followers of @ShirinGlander (June 7th 2017)"))
 ```
 
-```{r echo=FALSE, eval=FALSE}
-friends_followers %>%
-  filter(group != "friend" & log2(followersCount) > 5) %>%
-  select(screenName, followersCount, statusesCount, description, location, lang) %>%
-  arrange(desc(followersCount), desc(statusesCount))
+<br>
+
+### Tidy text analysis
+
+Next, I want to know more about my followers by analysing their Twitter descriptions with the **tidytext** package.
+
+```{r}
+library(tidytext)
+library(SnowballC)
 ```
 
 ```{r eval=FALSE, echo=FALSE}
@@ -200,12 +285,16 @@ get_sentiments("bing")
 get_sentiments("nrc")
 ```
 
-```{r echo=FALSE}
+Let's first assign a unique id to each user:
+
+```{r }
 followers_df <- followers_df %>%
   mutate(id = seq_along(1:n()))
 ```
 
-```{r eval=FALSE, echo=FALSE}
+To prepare the data, I am going to unnest the words in the user descriptions, convert them to the word stem, remove stop words and urls.
+
+```{r eval=FALSE}
 data(stop_words)
 
 tidy_descr <- followers_df %>%
@@ -217,13 +306,15 @@ tidy_descr <- followers_df %>%
 save(tidy_descr, file = "my_tidy_descr.RData")
 ```
 
-```{r, echo=FALSE}
+```{r}
 load("my_tidy_descr.RData")
 ```
 
 <br>
 
-```{r, echo=FALSE, fig.width=8, fig.height=5}
+#### What are the most commonly used words in my followers' descriptions?
+
+```{r fig.width=5, fig.height=3}
 tidy_descr %>%
   count(word_stem, sort = TRUE) %>%
   filter(n > 20) %>%
@@ -232,24 +323,30 @@ tidy_descr %>%
     coord_flip() +
     theme_tq() +
     labs(x = "",
-         y = "count of word stem in all followers' descriptions",
-         title = "What are the most commonly used words in your followers' descriptions?",
-         subtitle = "Frequent words in your followers' descriptions indicate interests of your target customers.",
-         caption = paste("Data: Twitter follower descriptions (btw.", summary(count(tidy_descr, screenName, sort = TRUE)$n)[1], "and", summary(count(tidy_descr, screenName, sort = TRUE)$n)[6], "words) of @ShirinGlander (June 5th 2017)"))
+         y = "count of word stem in all followers' descriptions")
 ```
 
 <br>
 
-- Word cloud of most frequent words words in your followers' descriptions
+This, we can also show with a word cloud.
 
-```{r fig.width=6, fig.height=6, echo=FALSE}
+```{r message=FALSE}
+library(wordcloud)
+library(tm)
+```
+
+```{r fig.width=6, fig.height=6}
 tidy_descr %>%
   count(word_stem) %>%
   mutate(word_stem = removeNumbers(word_stem)) %>%
   with(wordcloud(word_stem, n, max.words = 100, colors = palette_light()))
 ```
 
-```{r echo=FALSE}
+<br>
+
+Instead of looking for the most common words, we can also look for the most common ngrams: here, for the most common word pairs (bigrams) in my followers' descriptions.
+
+```{r eval=FALSE}
 tidy_descr_ngrams <- followers_df %>%
   unnest_tokens(bigram, description, token = "ngrams", n = 2) %>%
   filter(!grepl("\\.|http", bigram)) %>%
@@ -262,19 +359,35 @@ bigram_counts <- tidy_descr_ngrams %>%
 save(bigram_counts, file = "bigram_counts.RData")
 ```
 
-```{r echo=FALSE, eval=FALSE}
+```{r}
+load("bigram_counts.RData")
+```
+
+```{r fig.width=5, fig.height=2.5}
 bigram_counts %>%
   filter(n > 10) %>%
-  ggplot(aes(x = reorder(word1, n), y = reorder(word2, n), fill = n)) +
+  ggplot(aes(x = reorder(word1, -n), y = reorder(word2, -n), fill = n)) +
     geom_tile(alpha = 0.8, color = "white") +
     scale_fill_gradientn(colours = c(palette_light()[[1]], palette_light()[[2]])) +
     coord_flip() +
     theme_tq() +
     theme(legend.position = "right") +
-    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+    labs(x = "first word in pair",
+         y = "second word in pair",
+         fill = "count")
 ```
 
-```{r fig.width=10, fig.height=6, echo=FALSE}
+<br>
+
+These, we can also show as a graph:
+
+```{r message=FALSE}
+library(igraph)
+library(ggraph)
+```
+
+```{r }
 bigram_graph <- bigram_counts %>%
   filter(n > 5) %>%
   graph_from_data_frame()
@@ -282,27 +395,28 @@ bigram_graph <- bigram_counts %>%
 set.seed(1)
 
 a <- grid::arrow(type = "closed", length = unit(.15, "inches"))
+```
 
+```{r fig.width=6, fig.height=4}
 ggraph(bigram_graph, layout = "fr") +
   geom_edge_link(aes(edge_alpha = n), show.legend = FALSE,
                  arrow = a, end_cap = circle(.07, 'inches')) +
   geom_node_point(color =  palette_light()[1], size = 5, alpha = 0.8) +
-  geom_node_text(aes(label = name), vjust = 1, hjust = 1) +
-  theme_void() +
-  labs(title = "Most commonly used word pairs in followers' descriptions",
-         subtitle = "Frequent word pairs in your followers' descriptions indicate interests of your target customers.",
-         caption = paste("Data: Twitter follower descriptions (btw.", summary(count(tidy_descr, screenName, sort = TRUE)$n)[1], "and", summary(count(tidy_descr, screenName, sort = TRUE)$n)[6], "words) of @ShirinGlander (June 5th 2017)"))
+  geom_node_text(aes(label = name), vjust = 1.5, hjust = 0.5) +
+  theme_void()
 ```
 
-```{r echo=FALSE}
+<br>
+
+We can also use bigram analysis to identify negated meanings (this will become relevant for sentiment analysis later). So, let's look at which words are preceded by "not" or "no".
+
+```{r }
 bigrams_separated <- followers_df %>%
   unnest_tokens(bigram, description, token = "ngrams", n = 2) %>%
   filter(!grepl("\\.|http", bigram)) %>%
   separate(bigram, c("word1", "word2"), sep = " ") %>%
-  filter(word1 == "not") %>%
+  filter(word1 == "not" | word1 == "no") %>%
   filter(!word2 %in% stop_words$word)
-
-#count(bigrams_separated, word1, word2, sort = TRUE)
 
 not_words <- bigrams_separated %>%
   filter(word1 == "not") %>%
@@ -311,7 +425,7 @@ not_words <- bigrams_separated %>%
   ungroup()
 ```
 
-```{r echo=FALSE, eval=FALSE}
+```{r fig.width=5, fig.height=1}
 not_words %>%
   mutate(contribution = n * score) %>%
   arrange(desc(abs(contribution))) %>%
@@ -320,13 +434,20 @@ not_words %>%
   ggplot(aes(word2, n * score, fill = n * score > 0)) +
     geom_col(show.legend = FALSE) +
     scale_fill_manual(values = palette_light()) +
-    xlab("Words preceded by \"not\"") +
-    ylab("Sentiment score * number of occurrences") +
+    labs(x = "",
+         y = "Sentiment score * number of occurrences",
+         title = "Words preceded by \"not\"") +
     coord_flip() +
     theme_tq()
 ```
 
-```{r echo=FALSE}
+<br>
+
+#### What's the predominant sentiment in my followers' descriptions?
+
+For sentiment analysis, I will exclude the words with a negated meaning from nrc and switch their postive and negative meanings from bing (although in this case, there was only one negated word, "endorsement", so it won't make a real difference).
+
+```{r}
 tidy_descr_sentiment <- tidy_descr %>%
   left_join(select(bigrams_separated, word1, word2), by = c("word" = "word2")) %>%
   inner_join(get_sentiments("nrc"), by = "word") %>%
@@ -335,7 +456,9 @@ tidy_descr_sentiment <- tidy_descr %>%
   mutate(nrc = ifelse(!is.na(word1), NA, nrc),
          bing = ifelse(!is.na(word1) & bing == "positive", "negative", 
                        ifelse(!is.na(word1) & bing == "negative", "positive", bing)))
+```
 
+```{r fig.width=6, fig.height=2.5}
 tidy_descr_sentiment %>%
   filter(nrc != "positive") %>%
   filter(nrc != "negative") %>%
@@ -348,13 +471,16 @@ tidy_descr_sentiment %>%
     coord_flip() +
     theme_tq() +
     labs(x = "",
-         y = "count of sentiment in followers' descriptions",
-         title = "What's the predominant sentiment in your followers' descriptions?",
-         subtitle = "Most common sentiments in your followers' descriptions characterize your target customers.",
-         caption = "Data: Twitter follower descriptions (corrected for negated meaning) of @ShirinGlander (June 5th 2017)")
+         y = "count of sentiment in followers' descriptions")
 ```
 
-```{r echo=FALSE}
+<br>
+
+Are followers' descriptions mostly positive or negative?
+
+The majority of my followers have predominantly positive descriptions.
+
+```{r fig.width=4, fig.height=2.5}
 tidy_descr_sentiment %>%
   count(screenName, word, bing) %>%
   group_by(screenName, bing) %>%
@@ -363,17 +489,15 @@ tidy_descr_sentiment %>%
   mutate(sentiment = positive - negative) %>%
   ggplot(aes(x = sentiment)) +
     geom_density(color = palette_light()[1], fill = palette_light()[1], alpha = 0.8) +
-    theme_tq() +
-    labs(title = "Are followers' descriptions mostly positive or negative?",
-         subtitle = "The majority of your followers have predominantly positive descriptions.",
-         caption = "Data: Twitter follower descriptions (corrected for negated meaning) of @ShirinGlander (June 5th 2017)")
+    theme_tq()
 ```
 
 <br>
 
-- What are the most common positive and negative words in followers' descriptions?
+What are the most common positive and negative words in followers' descriptions?
 
-```{r echo=FALSE, fig.width=5, fig.height=5}
+```{r message=FALSE, fig.width=5, fig.height=5}
+library(reshape2)
 tidy_descr_sentiment %>%
   count(word, bing, sort = TRUE) %>%
   acast(word ~ bing, value.var = "n", fill = 0) %>%
@@ -381,7 +505,15 @@ tidy_descr_sentiment %>%
                    max.words = 100)
 ```
 
-```{r echo=FALSE, fig.width=12, fig.height=5}
+<br>
+
+#### Topic modeling: are there groups of followers with specific interests?
+
+```{r}
+library(topicmodels)
+```
+
+```{r eval=FALSE, fig.width=12, fig.height=5}
 dtm_words_count <- tidy_descr %>%
   mutate(word_stem = removeNumbers(word_stem)) %>%
   count(screenName, word_stem, sort = TRUE) %>%
@@ -396,12 +528,13 @@ topics_beta <- tidy(dtm_lda, matrix = "beta")
 save(topics_beta, file = "topics_beta.RData")
 ```
 
-```{r echo=FALSE}
+```{r }
 load("topics_beta.RData")
 ```
 
-```{r echo=FALSE, fig.width=12, fig.height=5}
+```{r fig.width=12, fig.height=5}
 p1 <- topics_beta %>%
+  filter(grepl("[a-z]+", term)) %>%
   group_by(topic) %>%
   top_n(10, beta) %>%
   ungroup() %>%
@@ -416,17 +549,16 @@ p1 <- topics_beta %>%
     theme_tq() +
     labs(x = "",
          y = "beta (~ occurrence in topics 1-5)",
-         title = "Topic modeling: are there groups of followers with specific interests?",
-         subtitle = "The top 10 most characteristic words describe topic categories.")
+         title = "The top 10 most characteristic words describe topic categories.")
 ```
 
-```{r echo=FALSE, eval=FALSE}
+```{r eval=FALSE}
 topics_gamma <- tidy(dtm_lda, matrix = "gamma") %>%
   arrange(desc(gamma))
 save(topics_gamma, file = "topics_gamma.RData")
 ```
 
-```{r echo=FALSE}
+```{r }
 load("topics_gamma.RData")
 ```
 
@@ -448,11 +580,13 @@ assignments <- augment(dtm_lda, data = dtm_words_count) %>%
   arrange(document)
 ```
 
-```{r echo=FALSE, fig.width=14, fig.height=7}
+```{r fig.width=14, fig.height=7}
 user_topic <- topics_gamma %>%
   group_by(document) %>%
   top_n(1, gamma)
+```
 
+```{r fig.width=14, fig.height=7}
 p2 <- user_topic %>%
   #filter(gamma > 0.25) %>%
   group_by(topic) %>%
@@ -463,17 +597,24 @@ p2 <- user_topic %>%
     scale_color_manual(values = palette_light()) +
     scale_fill_manual(values = palette_light()) +
     theme_tq() +
-    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+    coord_flip() +
     labs(x = "",
-         y = "gamma\n(~ affiliation with topics 1-5)",
-         subtitle = "Followers' affiliation with topics could be used for targeted advertisement.",
-         caption = "Data: Twitter follower descriptions of @ShirinGlander (June 5th 2017)")
+         y = "gamma\n(~ affiliation with topics 1-5)")
 ```
 
-```{r echo=FALSE, fig.width=14, fig.height=9}
-grid.arrange(p1, p2, ncol = 1, heights = c(0.6, 0.4))
+```{r message=FALSE, fig.width=16, fig.height=9}
+library(grid)
+library(gridExtra)
+grid.arrange(p1, p2, ncol = 1, heights = c(0.7, 0.3))
 ```
 
+------------------
+
+<br>
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=4, fig.align="center", cache=FALSE}
+sessionInfo()
+```
 
 ```{r eval=FALSE, echo=FALSE}
 library(widyr)
@@ -509,7 +650,6 @@ word_cors %>%
   geom_node_text(aes(label = name), repel = TRUE) +
   theme_void()
 ```
-
 
 
 ```{r eval=FALSE, echo=FALSE}

@@ -1,0 +1,7 @@
+---
+title: "Creating presentations with solidify"
+author: "Shirin Glander"
+date: "6/28/2017"
+output: html_document
+---
+
