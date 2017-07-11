@@ -1,0 +1,48 @@
+---
+title: "Google Trends"
+output: html_document
+---
+
+https://trends.google.com/trends/
+
+Google Trends is a useful way to compare changes in popularity of certain search terms over time, and Google Trends data can be used as a proxy for all sorts of difficult-to-measure quantities like economic activity and disease propagation. If you'd like to use Google Trends data in your own analyses, the gtrendsR package for R is now available on CRAN. This package by Philippe Massicotte and Dirk Eddelbuettel adds functions to connect with your Google account, and download Trends data for one or more search terms at daily or weekly resolution over a specified period of time.
+
+For example, this code shows the relative prevalence of searches including the terms "data is" and "data are" over the past 10 years:
+
+https://christophriedl.net/2013/08/22/google-trends-with-r/
+
+```{r}
+if (!require("devtools")) install.packages("devtools")
+devtools::install_github("PMassicotte/gtrendsR")
+```
+
+```{r}
+library(gtrendsR)
+gconnect(usr = "shirins.playground@gmail.com", 
+         psw = "googletrendsblogpost") 
+lang_trend <- gtrends(c("data is", "data are"), res="week")
+plot(lang_trend)
+```
+
+```{r}
+library(magrittr)
+
+email = "test@gmail.com"
+password = "xxxx"
+url = "https://www.google.com/trends/trendsReport?q=test&cat=0&content=1&export=1"
+
+session = rvest::html_session("https://accounts.google.com/accounts/ServiceLogin")
+
+form = session %>% rvest::html_node("form") %>% rvest::html_form() %>%
+    rvest::set_values(Email=email)
+
+session %<>% rvest::submit_form(form) 
+
+form = session %>% rvest::html_node("form") %>% rvest::html_form() %>%
+    rvest::set_values(Passwd=password)
+
+session %<>% rvest::submit_form(form) 
+
+result = session %>% rvest::jump_to(url)
+```
+
