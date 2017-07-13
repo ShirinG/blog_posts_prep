@@ -1,5 +1,0 @@
----
-title: "Object Character Recognition with tesseract"
-output: html_document
----
-

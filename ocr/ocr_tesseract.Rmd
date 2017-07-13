@@ -1,6 +1,10 @@
 ---
-title: "Optical Character Recognition (OCR) of non-English documents with tesseract and R"
-output: html_document
+title: "Optical Character Recognition (OCR) of non-English documents in R using Tesseract"
+author: "Shirin Glander"
+date: "`r Sys.Date()`"
+output:
+  md_document:
+    variant: markdown_github
 ---
 
 One of the many great packages of rOpenSci has implemented [the open source engine Tesseract](https://ropensci.org/blog/blog/2016/11/16/tesseract).
@@ -44,7 +48,7 @@ tesseract 3.05.01
   libjpeg 8d : libpng 1.6.29 : libtiff 4.0.8 : zlib 1.2.8
 ```
 
-So, I also needed to install the training data for version 3 (the default is for version 4), which you can [find here](https://github.com/tesseract-ocr/tessdata/tree/3.04.00).
+So, I also needed to download the training data for version 3 (the default is for version 4), which you can [find here](https://github.com/tesseract-ocr/tessdata/tree/3.04.00) and copy it to tesseracts language folder.
 
 <br>
 
@@ -62,29 +66,46 @@ Image nr. 1 is machine-generated and should therefore yield much better results 
 
 This, we can also do from within R, making use of another one of rOpenSci's packages: [**magick**](https://cran.r-project.org/web/packages/magick/vignettes/intro.html).
 
-```{r message=FALSE}
-library(magick)
-image1 <- image_read("/Users/shiringlander/Documents/Github/Blog_posts_prep/ocr/beispiel_scan.png")
-image2 <- image_read("/Users/shiringlander/Documents/Github/Blog_posts_prep/ocr/beispiel_scan_2.jpg")
-```
+However, it seems that **magick** doesn't have a function that converts an image to black and white, so I am using **EBImage** first. Because **magick** wants an magick image object for input, I saved the black-and-white image first and then read it in again with `image_read()`. This isn't exactly an elegant solution, so if someone knows of a better way to do this, please let me know!
 
-If we want to inspect our images from within R, we can use **magick**'s `image_browse()` function.
+```{r}
+library(EBImage) # install from Bioconductor!
+```
 
 ```{r eval=FALSE}
-image_browse(image1)
+color.image <- readImage("/Users/shiringlander/Documents/Github/Blog_posts_prep/ocr/beispiel_scan.png")
+bw.image <- channel(color.image,"gray")
+writeImage(bw.image,file="/Users/shiringlander/Documents/Github/Blog_posts_prep/ocr/beispiel_scan_bw.png")
 ```
 
+```{r eval=FALSE}
+color.image <- readImage("/Users/shiringlander/Documents/Github/Blog_posts_prep/ocr/beispiel_scan_2.jpg")
+bw.image <- channel(color.image,"gray")
+writeImage(bw.image,file="/Users/shiringlander/Documents/Github/Blog_posts_prep/ocr/beispiel_scan_2_bw.jpg")
+```
+
+```{r message=FALSE}
+library(magick)
+image1 <- image_read("/Users/shiringlander/Documents/Github/Blog_posts_prep/ocr/beispiel_scan_bw.png")
+image2 <- image_read("/Users/shiringlander/Documents/Github/Blog_posts_prep/ocr/beispiel_scan_2_bw.jpg")
+```
+
+Now, we can follow [Tesseract's guidelines on how to improve image quality](https://github.com/tesseract-ocr/tesseract/wiki/ImproveQuality):
+
+```{r message=FALSE}
+library(tidyverse)
+```
 
 ```{r eval=FALSE, message=FALSE}
 image_bearb1 <- image1 %>%
     image_scale("x2000") %>%                        # rescale
     image_background("white", flatten = TRUE) %>%   # set background to white
     image_trim() %>%                                # Trim edges that are the background color from the image.
-    image_noise() %>%                               # Reduce noise in image using a noise peak elimination filter.
+    image_noise() %>%                               # Reduce noise in image using a noise peak elimination filter
     image_enhance() %>%                             # Enhance image (minimize noise)
     image_normalize() %>%                           # Normalize image (increase contrast by normalizing the pixel values to span the full range of color values).
     image_contrast(sharpen = 1) %>%                 # increase contrast
-    image_deskew(treshold = 40)
+    image_deskew(treshold = 40)                     # deskew image -> creates negative offset in some scans
 ```
 
 ```{r eval=FALSE}
@@ -92,27 +113,33 @@ image_bearb2 <- image2 %>%
     image_scale("x2000") %>%                        # rescale
     image_background("white", flatten = TRUE) %>%   # set background to white
     image_trim() %>%                                # Trim edges that are the background color from the image.
-    image_noise() %>%                               # Reduce noise in image using a noise peak elimination filter.
+    image_noise() %>%                               # Reduce noise in image using a noise peak elimination filter
     image_enhance() %>%                             # Enhance image (minimize noise)
     image_normalize() %>%                           # Normalize image (increase contrast by normalizing the pixel values to span the full range of color values).
     image_contrast(sharpen = 1) %>%                 # increase contrast
-    image_deskew(treshold = 40)                     # deskew image -> creates negative offset in some scans == error
+    image_deskew(treshold = 40)                     # deskew image -> creates negative offset in some scans
 ```
 
+If we want to inspect our images from within R, we can use **magick**'s `image_browse()` function.
+
 ```{r eval=FALSE}
-image_browse(image_bearb1)
+image_browse(image_bearb2)
 ```
 
 <br>
 
 ## OCR
 
-For some reason, I couldn't solve the error message I got when directly pointing the processed images to the `ocr()` function: `Magick: TIFF: negative image positions unsupported`. This error results from `image_deskew()` but all potential solutions did not seem to be implemented with the r package of ImageMagick, so I had to resort to a work-around: I saved the images first and then pointed `ocr()` to the images. This worked without a hitch!
+Tesseract's central function is called `ocr()`.
+
+For some reason, I couldn't solve the error message I got when directly pointing the processed images to the `ocr()` function: `Magick: TIFF: negative image positions unsupported`. This error results from `image_deskew()` but all potential solutions don't seem to be implemented with the R package of ImageMagick, so I had to resort to a work-around: I saved the images first and then pointed `ocr()` to the images. This worked without a hitch!
 
 ```{r eval=FALSE}
 image_write(image_bearb1, path = "/Users/shiringlander/Documents/Github/Blog_posts_prep/ocr/beispiel_scan_bearb.png", format = "png")
 image_write(image_bearb2, path = "/Users/shiringlander/Documents/Github/Blog_posts_prep/ocr/beispiel_scan_2_bearb.jpg", format = "jpg")
 ```
+
+When we are not working with an English document, we can specify the language with the `engine = tesseract(language = "deu")` option. We can also set a whole [range of parameters](http://www.sk-spell.sk.cx/tesseract-ocr-parameters-in-302-version) but for now, I will only show how to use a whitelist: by specifying characters in a whitelist, tesseract will only look for these in the document. You can e.g. use this if you only expect numbers in you document. Here I am not being very restrictive, though...
 
 ```{r warning=FALSE}
 whitelist <- "1234567890-.,;:qwertzuiopüasdfghjklöäyxcvbnmQWERTZUIOPÜASDFGHJKLÖÄYXCVBNM@ß€!$%&/()=?+"
@@ -132,16 +159,19 @@ text2 <- ocr("/Users/shiringlander/Documents/Github/Blog_posts_prep/ocr/beispiel
 
 Evaluating how good our model performed isn't trivial either. While we as humans can very easily judge the accuracy of our digitzed text just by looking at it, we need a standardized and automated way to evaluate model performance.
 
-We could e.g. create a list of words that we want to have recognized. This could be adapted to include any list of given words that are important for the final task that you want to apply your model too.
+One way would be to manually transcribe your document and check it against the text that tesseract extracted. However, this is very labor-intensive and time-consuming, especially when you're working with a large number of documents!
 
-Or, as I am going to do here, we can compare the words to a list of words from a dictionary to get an idea about how many "words" are actual words. This is of course not fool-proof, either. Some words may not be in our dictionary or they are borrowed from another language, they might be names of people or places, addresses, abbreviations, etc.
+Another, slightly less arduous way would be to create a list of relevant words that we want to have recognized. This could be adapted to include any list of given words that are important for you to be recognized (if you wanted to be able to search for them among your documents, for example).
+
+Or, as I am going to do here, we can go a much easier way and compare the words that tesseract recognized to a list of words from a dictionary to get an idea about how many of them are actual words. This is of course not without problems: Some words may not be in our dictionary or they are borrowed from another language, they might be names of people or places, addresses, abbreviations, etc. Also, because we don't have a benchmark for our document, we will only get an estimation of how many words were correctly recognized. But we can really only compare different tesseract models against each other with this method.
 
 Because we use different grammatical forms of words, we also want to stem both our recognized words and the dictionary before comparing them!
 
 Here, I am using the [German Open Thesaurus](https://www.openthesaurus.de/about/download).
 
+To separate the text and the dictionary into distinct words, I am using the **tidytext** package together with **SnowballC** for word stemming. Finally, I am going to remove duplicate entries.
+
 ```{r message=FALSE}
-library(tidyverse)
 library(tidytext)
 library(SnowballC)
 
@@ -152,17 +182,18 @@ openthes <- data.frame(words = read_lines("/Users/shiringlander/Documents/Projek
   distinct()
 ```
 
+This leaves us with `r nrow(openthes)` German reference words.
+
+Now, we can do the same with our tesseract output.
+
 ```{r}
-# separate into words and tidy
 text_1_df <- data.frame(text = read.delim(textConnection(text1),    # make text into dataframe
                                           header = FALSE, 
                                           sep = "\n", 
                                           strip.white = TRUE)) %>%
   mutate(text = as.character(V1)) %>%
   unnest_tokens(word, text) %>%                                      # separate words
-  mutate(word = wordStem(word, language = "deu")) %>%                # use word stem
-  mutate(nchar = nchar(word)) %>%                                    # count letters per word
-  filter(nchar > 1)                                                  # remove 1 letter "words"
+  mutate(word = wordStem(word, language = "deu"))                    # use word stem
 
 text_2_df <- data.frame(text = read.delim(textConnection(text2),    # make text into dataframe
                                           header = FALSE, 
@@ -170,10 +201,10 @@ text_2_df <- data.frame(text = read.delim(textConnection(text2),    # make text 
                                           strip.white = TRUE)) %>%
   mutate(text = as.character(V1)) %>%
   unnest_tokens(word, text) %>%                                      # separate words
-  mutate(word = wordStem(word, language = "deu")) %>%                # use word stem
-  mutate(nchar = nchar(word)) %>%                                    # count letters per word
-  filter(nchar > 1)                                                  # remove 1 letter "words"
+  mutate(word = wordStem(word, language = "deu"))                    # use word stem
 ```
+
+To get an estimate about model performance, I am then counting how many of the words that were recognized in each document are also part of the German dictionary (and therefore likely to be real words) and plot the results.
 
 ```{r}
 res1 <- text_1_df %>%
@@ -195,10 +226,21 @@ rbind(res1, res2) %>%
     geom_bar(stat = "identity") +
     scale_fill_brewer(palette = "Set1") +
     theme_bw() +
-    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
     labs(title = "OCR performance evaluation",
          subtitle = "Percentage of words that mapped to reference",
          fill = "in ref",
          x = "")
+```
+
+Between 80 and 90% of recognized words seem to be actual words!
+
+Of course, the less "standard" a document is, the more difficult it will be to extract text correctly but I'd say this isn't bad for a first attempt!
+
+---
+
+<br>
+
+```{r}
+sessionInfo()
 ```
 

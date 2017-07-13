@@ -27,8 +27,8 @@ plot(lang_trend)
 ```{r}
 library(magrittr)
 
-email = "test@gmail.com"
-password = "xxxx"
+email = "shirins.playground@gmail.com"
+password = "googletrendsblogpost"
 url = "https://www.google.com/trends/trendsReport?q=test&cat=0&content=1&export=1"
 
 session = rvest::html_session("https://accounts.google.com/accounts/ServiceLogin")
