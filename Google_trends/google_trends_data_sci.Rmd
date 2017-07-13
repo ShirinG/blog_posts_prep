@@ -11,38 +11,34 @@ For example, this code shows the relative prevalence of searches including the t
 
 https://christophriedl.net/2013/08/22/google-trends-with-r/
 
-```{r}
+```{r eval=FALSE}
 if (!require("devtools")) install.packages("devtools")
 devtools::install_github("PMassicotte/gtrendsR")
 ```
 
 ```{r}
 library(gtrendsR)
-gconnect(usr = "shirins.playground@gmail.com", 
-         psw = "googletrendsblogpost") 
-lang_trend <- gtrends(c("data is", "data are"), res="week")
-plot(lang_trend)
+
+datasci <- gtrends("data science")
+plot(datasci)
+str(datasci)
+
+dataeng <- gtrends("data engineer")
+
+ml <- gtrends("machine learning")
+
+business <- gtrends("business intelligence")
+
+predictive <- gtrends("predictive analytics")
+predictive2 <- gtrends("predictive maintenance")
 ```
 
 ```{r}
-library(magrittr)
-
-email = "shirins.playground@gmail.com"
-password = "googletrendsblogpost"
-url = "https://www.google.com/trends/trendsReport?q=test&cat=0&content=1&export=1"
-
-session = rvest::html_session("https://accounts.google.com/accounts/ServiceLogin")
-
-form = session %>% rvest::html_node("form") %>% rvest::html_form() %>%
-    rvest::set_values(Email=email)
-
-session %<>% rvest::submit_form(form) 
-
-form = session %>% rvest::html_node("form") %>% rvest::html_form() %>%
-    rvest::set_values(Passwd=password)
-
-session %<>% rvest::submit_form(form) 
-
-result = session %>% rvest::jump_to(url)
+save(datasci, file = "datasci.RData")
+save(dataeng, file = "dataeng.RData")
+save(ml, file = "ml.RData")
+save(business, file = "business.RData")
+save(predictive, file = "predictive.RData")
+save(predictive2, file = "predictive2.RData")
 ```
 
