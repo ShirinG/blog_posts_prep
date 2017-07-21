@@ -84,25 +84,20 @@ save(followers_df, file = "my_followers.RData")
 ```{r eval=FALSE, echo=FALSE, include=FALSE}
 load("friends.RData")
 
-for (i in 123:length(friends)) {
+for (i in 1:length(friends)) {
   friends2 <- friends[[i]]$getFriends() # my friends' friends
   friends2_df <- twListToDF(friends2) %>%
     rownames_to_column() %>%
     mutate(friend = as.character(friends[[i]]$id))
   
-  if (i == 123) {
+  if (i == 1) {
     friends2_df_final <- friends2_df
   } else {
     friends2_df_final <- rbind(friends2_df_final, friends2_df)
   }
   print(i)
 }
-```
 
-```{r eval=FALSE, echo=FALSE, include=FALSE}
-friends2_df_final_2 <- friends2_df_final
-load("friends_friends.RData")
-friends2_df_final <- rbind(friends2_df_final, friends2_df_final_2)
 save(friends2_df_final, file = "friends_friends.RData")
 ```
 
@@ -160,31 +155,6 @@ As we can see, the vast majority of friends and followers have English and Germa
 
 We can also try to identify our most influential followers. These would be followers with a big network (i.e. who have many followers) and who also tweet/re-tweet a lot. If we capture these followers’ interests with one of our tweets, they are a) more likely to re-tweet and b) will reach a bigger audience by doing so!
 
-```{r warning=FALSE, fig.width=10, fig.height=3, echo=FALSE, eval=FALSE}
-followers_df %>%
-  mutate(date = as.Date(created, format = "%Y-%m-%d"),
-         today = as.Date("2017-06-07", format = "%Y-%m-%d"),
-         days = as.numeric(today - date),
-         statusesCount_pDay = statusesCount / days) %>%
-  select(statusesCount_pDay, followersCount) %>%
-  gather(x, y) %>%
-  ggplot(aes(x = y)) +
-    facet_grid(.~ factor(x), scales = "free") +
-    geom_density(color = "#377F97", fill = "#377F97", alpha = 0.8) +
-    theme_bw() +
-    theme(strip.background=element_rect(fill = "#4A9888")) +
-    scale_x_continuous(trans = 'log2') +
-    labs(x = expression(log[2]~of~{2}^nd~"degree"~"followers, friends & posts per day"),
-         y = "density")
-```
-
-```{r echo=FALSE, eval=FALSE, include=FALSE}
-followers_df %>%
-  arrange(-followersCount) %>%
-  select(name, followersCount, description, followersCount) %>%
-  .[1:10,]
-```
-
 ```{r message=FALSE, echo=FALSE}
 top_fol <- followers_df %>%
   mutate(date = as.Date(created, format = "%Y-%m-%d"),
@@ -232,23 +202,6 @@ followers_df %>%
 
 The plot above shows the correlation between the number of followers codecentric’s followers have and how often they tweet.
 
-```{r eval=FALSE, echo=FALSE, include=FALSE}
-followers_df %>%
-  filter(followersCount > 1000) %>%
-  mutate(date = as.Date(created, format = "%Y-%m-%d"),
-         today = as.Date("2017-06-05", format = "%Y-%m-%d"),
-         days = as.numeric(today - date),
-         statusesCount_pDay = statusesCount / days) %>%
-  ggplot(aes(x = statusesCount_pDay)) +
-    geom_density(color = "#377F97", fill = "#377F97", alpha = 0.8) +
-    theme_bw() +
-    labs(x = "number of tweets per day",
-         y = "density",
-         title = "How active are your most influential followers?",
-         subtitle = "The majority of your followers with > 1000 followers tweets up to 20x per day.",
-         caption = paste("Data: Tweets by", nrow(filter(followers_df, followersCount > 1000)), "followers with > 1 mio followers of @ShirinGlander (June 7th 2017)"))
-```
-
 Now that we know who our most influential followers are, we can analyze their short descriptions about themselves to find out what they are interested in. By proxy, this will give us an idea about which kind of tweets are most likely to capture their interest. Of course, this is not to say that these are the only people who (should) matter and that tweets should be tailored towards these interests only! Covering a wide range of topics makes for an interesting and authentic profile but since “knowledge is power”, it can be extremely valuable to know which tweets/posts are likely to increase visibility!
 
 ```{r message=FALSE, echo=FALSE}
@@ -276,12 +229,6 @@ library(tidytext)
 library(SnowballC)
 ```
 
-```{r eval=FALSE, echo=FALSE}
-get_sentiments("afinn")
-get_sentiments("bing")
-get_sentiments("nrc")
-```
-
 To prepare the data, I am splitting the user descriptions into words, convert each word to its word stem and remove stop words.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -297,18 +244,6 @@ tidy_descr <- top_fol_tweet2 %>%
 ```
 
 We can now identify the most common words in these descriptions.
-
-```{r fig.width=5, fig.height=4, echo=FALSE, eval=FALSE, message=FALSE}
-tidy_descr %>%
-  count(word_stem, sort = TRUE) %>%
-  top_n(10) %>%
-  ggplot(aes(x = reorder(word_stem, n), y = n)) +
-    geom_col(color = "#377F97", fill = "#377F97", alpha = 0.8) +
-    coord_flip() +
-    theme_bw() +
-    labs(x = "",
-         y = "count of word stem in all followers' descriptions")
-```
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 library(wordcloud)
@@ -336,20 +271,6 @@ tidy_descr_ngrams <- top_fol_tweet2 %>%
 
 bigram_counts <- tidy_descr_ngrams %>%
   count(word1, word2, sort = TRUE)
-```
-
-```{r fig.width=5, fig.height=2.5, echo=FALSE, eval=FALSE}
-bigram_counts %>%
-  ggplot(aes(x = reorder(word1, -n), y = reorder(word2, -n), fill = n)) +
-    geom_tile(alpha = 0.8, color = "white") +
-    scale_fill_gradientn(colours = c("#5BB18E", "#377F97")) +
-    coord_flip() +
-    theme_bw() +
-    theme(legend.position = "right") +
-    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
-    labs(x = "first word in pair",
-         y = "second word in pair",
-         fill = "count")
 ```
 
 ```{r message=FALSE, echo=FALSE}
@@ -391,28 +312,7 @@ bigrams_separated <- top_fol_tweet2 %>%
   separate(bigram, c("word1", "word2"), sep = " ") %>%
   filter(word1 == "not" | word1 == "no" | word1 == "nicht" | word1 == "kein") %>%
   filter(!word2 %in% stop_words$word)
-
-not_words <- bigrams_separated %>%
-  inner_join(get_sentiments("afinn"), by = c(word2 = "word")) %>%
-  count(word2, score.y, sort = TRUE) %>%
-  ungroup()
 ```
-
-```{r fig.width=5, fig.height=2, echo=FALSE, eval=FALSE}
-not_words %>%
-  mutate(contribution = n * score.y) %>%
-  arrange(desc(abs(contribution))) %>%
-  mutate(word2 = reorder(word2, contribution)) %>%
-  ggplot(aes(word2, n * score.y, fill = n * score.y > 0)) +
-    geom_col(show.legend = FALSE) +
-    scale_fill_manual(values = c("#5BB18E", "#377F97")) +
-    labs(x = "",
-         y = "Sentiment score * number of occurrences",
-         title = "Words preceded by \"not\"") +
-    coord_flip() +
-    theme_bw()
-```
-
 
 ```{r echo=FALSE}
 tidy_descr_sentiment <- tidy_descr %>%
@@ -423,22 +323,6 @@ tidy_descr_sentiment <- tidy_descr %>%
   mutate(nrc = ifelse(!is.na(word1), NA, nrc),
          bing = ifelse(!is.na(word1) & bing == "positive", "negative", 
                        ifelse(!is.na(word1) & bing == "negative", "positive", bing)))
-```
-
-```{r fig.width=6, fig.height=2.5, echo=FALSE, eval=FALSE}
-tidy_descr_sentiment %>%
-  filter(nrc != "positive") %>%
-  filter(nrc != "negative") %>%
-  gather(x, y, nrc, bing) %>%
-  count(x, y, sort = TRUE) %>%
-  ggplot(aes(x = reorder(y, n), y = n)) +
-    facet_wrap(~ x, scales = "free") +
-    geom_col(color = "#377F97", fill = "#377F97", alpha = 0.8) +
-    coord_flip() +
-    theme_bw() +
-    theme(strip.background=element_rect(fill = "#4A9888")) +
-    labs(x = "",
-         y = "count of sentiment in followers' descriptions")
 ```
 
 ```{r sentiment, fig.width=8, fig.height=3, echo=FALSE, fig.align="center"}
@@ -552,41 +436,6 @@ dev.off()
 
 ![](twitter_net_betweenness.png)
 
-```{r echo=FALSE, eval=FALSE}
-graph_diameter <- graph
-node_diameter <- get.diameter(graph_diameter,  directed = TRUE)
-
-V(graph_diameter)$color <- scales::alpha(V(graph_diameter)$color, alpha = 0.2)
-V(graph_diameter)$size <- 1
-
-V(graph_diameter)[node_diameter]$color <- "red"
-V(graph_diameter)[node_diameter]$size <- 5
-
-E(graph_diameter)$color <- "grey"
-E(graph_diameter)$width <- 1
-
-E(graph_diameter, path = node_diameter)$color <- "red"
-E(graph_diameter, path = node_diameter)$width <- 5
-
-V(graph_diameter)$label <- ifelse(V(graph_diameter)$color == "red", V(graph_diameter)$name, NA)
-```
-
-```{r fig.width=40, fig.height=40, echo=FALSE, eval=FALSE}
-pdf("twitter_net_diameter.pdf", width = 70, height = 80)
-plot(graph_diameter,
-     layout = layout,
-     vertex.label = V(graph_diameter)$label,
-     vertex.color = V(graph_diameter)$color, 
-     vertex.size = V(graph_diameter)$size, 
-     vertex.frame.color = "gray", 
-     vertex.label.color = "black", 
-     vertex.label.cex = 2,
-     edge.arrow.size = 1,
-     edge.color = E(graph_diameter)$color,
-     edge.width = E(graph_diameter)$width)
-dev.off()
-```
-
 ## Topic Modeling
 
 We can now use the follower descriptions again to identify groups of users with similar interests. For a detailed introduction to topic modeling, see [Matthias Radtke's "Topic Modeling of the codecentric Blog Articles""](https://blog.codecentric.de/en/2017/01/topic-modeling-codecentric-blog-articles/).
@@ -609,7 +458,7 @@ all_descr <- rbind(select(friends_df, screenName, description),
   filter(!grepl("\\.|http", word))
 ```
 
-```{r fig.width=12, fig.height=5, echo=FALSE, eval=FALSE}
+```{r fig.width=12, fig.height=5, echo=FALSE}
 dtm_words_count <- all_descr %>%
   mutate(word_stem = removeNumbers(word_stem)) %>%
   count(screenName, word_stem, sort = TRUE) %>%
@@ -621,11 +470,6 @@ dtm_words_count <- all_descr %>%
 dtm_lda <- LDA(dtm_words_count, k = 5, control = list(seed = 1234))
 
 topics_beta <- tidy(dtm_lda, matrix = "beta")
-save(topics_beta, file = "topics_beta.RData")
-```
-
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-load("topics_beta.RData")
 ```
 
 The wordcloud below visualizes the most characteristic words for each topic.
@@ -642,33 +486,14 @@ topics_beta %>%
   comparison.cloud(colors = brewer.pal(5, "Set1"))
 ```
 
-```{r fig.width=12, fig.height=3, echo=FALSE, eval=FALSE}
-topics_beta %>%
-  #filter(grepl("[a-z]+", term)) %>%
-  group_by(topic) %>%
-  top_n(10, beta) %>%
-  ungroup() %>%
-  arrange(topic, -beta) %>%
-  mutate(term = reorder(term, beta)) %>%
-  ggplot(aes(term, beta, color = factor(topic))) +
-    geom_col(show.legend = FALSE, alpha = 0.8, color = "#377F97", fill = "#377F97") +
-    facet_wrap(~ topic, ncol = 5, scales = "free") +
-    coord_flip() +
-    theme_bw() +
-    theme(strip.background=element_rect(fill = "#4A9888")) +
-    labs(x = "",
-         y = "beta (~ occurrence in topics 1-5)",
-         title = "The top 10 most characteristic words describe topic categories.")
-```
-
-```{r echo=FALSE, eval=FALSE}
+```{r echo=FALSE}
 topics_gamma <- tidy(dtm_lda, matrix = "gamma") %>%
   arrange(desc(gamma))
 ```
 
 Now, we want to know which topic each user in our network belongs to. This, we can find out with the so called gamma score. Each user is assigned the topic with highest respective gamma score.
 
-```{r fig.width=14, fig.height=7, echo=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
+```{r fig.width=14, fig.height=7, echo=FALSE, message=FALSE, warning=FALSE}
 user_topic <- topics_gamma %>%
   group_by(document) %>%
   top_n(1, gamma)
@@ -689,11 +514,9 @@ node_table$color = ifelse(node_table$topic == 1, pal[1],
                           ifelse(node_table$topic == 2, pal[2],
                                  ifelse(node_table$topic == 3, pal[3],
                                         ifelse(node_table$topic == 4, pal[4], pal[5]))))
-save(node_table, file = "node_table.RData")
 ```
 
 ```{r echo=FALSE, eval=FALSE}
-load("node_table.RData")
 graph2 <- graph_from_data_frame(edge_table, directed = TRUE, vertices = node_table)
 V(graph2)$size <- ifelse(V(graph2)$name == "codecentric", 4, 1)
 V(graph2)$label <- ifelse(V(graph2)$name == "codecentric", "codecentric", NA)
