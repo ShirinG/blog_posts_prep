@@ -9,52 +9,20 @@ output:
     theme: cayman
 ---
 
-**Tags:**
-
-- Data Science
-- network analysis
-- graph theory
-- text mining
-- sentiment analysis
-- topic modeling
-- real-world
-- twitter
-- social media
-- analysis
-
-<br>
-
-Recently, Matthias Radtke has written a very nice blog post on [Topic Modeling of the codecentric Blog Articles](https://blog.codecentric.de/en/2017/01/topic-modeling-codecentric-blog-articles/), where he is giving a comprehensive introduction to Topic Modeling. In this article I am showing a real-world example of how we can use Data Science to gain insights from text data and social network analysis.
-
-I am using publicly available Twitter data to characterize codecentric’s friends and followers for
-
-- identifying the most "influential" followers and using text analysis tools like sentiment analysis to characterize their interests from their user descriptions
-- performing Social Network Analysis on friends, followers and a subset of second degree connections to identify key players who will be able to pass on information to a wide reach of other users and
-- combing this network analysis with topic modeling to identify meta-groups with similar interests.
-
-Knowing the interests and social network positions of our followers allows us to identify key users who are likely to retweet posts that fall within their range of interests and who will reach a wide audience.
-
-## Twitter Mining
-
-Via the [Twitter REST API](https://dev.twitter.com/rest/public) anybody can access Tweets, Timelines, Friends and Followers of users or hash-tags. One drawback of the REST API is its rate limit of 15 requests per application per rate limit window (15 minutes). An alternative would be to use [Twitters's Streaming API](https://dev.twitter.com/streaming/overview), if you wanted to continuously stream data of specific users, topics or hash-tags. Here though, I want to look at a snapshot of codecentric’s Twitter followers to show some of the possibilities that analyzing this information holds.
-
-```{r echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE}
+```{r }
 library(twitteR)
-```
-
-```{r echo=FALSE, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(tidytext)
 ```
 
-```{r eval=FALSE, echo=FALSE, include=FALSE}
+```{r }
 consumerKey = "INSERT KEY HERE"
 consumerSecret = "INSERT SECRET KEY HERE"
 accessToken = "INSERT TOKEN HERE"
 accessSecret = "INSERT SECRET TOKEN HERE"
 ```
 
-```{r eval=FALSE, echo=FALSE, include=FALSE}
+```{r }
 options(httr_oauth_cache = TRUE)
 
 setup_twitter_oauth(consumer_key = consumerKey, 
@@ -63,27 +31,18 @@ setup_twitter_oauth(consumer_key = consumerKey,
                     access_secret = accessSecret)
 ```
 
-```{r eval=FALSE, echo=FALSE, include=FALSE}
+```{r }
 user <- getUser("codecentric")
 
 friends <- user$getFriends() # who I follow
-save(friends, file = "friends.RData")
-
 friends_df <- twListToDF(friends) %>%
   rownames_to_column()
-save(friends_df, file = "my_friends.RData")
-
 followers <- user$getFollowers() # my followers
-save(followers, file = "followers.RData")
-
 followers_df <- twListToDF(followers) %>%
   rownames_to_column()
-save(followers_df, file = "my_followers.RData")
 ```
 
-```{r eval=FALSE, echo=FALSE, include=FALSE}
-load("friends.RData")
-
+```{r }
 for (i in 1:length(friends)) {
   friends2 <- friends[[i]]$getFriends() # my friends' friends
   friends2_df <- twListToDF(friends2) %>%
@@ -97,41 +56,16 @@ for (i in 1:length(friends)) {
   }
   print(i)
 }
-
-save(friends2_df_final, file = "friends_friends.RData")
 ```
 
-```{r echo=FALSE}
-load("my_friends.RData")
-load("my_followers.RData")
-load("friends_friends.RData")
-```
-
-On July 15th, codecentric had `r length(unique(friends_df$screenName))` friends (users who codecentric follows) and `r length(unique(followers_df$screenName))` followers (users who follow codecentric), while `r length(which(unique(friends_df$screenName) %in% unique(followers_df$screenName)))` of them are simultaneously friends & followers.
-
-```{r echo=FALSE}
+```{r }
 friends_followers_df <- rbind(mutate(followers_df, type = ifelse(screenName %in% friends_df$screenName, "friend & follower", "follower")),
       mutate(friends_df, type = ifelse(screenName %in% followers_df$screenName, "friend & follower", "friend"))) %>%
   unique()
 #summary(as.factor(friends_followers_df$type))
 ```
 
-We now have the following information about these friends and followers:
-
-- user name
-- user screen name
-- user description (the short introduction that each user can write about themselves)
-- number of tweets per user
-- number of followers per user
-- number of friends per user
-- date of account creation
-- account location
-- account language
-- etc.
-
-This data can tell us a lot about who is interested in codecentric and what we do. We can e.g. start with a simple exploratory data analysis and look at what languages the accounts are set to - no need for fancy models (just yet)!
-
-```{r languages, fig.width=5, fig.height=5, echo=FALSE, message=FALSE, fig.align="center"}
+```{r languages, fig.width=5, fig.height=5, fig.align="center"}
 friends_followers_df %>%
   group_by(type) %>%
   count(lang) %>%
@@ -149,13 +83,7 @@ friends_followers_df %>%
          caption = expression("Twitter friends and followers of @codecentric (data from July"~15^th~"2017)"))
 ```
 
-As we can see, the vast majority of friends and followers have English and German account settings. The insight derived from this is that tweeting in both, German and English will find an audience among our followers (even though English would probably be more inclusive, assuming that most, if not all, German followers will also be able to understand English tweets).
-
-### Who are codecentric’s most influential followers and what are they interested in?
-
-We can also try to identify our most influential followers. These would be followers with a big network (i.e. who have many followers) and who also tweet/re-tweet a lot. If we capture these followers’ interests with one of our tweets, they are a) more likely to re-tweet and b) will reach a bigger audience by doing so!
-
-```{r message=FALSE, echo=FALSE}
+```{r }
 top_fol <- followers_df %>%
   mutate(date = as.Date(created, format = "%Y-%m-%d"),
          today = as.Date("2017-06-07", format = "%Y-%m-%d"),
@@ -166,7 +94,7 @@ top_fol <- followers_df %>%
   .[1:10, ]
 ```
 
-```{r message=FALSE, echo=FALSE}
+```{r }
 top_tweet <- followers_df %>%
   mutate(date = as.Date(created, format = "%Y-%m-%d"),
          today = as.Date("2017-06-07", format = "%Y-%m-%d"),
@@ -180,7 +108,7 @@ top_fol_tweet <- rbind(top_fol, top_tweet) %>%
   unique()
 ```
 
-```{r followers, warning=FALSE, fig.width=8, fig.height=4, echo=FALSE, fig.align="center"}
+```{r followers, fig.width=8, fig.height=4, fig.align="center"}
 followers_df %>%
   mutate(date = as.Date(created, format = "%Y-%m-%d"),
          today = as.Date("2017-06-07", format = "%Y-%m-%d"),
@@ -200,11 +128,7 @@ followers_df %>%
          caption = expression(2^nd~"degree followers and tweet rate of @codecentric Twitter followers (data from July"~15^th~"2017)"))
 ```
 
-The plot above shows the correlation between the number of followers codecentric’s followers have and how often they tweet.
-
-Now that we know who our most influential followers are, we can analyze their short descriptions about themselves to find out what they are interested in. By proxy, this will give us an idea about which kind of tweets are most likely to capture their interest. Of course, this is not to say that these are the only people who (should) matter and that tweets should be tailored towards these interests only! Covering a wide range of topics makes for an interesting and authentic profile but since “knowledge is power”, it can be extremely valuable to know which tweets/posts are likely to increase visibility!
-
-```{r message=FALSE, echo=FALSE}
+```{r }
 top_fol2 <- followers_df %>%
   mutate(date = as.Date(created, format = "%Y-%m-%d"),
          today = as.Date("2017-06-07", format = "%Y-%m-%d"),
@@ -216,22 +140,18 @@ top_fol2 <- followers_df %>%
   .[1:100, ]
 ```
 
-```{r message=FALSE, echo=FALSE}
+```{r }
 top_fol_tweet2 <- top_fol2 %>%
   left_join(select(followers_df, screenName, description), by = "screenName") %>%
   mutate(id = seq_along(1:n()))
 ```
 
-In order to extract information from the descriptions of the most influential followers (defined as the top `r nrow(top_fol_tweet2)` followers based on a score of follower count * average tweets per day), I am making use of text analysis and natural language processing tools.
-
-```{r echo=FALSE}
+```{r }
 library(tidytext)
 library(SnowballC)
 ```
 
-To prepare the data, I am splitting the user descriptions into words, convert each word to its word stem and remove stop words.
-
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r }
 data(stop_words)
 stop_words_deu <- read.table("../german_stop_words.txt", header = FALSE)
 
@@ -243,25 +163,19 @@ tidy_descr <- top_fol_tweet2 %>%
   filter(!grepl("\\.|http", word))
 ```
 
-We can now identify the most common words in these descriptions.
-
-```{r message=FALSE, echo=FALSE, warning=FALSE}
+```{r }
 library(wordcloud)
 library(tm)
 ```
 
-```{r wordcloud, fig.width=6, fig.height=6, echo=FALSE, fig.align="center"}
+```{r wordcloud, fig.width=6, fig.height=6, fig.align="center"}
 tidy_descr %>%
   count(word_stem) %>%
   mutate(word_stem = removeNumbers(word_stem)) %>%
   with(wordcloud(word_stem, n, max.words = 100, colors = c("#377F97", "#5BB18E")))
 ```
 
-Not surprisingly, software development, agile and business are among the most common words. But also IoT, data and science occur frequently in our influential followers’ descriptions!
-
-Instead of looking for the most common words, we can also look for the most common word pairs (bigrams).
-
-```{r echo=FALSE}
+```{r }
 tidy_descr_ngrams <- top_fol_tweet2 %>%
   unnest_tokens(bigram, description, token = "ngrams", n = 2) %>%
   filter(!grepl("\\.|http", bigram)) %>%
@@ -273,12 +187,12 @@ bigram_counts <- tidy_descr_ngrams %>%
   count(word1, word2, sort = TRUE)
 ```
 
-```{r message=FALSE, echo=FALSE}
+```{r }
 library(igraph)
 library(ggraph)
 ```
 
-```{r echo=FALSE}
+```{r }
 bigram_graph <- bigram_counts %>%
   filter(n > 1) %>%
   graph_from_data_frame()
@@ -288,7 +202,7 @@ set.seed(1)
 a <- grid::arrow(type = "closed", length = unit(.15, "inches"))
 ```
 
-```{r bigrams, fig.width=8, fig.height=5, echo=FALSE, fig.align="center"}
+```{r bigrams, fig.width=8, fig.height=5, fig.align="center"}
 ggraph(bigram_graph, layout = "nicely") +
   geom_edge_link(aes(edge_alpha = n), show.legend = FALSE,
                  arrow = a, end_cap = circle(.07, 'inches')) +
@@ -297,15 +211,7 @@ ggraph(bigram_graph, layout = "nicely") +
   theme_void()
 ```
 
-This graph shows the most common word pairs in our influential followers’ descriptions (arrow colors represent how often the pair occurs). Because we are looking at a relatively small set of followers, none of the word pairs occur exceptionally often. Still, data science is the most common word pair!
-
-### Sentiment analysis
-
-Sentiment analysis describes a collection of natural language processing tools and resources that are used to identify subjective information in text, like positive or negative sentiment, joy, digust, fear, anger, etc.
-
-Here, we can also use bigram analysis to identify negated meanings, i.e. words preceded by “not”, “no”, etc. In sentiment analysis, the meanings of negated words can then be reversed.
-
-```{r echo=FALSE}
+```{r }
 bigrams_separated <- top_fol_tweet2 %>%
   unnest_tokens(bigram, description, token = "ngrams", n = 2) %>%
   filter(!grepl("\\.|http", bigram)) %>%
@@ -314,7 +220,7 @@ bigrams_separated <- top_fol_tweet2 %>%
   filter(!word2 %in% stop_words$word)
 ```
 
-```{r echo=FALSE}
+```{r }
 tidy_descr_sentiment <- tidy_descr %>%
   left_join(select(bigrams_separated, word1, word2), by = c("word" = "word2")) %>%
   inner_join(get_sentiments("nrc"), by = "word") %>%
@@ -325,7 +231,7 @@ tidy_descr_sentiment <- tidy_descr %>%
                        ifelse(!is.na(word1) & bing == "negative", "positive", bing)))
 ```
 
-```{r sentiment, fig.width=8, fig.height=3, echo=FALSE, fig.align="center"}
+```{r sentiment, fig.width=8, fig.height=3, fig.align="center"}
 tidy_descr_sentiment %>%
   count(screenName, word, bing) %>%
   group_by(screenName, bing) %>%
@@ -339,29 +245,23 @@ tidy_descr_sentiment %>%
          caption = expression("Top 100 most influential @codecentric Twitter followers on July"~15^th~2017))
 ```
 
-This plot shows the overall sentiment in the user descriptions of the most influential followers. Based on Bing Liu’s sentiment lexicon, we can score how many positive and negative words were used in each followers’ description. Because this lexicon is only available for the English language, we can only get realiable scores for followers with an English description (68 out of 100 followers have an English language setting). As we can see, the majority of followers have predominantly positive descriptions.
-
-```{r echo=FALSE, eval=FALSE}
+```{r }
 top_fol_tweet2 %>%
   left_join(select(followers_df, screenName, lang), by = "screenName") %>%
   count(lang)
 ```
 
-## Social Network Analysis
-
-Social networks describe interactions between people, e.g. Twitter friends and followers. The analysis of such networks makes use of graph theory.
-
-```{r message=FALSE, echo=FALSE}
+```{r }
 library(ggraph)
 library(igraph)
 ```
 
-```{r echo=FALSE}
+```{r }
 friends2_df_final <- friends2_df_final %>%
   left_join(select(friends_df, screenName, rowname), by = c("friend" = "rowname"))
 ```
 
-```{r echo=FALSE}
+```{r }
 edge_table_1 <- data.frame(source = rep("codecentric", nrow(friends_df)),
                          target = friends_df$screenName)
 
@@ -374,7 +274,7 @@ edge_table_3 <- data.frame(source = friends2_df_final$screenName.y,
 edge_table <- rbind(edge_table_1, edge_table_2, edge_table_3)
 ```
 
-```{r echo=FALSE, eval=FALSE}
+```{r }
 graph <- graph_from_data_frame(edge_table, directed = TRUE)
 layout <- layout_with_fr(graph)
 V(graph)$color <- ifelse(V(graph)$name == "codecentric", "#377F97", "#4A9888")
@@ -382,7 +282,7 @@ V(graph)$size <- ifelse(V(graph)$name == "codecentric", 6, 1)
 V(graph)$label <- ifelse(V(graph)$name == "codecentric", "codecentric", NA)
 ```
 
-```{r fig.width=40, fig.height=40, echo=FALSE, eval=FALSE}
+```{r }
 pdf("twitter_net.pdf", width = 70, height = 80)
 plot(graph,
      layout = layout,
@@ -396,30 +296,15 @@ plot(graph,
 dev.off()
 ```
 
-Here, we can show codecentric’s Twitter followers and friends as a directed network: each node represents a user and edge arrows indicate who a user follows.
-
-Because of Twitter’s API rate limit, I have only mined the friends lists of 106 of codecentric’s friends. Still, this leaves us with a network of 39929 second degree connections!
-
-With graph theory we can calculate a number of metrics that allow us to identify key players in the network:
-
-- centrality and node degree to find nodes with many adjacent edges (i.e. users who are highly connected)
-- closeness to find central nodes (i.e. users that can spread information to many other users)
-- transitivity or clustering coefficient, which measures the probability that adjacent nodes are connected
-- PageRank or eigenvector centrality, which scores nodes according to their connections with high-degree nodes
-- betweenness centrality and diameter (to describe the shortest and longest paths between nodes)
-
-Below, I am showing the network graph with node size representing betweenness centrality. Nodes with high betweenness centrality are on the path between many other nodes, which makes them key connections or bridges between different groups of nodes. These users are very important because they are likely to pass on information to a wide reach of other users. Node positions are calculated with the Fruchterman-Reingold layout algorithm.
-
-```{r echo=FALSE, eval=FALSE}
+```{r}
 betweenness <- igraph::betweenness(graph, directed = TRUE)
 #betweenness[order(betweenness, decreasing = TRUE)]
 edge_betweenness <- igraph::edge_betweenness(graph, directed = TRUE)
 
-#V(graph)$label <- ifelse(betweenness > 1.377939e+06, V(graph)$name, NA)
 V(graph)$size <- ifelse(V(graph)$name == "codecentric", 10, betweenness * 0.000001)
 ```
 
-```{r fig.width=40, fig.height=40, echo=FALSE, eval=FALSE}
+```{r }
 pdf("twitter_net_betweenness.pdf", width = 70, height = 80)
 plot(graph,
      layout = layout,
@@ -434,19 +319,11 @@ plot(graph,
 dev.off()
 ```
 
-![](twitter_net_betweenness.png)
-
-## Topic Modeling
-
-We can now use the follower descriptions again to identify groups of users with similar interests. For a detailed introduction to topic modeling, see [Matthias Radtke's "Topic Modeling of the codecentric Blog Articles""](https://blog.codecentric.de/en/2017/01/topic-modeling-codecentric-blog-articles/).
-
-Here, I am using Latent Dirichlet Allocation with the VEM algorithm to group codecentric's first and second degree connections into five topics.
-
-```{r echo=FALSE}
+```{r }
 library(topicmodels)
 ```
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r }
 friends2_df_final <- rename(friends2_df_final, screenName = screenName.x)
 all_descr <- rbind(select(friends_df, screenName, description),
                    select(followers_df, screenName, description),
@@ -458,7 +335,7 @@ all_descr <- rbind(select(friends_df, screenName, description),
   filter(!grepl("\\.|http", word))
 ```
 
-```{r fig.width=12, fig.height=5, echo=FALSE}
+```{r }
 dtm_words_count <- all_descr %>%
   mutate(word_stem = removeNumbers(word_stem)) %>%
   count(screenName, word_stem, sort = TRUE) %>%
@@ -472,9 +349,7 @@ dtm_lda <- LDA(dtm_words_count, k = 5, control = list(seed = 1234))
 topics_beta <- tidy(dtm_lda, matrix = "beta")
 ```
 
-The wordcloud below visualizes the most characteristic words for each topic.
-
-```{r comparecloud, message=FALSE, fig.width=10, fig.height=10, echo=FALSE, warning=FALSE, fig.align="center"}
+```{r comparecloud, fig.width=10, fig.height=10, fig.align="center"}
 library(reshape2)
 library(RColorBrewer)
 topics_beta %>%
@@ -486,14 +361,12 @@ topics_beta %>%
   comparison.cloud(colors = brewer.pal(5, "Set1"))
 ```
 
-```{r echo=FALSE}
+```{r }
 topics_gamma <- tidy(dtm_lda, matrix = "gamma") %>%
   arrange(desc(gamma))
 ```
 
-Now, we want to know which topic each user in our network belongs to. This, we can find out with the so called gamma score. Each user is assigned the topic with highest respective gamma score.
-
-```{r fig.width=14, fig.height=7, echo=FALSE, message=FALSE, warning=FALSE}
+```{r }
 user_topic <- topics_gamma %>%
   group_by(document) %>%
   top_n(1, gamma)
@@ -505,9 +378,6 @@ node_table <- data.frame(name = unique(c(as.character(edge_table$source), as.cha
 node_table <- node_table[!duplicated(node_table$name), ]
 
 library(RColorBrewer)
-#pal <- brewer.pal(9, "BuGn")
-#pal <- pal[-(1:4)]
-
 pal <- brewer.pal(5, "Set1")
 
 node_table$color = ifelse(node_table$topic == 1, pal[1],
@@ -516,13 +386,13 @@ node_table$color = ifelse(node_table$topic == 1, pal[1],
                                         ifelse(node_table$topic == 4, pal[4], pal[5]))))
 ```
 
-```{r echo=FALSE, eval=FALSE}
+```{r }
 graph2 <- graph_from_data_frame(edge_table, directed = TRUE, vertices = node_table)
 V(graph2)$size <- ifelse(V(graph2)$name == "codecentric", 4, 1)
 V(graph2)$label <- ifelse(V(graph2)$name == "codecentric", "codecentric", NA)
 ```
 
-```{r fig.width=40, fig.height=40, echo=FALSE, eval=FALSE}
+```{r }
 pdf("twitter_net_topics.pdf", width = 70, height = 80)
 plot(graph2,
      layout = layout,
@@ -539,17 +409,3 @@ legend("topright", legend = c("Topic 1", "Topic 2", "Topic 3", "Topic 4", "Topic
        title = "Node color") 
 dev.off()
 ```
-
-![](twitter_net_topics.png)
-
-This network shows the different interest groups of codecentric’s Twitter friends based on what topics they and their friends were assigned to (YvesHanouille e.g. seems to be follow many users assigned to topic 1, which is about software development).
-
-Even though this network is far from representative, because it only shows a subgroup of second degree friends, we can already see the potential that this information contains! We now have a very good idea about the interests of our friends from a) their Twitter descriptions and b) from the descriptions of the users that they in turn follow. We could now, for example, generate a similar network with first and second degree followers. It would give us a good idea about the interests of users who are not (yet) followers. This information could be used to target specific interest groups by expanding or focusing more on topics where we see a potential for reaching many users via existing followers.
-
-We could even imagine combining this approach with machine learning techniques to predict follower interests and sharing-potential.
-
----
-
-All analyses have been done with R version 3.4.0.
-
-Code is available via Github.
