@@ -7,16 +7,13 @@ https://trends.google.com/trends/
 
 Google Trends is a useful way to compare changes in popularity of certain search terms over time, and Google Trends data can be used as a proxy for all sorts of difficult-to-measure quantities like economic activity and disease propagation. If you'd like to use Google Trends data in your own analyses, the gtrendsR package for R is now available on CRAN. This package by Philippe Massicotte and Dirk Eddelbuettel adds functions to connect with your Google account, and download Trends data for one or more search terms at daily or weekly resolution over a specified period of time.
 
-For example, this code shows the relative prevalence of searches including the terms "data is" and "data are" over the past 10 years:
-
-https://christophriedl.net/2013/08/22/google-trends-with-r/
 
 ```{r eval=FALSE}
 if (!require("devtools")) install.packages("devtools")
 devtools::install_github("PMassicotte/gtrendsR")
 ```
 
-```{r}
+```{r eval=FALSE}
 library(gtrendsR)
 
 datasci <- gtrends("data science")
@@ -33,7 +30,7 @@ predictive <- gtrends("predictive analytics")
 predictive2 <- gtrends("predictive maintenance")
 ```
 
-```{r}
+```{r eval=FALSE}
 save(datasci, file = "datasci.RData")
 save(dataeng, file = "dataeng.RData")
 save(ml, file = "ml.RData")
@@ -41,4 +38,54 @@ save(business, file = "business.RData")
 save(predictive, file = "predictive.RData")
 save(predictive2, file = "predictive2.RData")
 ```
+
+```{r}
+load("datasci.RData")
+load("dataeng.RData")
+load("ml.RData")
+load("business.RData")
+load("predictive.RData")
+load("predictive2.RData")
+```
+
+```{r}
+library(tidyverse)
+```
+
+```{r fig.width=5, fig.height=2.5}
+rbind(datasci$interest_over_time,
+      dataeng$interest_over_time,
+      ml$interest_over_time,
+      business$interest_over_time,
+      predictive$interest_over_time,
+      predictive2$interest_over_time) %>%
+  ggplot(aes(x = date, y = hits, color = keyword)) +
+    geom_smooth() +
+    theme_bw() +
+    theme(legend.position = "top")
+```
+
+```{r fig.width=5, fig.height=5}
+rbind(datasci$interest_over_time,
+      dataeng$interest_over_time,
+      ml$interest_over_time,
+      business$interest_over_time,
+      predictive$interest_over_time,
+      predictive2$interest_over_time) %>%
+  ggplot(aes(x = date, y = hits)) +
+    facet_grid(keyword ~ .) +
+    geom_smooth() +
+    geom_line() +
+    theme_bw()
+```
+
+
+
+
+
+
+
+
+
+
 
