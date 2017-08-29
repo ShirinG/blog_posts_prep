@@ -1,0 +1,209 @@
+---
+title: "Albanien"
+author: "Dr. Shirin Glander"
+date: "27 8 2017"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r fig.width = 6, fig.height = 5, fig.align = "center", warning=FALSE, message=FALSE}
+library(ggplot2)
+library(ggmap)
+
+map_theme <- list(theme(legend.position = "top",
+                        panel.grid.minor = element_blank(),
+                        panel.grid.major = element_blank(),
+                        panel.background = element_blank(),
+                        plot.background = element_rect(fill = "white"),
+                        panel.border = element_blank(),
+                        axis.line = element_blank(),
+                        axis.text.x = element_blank(),
+                        axis.text.y = element_blank(),
+                        axis.ticks = element_blank(),
+                        axis.title.x = element_blank(),
+                        axis.title.y = element_blank(),
+                        plot.title = element_text(size = 18)))
+
+map <- get_map(c(lon = 20, lat = 41), zoom = 7)
+```
+
+```{r}
+library(googleway)
+```
+
+```{r}
+google_directions_fun <- function(place1, place2, date) {
+  
+  pl1 <- google_geocode(address = place1,
+                       key = "AIzaSyDNGk6xQZwZ3CBsi3jVh_YM0ULHRJ7cXuU",
+                       simplify = TRUE)
+  
+  pl2 <- google_geocode(address = place2,
+                       key = "AIzaSyDNGk6xQZwZ3CBsi3jVh_YM0ULHRJ7cXuU",
+                       simplify = TRUE)
+  
+  route <- google_directions(origin = pl1$results$formatted_address,
+                          destination = pl2$results$formatted_address,
+                          key = "AIzaSyDNGk6xQZwZ3CBsi3jVh_YM0ULHRJ7cXuU",
+                          mode = "driving",
+                          simplify = TRUE)
+  
+  waypoints <- decode_pl(route$routes$overview_polyline$points) %>%
+    mutate(day = date)
+  
+  return(waypoints)
+  
+}
+```
+
+```{r}
+google_geocode(address = "Fier, Albania",
+                       key = "AIzaSyDNGk6xQZwZ3CBsi3jVh_YM0ULHRJ7cXuU",
+                       simplify = TRUE)
+```
+
+```{r}
+tirana_shkodra_route <- google_directions_fun("Tirana", "Shkodra", "2017-08-06")
+shkodra_fishte_route <- google_directions_fun("Vau i Dejës, Albania", "Fishtë", "2017-08-07")
+fishte_shkodra_route <- google_directions_fun("Shkodra", "Fishtë", "2017-08-07")
+shkodra_koman_route <- google_directions_fun("Shkodra", "Koman, SH25, 4013, Albania", "2017-08-08")
+koman_valbona_route <- google_directions_fun("Koman, SH25, 4013, Albania", "Valbona, Albania", "2017-08-08")
+valbona_gjacova_route <- google_directions_fun("Valbona, Albania", "Gjacova", "2017-08-11")
+gjacova_kruje_route <- google_directions_fun("Gjacova", "Kruja", "2017-08-11")
+kruje_elbasan_route <- google_directions_fun("Kruja", "Elbasan", "2017-08-13")
+elbasan_lin_route <- google_directions_fun("Elbasan", "Lin, Albania", "2017-08-13")
+lin_pogradec_route <- google_directions_fun("Lin, Albania", "Drilon, Albania", "2017-08-14")
+lin_berat_route <- google_directions_fun("Lin, Albania", "Berat", "2017-08-15")
+berat_osumi_route <- google_directions_fun("Berat", "Dhorës", "2017-08-16")
+berat_apollonia_route <- google_directions_fun("Berat", "Fier, Albania", "2017-08-17")
+apollonia_himare_route <- google_directions_fun("Fier, Albania", "Himarë", "2017-08-17")
+himare_sarande_route <- google_directions_fun("Himarë", "Sarande", "2017-08-19")
+sarande_blueeye_route <- google_directions_fun("Sarande", "The Blue Eye, Sarandë, Albania", "2017-08-19")
+blueeye_gjirokaster_route <- google_directions_fun("The Blue Eye, Sarandë, Albania", "Gjirokaster", "2017-08-19")
+gjirokaster_durres_route <- google_directions_fun("Gjirokaster", "Durrës", "2017-08-22")
+durres_tirana_route <- google_directions_fun("Durrës", "Tirana", "2017-08-24")
+```
+
+```{r}
+route <- rbind(tirana_shkodra_route,
+               shkodra_fishte_route,
+               fishte_shkodra_route,
+               shkodra_koman_route,
+               koman_valbona_route,
+               valbona_gjacova_route,
+               gjacova_kruje_route,
+               kruje_elbasan_route,
+               elbasan_lin_route,
+               lin_pogradec_route,
+               lin_berat_route,
+               berat_osumi_route,
+               berat_apollonia_route,
+               apollonia_himare_route,
+               himare_sarande_route,
+               sarande_blueeye_route,
+               blueeye_gjirokaster_route,
+               gjirokaster_durres_route,
+               durres_tirana_route)
+```
+
+```{r}
+places <- c("Tirana", "Shkodra", "Koman, SH25, 4013, Albania", "Valbona, Albania", "Kruja", 
+            "Elbasan", "Lin, Albania", "Pogradec", "Berat", "Dhorës", "Pojan,Fier, Albania", "Himarë", "Sarande",
+            "The Blue Eye, Sarandë, Albania", "Gjirokaster", "Durrës")
+
+for (place in places) {
+  
+  pl <- google_geocode(address = place,
+                       key = "AIzaSyDNGk6xQZwZ3CBsi3jVh_YM0ULHRJ7cXuU",
+                       simplify = TRUE)
+  
+  lat <- pl$results$geometry$location$lat
+  lon <- pl$results$geometry$location$lng
+  
+  if (place == "Tirana") {
+    places_df <- data.frame(name = place,
+                            lat = lat,
+                            lon = lon)
+  } else {
+    places_df <- rbind(places_df,
+                  data.frame(name = place,
+                             lat = lat,
+                             lon = lon))
+  }
+}
+
+places_df$name <- as.character(places_df$name)
+places_df$name <- gsub(", Albania", "", places_df$name)
+places_df$name[places_df$name == "Koman, SH25, 4013"] <- "Koman"
+places_df$name[places_df$name == "Dhorës"] <- "Osumi Canyon"
+places_df$name[places_df$name == "Pojan,Fier"] <- "Apollonia"
+places_df$name[places_df$name == "The Blue Eye, Sarandë"] <- "Blue Eye"
+```
+
+```{r fig.width = 7, fig.height = 7, fig.align = "center", message=FALSE, warning=FALSE, eval=FALSE}
+ggmap(map) + 
+  geom_point(data = route, aes(x = lon, y = lat), color = "red", size = 1) +
+  geom_label(data = places_df, aes(x = lon, y = lat, label = name), check_overlap = TRUE, alpha = 0.5) +
+  map_theme
+ggsave(filename = "albania_map.png",  bg = "transparent")
+```
+
+---
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE}
+library(jsonlite)
+system.time(x <- fromJSON("~/Documents/Github/Takeout/Standortverlauf/Standortverlauf.json"))
+system.time(y <- fromJSON("~/Documents/Github/Takeout/Standortverlauf/Location History.json"))
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE}
+# extracting the locations dataframe
+loc = x$locations
+
+# converting time column from posix milliseconds into a readable time scale
+loc$time = as.POSIXct(as.numeric(x$locations$timestampMs)/1000, origin = "1970-01-01")
+
+# converting longitude and latitude from E7 to GPS coordinates
+loc$lat = loc$latitudeE7 / 1e7
+loc$lon = loc$longitudeE7 / 1e7
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE, cache=FALSE}
+# extracting the locations dataframe
+loc2 = y$locations
+
+# converting time column from posix milliseconds into a readable time scale
+loc2$time = as.POSIXct(as.numeric(y$locations$timestampMs)/1000, origin = "1970-01-01")
+
+# converting longitude and latitude from E7 to GPS coordinates
+loc2$lat = loc2$latitudeE7 / 1e7
+loc2$lon = loc2$longitudeE7 / 1e7
+```
+
+```{r}
+library(tidyverse)
+albanien1 <- loc %>%
+  select(time, lat, lon, altitude) %>%
+  #filter(time < "2017-08-24") %>%
+  #filter(time > "2017-08-04") %>%
+  arrange(time)
+
+albanien2 <- loc2 %>%
+  select(time, lat, lon, altitude) %>%
+  #filter(time < "2017-08-24") %>%
+  #filter(time > "2017-08-04") %>%
+  arrange(time)
+
+albanien <- rbind(albanien1, albanien2)
+```
+
+```{r fig.width = 10, fig.height = 10, fig.align = "center", message=FALSE, warning=FALSE, eval=FALSE}
+ggmap(map) + 
+  geom_point(data = albanien, aes(x = lon, y = lat), alpha = 1, color = "red", size = 2) +
+  #geom_line(data = albanien, aes(x = lon, y = lat), alpha = 1, color = "red") +
+  map_theme
+```
+
