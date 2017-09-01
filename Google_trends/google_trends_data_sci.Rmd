@@ -1,5 +1,5 @@
 ---
-title: "Google Trends"
+title: "R Basics: How to query Google Trends with R (plus correlations between keywords)"
 output: html_document
 ---
 
@@ -7,85 +7,142 @@ https://trends.google.com/trends/
 
 Google Trends is a useful way to compare changes in popularity of certain search terms over time, and Google Trends data can be used as a proxy for all sorts of difficult-to-measure quantities like economic activity and disease propagation. If you'd like to use Google Trends data in your own analyses, the gtrendsR package for R is now available on CRAN. This package by Philippe Massicotte and Dirk Eddelbuettel adds functions to connect with your Google account, and download Trends data for one or more search terms at daily or weekly resolution over a specified period of time.
 
+search intensity of a keyword
 
-```{r eval=FALSE}
-if (!require("devtools")) install.packages("devtools")
-devtools::install_github("PMassicotte/gtrendsR")
-```
+But it’s also invaluable for companies watching their brand health and analyzing consumer interests for the purposes of content creation 
 
-```{r eval=FALSE}
+```{r}
 library(gtrendsR)
 
-datasci <- gtrends("data science")
-plot(datasci)
-str(datasci)
-
-dataeng <- gtrends("data engineer")
-
-ml <- gtrends("machine learning")
-
-business <- gtrends("business intelligence")
-
-predictive <- gtrends("predictive analytics")
-predictive2 <- gtrends("predictive maintenance")
-```
-
-```{r eval=FALSE}
-save(datasci, file = "datasci.RData")
-save(dataeng, file = "dataeng.RData")
-save(ml, file = "ml.RData")
-save(business, file = "business.RData")
-save(predictive, file = "predictive.RData")
-save(predictive2, file = "predictive2.RData")
-```
-
-```{r}
-load("datasci.RData")
-load("dataeng.RData")
-load("ml.RData")
-load("business.RData")
-load("predictive.RData")
-load("predictive2.RData")
-```
-
-```{r}
 library(tidyverse)
+library(reshape2)
+```
+
+https://cran.r-project.org/web/packages/gtrendsR/index.html
+
+```{r}
+gtrends(query = "search_term",                                 # search one or more keyword(s)
+        geo = "",                                              # location; enter country_code from data("countries")
+        cat = "0",                                             # category; enter id from data("categories")
+        gprop = c("", "news", "images", "froogle", "youtube"), # Google product
+        session,                                               # session
+        res = c(NA, "1h", "4h", "1d", "7d"),                   # resolution
+        start_date = as.Date("2004-01-01"),                    # start date
+        end_date = as.Date(Sys.time()))                        # end date
+```
+
+```{r}
+system.time(search_trends <- gtrends(c("data science", 
+                                       "machine learning", 
+                                       "business intelligence", 
+                                       "predictive analytics", 
+                                       "predictive maintenance")))
+```
+
+```{r}
+summary(search_trends)
 ```
 
 ```{r fig.width=5, fig.height=2.5}
-rbind(datasci$interest_over_time,
-      dataeng$interest_over_time,
-      ml$interest_over_time,
-      business$interest_over_time,
-      predictive$interest_over_time,
-      predictive2$interest_over_time) %>%
-  ggplot(aes(x = date, y = hits, color = keyword)) +
-    geom_smooth() +
-    theme_bw() +
-    theme(legend.position = "top")
+plot(search_trends, type = "trend")
 ```
 
-```{r fig.width=5, fig.height=5}
-rbind(datasci$interest_over_time,
-      dataeng$interest_over_time,
-      ml$interest_over_time,
-      business$interest_over_time,
-      predictive$interest_over_time,
-      predictive2$interest_over_time) %>%
-  ggplot(aes(x = date, y = hits)) +
-    facet_grid(keyword ~ .) +
-    geom_smooth() +
-    geom_line() +
+```{r}
+data("countries")
+countries[grep("Germany|United States", countries$description, ignore.case = TRUE), ]
+```
+
+```{r}
+system.time(search_trends_geo <- gtrends("data science",
+                                     geo = c("DE", "US")))
+```
+
+```{r fig.width=5, fig.height=2.5}
+plot(search_trends_geo, type = "geo")
+```
+
+```{r}
+search_diff <- search_trends_geo$interest_over_time %>%
+  group_by(date, geo) %>%
+  summarise(sum_hits = sum(hits)) %>%
+  acast(date ~ geo, value.var = "sum_hits", fill = 0) %>%
+  as.data.frame() %>%
+  rownames_to_column() %>%
+  mutate(diff_DE_US = US - DE,
+         rowname = as.Date(rowname))
+
+library(broom)
+cor_diff <- cor.test(search_diff$DE, search_diff$US) %>%
+  tidy()
+
+search_diff %>%
+  ggplot(aes(x = rowname, y = diff_DE_US)) +
+    geom_smooth(aes(color = "lm diff US vs DE"), method = "lm") +
+    geom_ribbon(aes(ymin = DE, ymax = US), fill = "grey", alpha = 0.4) +
+    geom_line(aes(y = DE, color = "DE")) +
+    geom_line(aes(y = US, color = "US")) +
+    scale_color_brewer(palette = "Set1") +
+    annotate("text", label = paste("Cor:", round(cor_diff$estimate, digits = 2),
+                                   "\nCor p-val:", formatC(cor_diff$p.value, format = "e", digits = 2)), 
+             x = as.Date("2012-06-01"), y = 90, size = 5, colour = "darkgrey", hjust = 0) +
     theme_bw()
 ```
 
+ranking of search by region
+
+```{r}
+search_trends$interest_by_region %>%
+  group_by(keyword, location) %>%
+  summarise(sum_hits = sum(hits)) %>%
+  group_by(keyword) %>%
+  top_n(2, sum_hits) %>%
+  ggplot(aes(x = reorder(location, -sum_hits), y = sum_hits, fill = keyword)) +
+    geom_bar(stat = "identity", position = "dodge") +
+    theme_bw()
+```
+
+```{r}
+search_trends_geo$interest_by_dma %>%
+  arrange(-hits) %>%
+  head()
+```
+
+```{r}
+search_trends_geo$interest_by_city %>%
+  filter(geo == "DE")
+```
+
+```{r}
+search_trends$related_queries %>%
+  head()
+```
 
 
+correlation between time curves
 
+```{r}
+matrix <- search_trends$interest_over_time %>%
+  group_by(date, keyword) %>%
+  summarise(sum_hits = sum(hits)) %>%
+  acast(date ~ keyword, value.var = "sum_hits", fill = 0)
+head(matrix)
+```
 
+```{r}
+diff_matrix <- diff(matrix)
+head(diff_matrix)
+```
 
+```{r}
+library(corrgram)
+corrgram(matrix, order=TRUE, lower.panel=panel.shade,
+  upper.panel=panel.pie, text.panel=panel.txt)
+```
 
-
+```{r}
+corrgram(diff_matrix, order=TRUE, lower.panel=panel.shade,
+  upper.panel=panel.pie, text.panel=panel.txt)
+```
 
 
 
