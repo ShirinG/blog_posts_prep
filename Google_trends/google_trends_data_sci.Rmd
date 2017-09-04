@@ -85,7 +85,8 @@ search_diff %>%
     annotate("text", label = paste("Cor:", round(cor_diff$estimate, digits = 2),
                                    "\nCor p-val:", formatC(cor_diff$p.value, format = "e", digits = 2)), 
              x = as.Date("2012-06-01"), y = 90, size = 5, colour = "darkgrey", hjust = 0) +
-    theme_bw()
+    theme_bw() +
+    labs(x = "Date", y = "hits")
 ```
 
 ranking of search by region
